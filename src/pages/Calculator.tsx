@@ -65,6 +65,29 @@ const CalculatorPage = () => {
             <p className="mt-3 text-center text-muted-foreground">
               Рассчитайте стоимость таможенных платежей для любого транспортного средства
             </p>
+
+            {/* Live rates banner */}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3 rounded-lg border border-border/50 bg-card px-4 py-2.5 text-sm">
+              {ratesLoading ? (
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  Загрузка курсов ЦБ РФ…
+                </span>
+              ) : (
+                <>
+                  <span className="text-muted-foreground">
+                    Курсы ЦБ РФ на {ratesDate}
+                    {ratesError && " (резервные)"}:
+                  </span>
+                  <span className="font-medium text-foreground">$ {rates.USD}</span>
+                  <span className="font-medium text-foreground">€ {rates.EUR}</span>
+                  <span className="font-medium text-foreground">¥ {rates.JPY}</span>
+                  {ratesError && (
+                    <span className="text-xs text-destructive">(не удалось загрузить)</span>
+                  )}
+                </>
+              )}
+            </div>
           </motion.div>
 
           <div className="mt-10 grid gap-8 lg:grid-cols-5">
