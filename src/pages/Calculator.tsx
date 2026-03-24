@@ -28,6 +28,8 @@ import { useCurrencyRates } from "@/hooks/useCurrencyRates";
 const formatNum = (n: number) => n.toLocaleString("ru-RU");
 
 const CalculatorPage = () => {
+  const { rates, date: ratesDate, isLoading: ratesLoading, isError: ratesError } = useCurrencyRates();
+
   const [form, setForm] = useState<CalcInput>({
     vehicleType: "car",
     price: 0,
@@ -44,7 +46,7 @@ const CalculatorPage = () => {
 
   const handleCalc = () => {
     if (form.price <= 0) return;
-    setResult(calculate(form));
+    setResult(calculate(form, rates));
   };
 
   const update = <K extends keyof CalcInput>(key: K, val: CalcInput[K]) =>
