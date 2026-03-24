@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import PageTransition from "@/components/PageTransition";
 import { Calculator, Shield, Clock, TrendingUp, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
