@@ -99,4 +99,25 @@
     height: 1px;
     background: linear-gradient(90deg, transparent 0%, hsl(199 89% 48% / 0.3) 50%, transparent 100%);
   }
+
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+  .hover-lift:hover {
+    transform: scale(1.02) translateY(-2px);
+    box-shadow: 0 8px 30px hsl(199 89% 48% / 0.15);
+  }
+
+  .pulse-glow {
+    animation: pulseGlow 2.5s ease-in-out infinite;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 8px hsl(199 89% 48% / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px hsl(199 89% 48% / 0.6), 0 0 40px hsl(199 89% 48% / 0.2);
+  }
 }
