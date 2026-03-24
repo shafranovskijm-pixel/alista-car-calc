@@ -185,17 +185,18 @@ function calcRecyclingFee(
 
 // Customs processing fee (Постановление 1637, с 01.01.2025)
 function calcCustomsFee(valueRub: number): number {
-  if (valueRub <= 200000) return 775;
-  if (valueRub <= 450000) return 1550;
-  if (valueRub <= 1200000) return 3100;
-  if (valueRub <= 2700000) return 8530;
-  if (valueRub <= 4200000) return 12000;
-  if (valueRub <= 5500000) return 15500;
-  if (valueRub <= 7000000) return 20000;
-  if (valueRub <= 8000000) return 23000;
-  if (valueRub <= 9000000) return 25000;
-  if (valueRub <= 10000000) return 27000;
-  return 30000;
+  // Постановление №1637, актуальная редакция с 2025 г.
+  if (valueRub <= 200000) return 1128;
+  if (valueRub <= 450000) return 2462;
+  if (valueRub <= 1200000) return 4522;
+  if (valueRub <= 2700000) return 9480;
+  if (valueRub <= 4200000) return 14830;
+  if (valueRub <= 5500000) return 18482;
+  if (valueRub <= 7000000) return 22592;
+  if (valueRub <= 8000000) return 26562;
+  if (valueRub <= 9000000) return 30538;
+  if (valueRub <= 10000000) return 34518;
+  return 41540;
 }
 
 export function calculate(input: CalcInput, customRates?: Record<Currency, number>): CalcResult {
