@@ -159,7 +159,8 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="border-t border-border/50 py-16">
+      <div className="gradient-divider" />
+      <section className="py-16">
         <div className="container text-center">
           <h2 className="font-heading text-2xl font-bold text-foreground md:text-3xl">Режим работы</h2>
           <div className="mx-auto mt-8 max-w-md rounded-xl border border-border/50 bg-card p-6">
