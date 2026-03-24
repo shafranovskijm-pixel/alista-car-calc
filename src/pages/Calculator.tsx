@@ -291,6 +291,7 @@ const CalculatorPage = () => {
               </div>
             </div>
           </div>
+          <CalculatorDocs />
         </div>
       </section>
     </Layout>
