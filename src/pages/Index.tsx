@@ -115,7 +115,8 @@ const Index = () => {
       </section>
 
       {/* Features */}
-      <section className="border-t border-border/50 py-20">
+      <div className="gradient-divider" />
+      <section className="relative py-20">
         <div className="container">
           <h2 className="text-center font-heading text-3xl font-bold text-foreground md:text-4xl">
             Почему выбирают нас
