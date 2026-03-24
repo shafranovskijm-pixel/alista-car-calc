@@ -1,4 +1,5 @@
 // Customs calculation logic for Russian Federation
+// Updated to 2025–2026 regulations
 
 export type VehicleType = 'car' | 'truck' | 'motorcycle' | 'bus' | 'trailer' | 'atv' | 'snowmobile' | 'watercraft';
 export type ImporterType = 'individual' | 'legal';
@@ -27,19 +28,20 @@ export interface CalcResult {
   total: number;
 }
 
-// Approximate exchange rates to RUB
+// Approximate exchange rates to RUB (updated March 2026)
+export const RATES_DATE = '24.03.2026';
 const rates: Record<Currency, number> = {
   RUB: 1,
-  EUR: 100,
-  USD: 92,
-  JPY: 0.62,
+  EUR: 95,
+  USD: 87,
+  JPY: 0.58,
 };
 
 function toRub(amount: number, currency: Currency): number {
   return amount * rates[currency];
 }
 
-// Customs duty for individuals (cars)
+// Customs duty for individuals (cars) — ЕТТ ЕАЭС
 function individualCarDuty(priceEur: number, engineVolume: number, age: AgeCategory): number {
   if (age === 'new' || age === '1-3') {
     // Cars up to 3 years
@@ -69,44 +71,108 @@ function individualCarDuty(priceEur: number, engineVolume: number, age: AgeCateg
   return engineVolume * 5.7;
 }
 
-// Excise tax based on horsepower (2024 rates approximate)
+// Customs duty for legal entities — differentiated by age & engine volume
+// Based on ЕТТ ЕАЭС, codes 8703
+function legalEntityCarDuty(priceRub: number, priceEur: number, engineVolume: number, age: AgeCategory, vehicleType: VehicleType): number {
+  if (vehicleType !== 'car' && vehicleType !== 'motorcycle') {
+    // Trucks, buses, trailers etc. — 10–15% but min 0.5–1.0 €/cm³
+    const dutyRate = vehicleType === 'truck' || vehicleType === 'bus' ? 0.15 : 0.10;
+    return Math.max(priceRub * dutyRate, engineVolume * 0.5 * rates.EUR);
+  }
+
+  if (age === 'new' || age === '1-3') {
+    // New cars for legal entities: 15% but not less than specific €/cm³
+    if (engineVolume <= 1000) return Math.max(priceRub * 0.15, engineVolume * 0.36 * rates.EUR);
+    if (engineVolume <= 1500) return Math.max(priceRub * 0.15, engineVolume * 0.4 * rates.EUR);
+    if (engineVolume <= 1800) return Math.max(priceRub * 0.15, engineVolume * 0.36 * rates.EUR);
+    if (engineVolume <= 2300) return Math.max(priceRub * 0.15, engineVolume * 0.44 * rates.EUR);
+    if (engineVolume <= 3000) return Math.max(priceRub * 0.15, engineVolume * 0.44 * rates.EUR);
+    return Math.max(priceRub * 0.15, engineVolume * 0.8 * rates.EUR);
+  }
+
+  if (age === '3-5') {
+    // 3-5 years: 20% but not less than specific €/cm³
+    if (engineVolume <= 1000) return Math.max(priceRub * 0.20, engineVolume * 0.36 * rates.EUR);
+    if (engineVolume <= 1500) return Math.max(priceRub * 0.20, engineVolume * 0.4 * rates.EUR);
+    if (engineVolume <= 1800) return Math.max(priceRub * 0.20, engineVolume * 0.36 * rates.EUR);
+    if (engineVolume <= 2300) return Math.max(priceRub * 0.20, engineVolume * 0.44 * rates.EUR);
+    if (engineVolume <= 3000) return Math.max(priceRub * 0.20, engineVolume * 0.44 * rates.EUR);
+    return Math.max(priceRub * 0.20, engineVolume * 0.8 * rates.EUR);
+  }
+
+  // 5-7 and 7+ years — higher specific rates
+  if (engineVolume <= 1000) return engineVolume * 1.4 * rates.EUR;
+  if (engineVolume <= 1500) return engineVolume * 1.5 * rates.EUR;
+  if (engineVolume <= 1800) return engineVolume * 1.6 * rates.EUR;
+  if (engineVolume <= 2300) return engineVolume * 2.2 * rates.EUR;
+  if (engineVolume <= 3000) return engineVolume * 2.2 * rates.EUR;
+  return engineVolume * 3.2 * rates.EUR;
+}
+
+// Excise tax based on horsepower (2026 rates, ФЗ № 425-ФЗ)
 function calcExcise(power: number): number {
   if (power <= 90) return 0;
-  if (power <= 150) return power * 55;
-  if (power <= 200) return power * 531;
-  if (power <= 300) return power * 869;
-  if (power <= 400) return power * 1482;
-  if (power <= 500) return power * 1534;
-  return power * 1584;
+  if (power <= 150) return power * 64;
+  if (power <= 200) return power * 613;
+  if (power <= 300) return power * 1004;
+  if (power <= 400) return power * 1564;
+  if (power <= 500) return power * 1621;
+  return power * 1678;
 }
 
-// Recycling fee (approximate, 2024)
-function calcRecyclingFee(vehicleType: VehicleType, engineVolume: number, age: AgeCategory, importerType: ImporterType): number {
-  const baseRate = vehicleType === 'car' || vehicleType === 'motorcycle' ? 20000 : 150000;
-  let coefficient = 1;
+// Recycling fee (Постановление 1291 в ред. 1713, с 01.12.2025)
+// Base rates: cars/motorcycles = 20 000 ₽, trucks = 150 000 ₽
+function calcRecyclingFee(
+  vehicleType: VehicleType,
+  engineVolume: number,
+  power: number,
+  age: AgeCategory,
+  importerType: ImporterType,
+  fuelType: FuelType
+): number {
+  const isNew = age === 'new' || age === '1-3' || age === '3-5';
+  const isOld = !isNew; // 5-7 and 7+
 
-  const isOld = age === '3-5' || age === '5-7' || age === '7+';
-
-  if (vehicleType === 'car') {
-    if (engineVolume <= 1000) coefficient = isOld ? 6.15 : 0.17;
-    else if (engineVolume <= 2000) coefficient = isOld ? 15.69 : 0.17;
-    else if (engineVolume <= 3000) coefficient = isOld ? 24.01 : 0.17;
-    else if (engineVolume <= 3500) coefficient = isOld ? 60.06 : 12.56;
-    else coefficient = isOld ? 74.25 : 12.56;
-  } else if (vehicleType === 'truck') {
-    coefficient = isOld ? 24.01 : 0.5;
-  } else {
-    coefficient = isOld ? 6.15 : 0.17;
+  // Electric vehicles
+  if (fuelType === 'electric') {
+    const baseRate = 20000;
+    // Power in kW (approximate: 1 hp ≈ 0.7355 kW)
+    const powerKw = power * 0.7355;
+    if (powerKw <= 90) return baseRate * (isNew ? 2.41 : 8.26);
+    if (powerKw <= 150) return baseRate * (isNew ? 8.86 : 24.38);
+    if (powerKw <= 200) return baseRate * (isNew ? 12.56 : 33.95);
+    return baseRate * (isNew ? 22.25 : 55.02);
   }
 
-  if (importerType === 'individual' && vehicleType === 'car') {
-    return baseRate * (isOld ? 0.26 : 0.17);
+  if (vehicleType === 'car' || vehicleType === 'motorcycle') {
+    const baseRate = 20000;
+
+    // Coefficients per Decree 1291 ed. 1713 (from 01.12.2025)
+    // For cars with ICE/hybrid, by engine volume
+    if (engineVolume <= 1000) return baseRate * (isNew ? 4.06 : 10.36);
+    if (engineVolume <= 1500) return baseRate * (isNew ? 15.69 : 24.38);
+    if (engineVolume <= 2000) return baseRate * (isNew ? 33.37 : 47.15);
+    if (engineVolume <= 2500) return baseRate * (isNew ? 37.41 : 60.06);
+    if (engineVolume <= 3000) return baseRate * (isNew ? 42.24 : 74.25);
+    if (engineVolume <= 3500) return baseRate * (isNew ? 60.06 : 81.89);
+    return baseRate * (isNew ? 74.25 : 105.58);
   }
 
-  return baseRate * coefficient;
+  if (vehicleType === 'truck' || vehicleType === 'bus') {
+    const baseRate = 150000;
+    // Simplified truck/bus coefficients by mass category
+    if (engineVolume <= 2500) return baseRate * (isNew ? 1.44 : 4.56);
+    if (engineVolume <= 5000) return baseRate * (isNew ? 2.21 : 6.91);
+    if (engineVolume <= 8000) return baseRate * (isNew ? 4.56 : 14.0);
+    return baseRate * (isNew ? 8.39 : 24.01);
+  }
+
+  // ATV, snowmobile, watercraft, trailer
+  const baseRate = vehicleType === 'trailer' ? 150000 : 20000;
+  return baseRate * (isNew ? 0.5 : 1.52);
 }
 
-// Customs processing fee
+// Customs processing fee (Постановление 1637, с 01.01.2025)
 function calcCustomsFee(valueRub: number): number {
   if (valueRub <= 200000) return 775;
   if (valueRub <= 450000) return 1550;
@@ -130,21 +196,23 @@ export function calculate(input: CalcInput): CalcResult {
   if (input.importerType === 'individual' && (input.vehicleType === 'car' || input.vehicleType === 'motorcycle')) {
     // Individual duty in EUR, convert to RUB
     customsDuty = individualCarDuty(priceEur, input.engineVolume, input.age) * rates.EUR;
+  } else if (input.importerType === 'legal') {
+    customsDuty = legalEntityCarDuty(priceRub, priceEur, input.engineVolume, input.age, input.vehicleType);
   } else {
-    // Legal entity: flat rate based on vehicle type
-    const dutyRate = input.vehicleType === 'car' || input.vehicleType === 'motorcycle' ? 0.15 : 0.10;
+    // Individual importing non-car (truck, bus, etc.) — simplified
+    const dutyRate = 0.15;
     customsDuty = Math.max(priceRub * dutyRate, priceRub * 0.05);
   }
 
-  // Excise
-  const excise = input.fuelType === 'electric' ? 0 : calcExcise(input.power);
+  // Excise (only for legal entities; individuals importing for personal use are exempt)
+  const excise = (input.fuelType === 'electric' || input.importerType === 'individual') ? 0 : calcExcise(input.power);
 
-  // VAT (20% on price + duty + excise)
+  // VAT 22% (с 01.01.2026, ФЗ № 425-ФЗ)
   const vatBase = priceRub + customsDuty + excise;
-  const vat = input.importerType === 'individual' ? 0 : vatBase * 0.20;
+  const vat = input.importerType === 'individual' ? 0 : vatBase * 0.22;
 
-  // Recycling fee
-  const recyclingFee = calcRecyclingFee(input.vehicleType, input.engineVolume, input.age, input.importerType);
+  // Recycling fee (Постановление 1291 ред. 1713)
+  const recyclingFee = calcRecyclingFee(input.vehicleType, input.engineVolume, input.power, input.age, input.importerType, input.fuelType);
 
   // Customs processing fee
   const customsFee = calcCustomsFee(priceRub);
