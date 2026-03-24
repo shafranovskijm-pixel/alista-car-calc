@@ -5,6 +5,7 @@ import PageTransition from "@/components/PageTransition";
 
 const AboutPage = () => {
   return (
+    <PageTransition>
     <Layout>
       <section className="py-12 md:py-20">
         <div className="container max-w-4xl">
