@@ -5,6 +5,7 @@ import { Calculator, Shield, Clock, TrendingUp, ChevronRight, HelpCircle } from 
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Layout from "@/components/Layout";
+import Gallery from "@/components/Gallery";
 
 const faqItems = [
   {
@@ -131,7 +132,22 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Schedule */}
+      {/* Gallery */}
+      <section className="border-t border-border/50 py-20">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-center font-heading text-3xl font-bold text-foreground md:text-4xl mb-10">
+              Наши работы
+            </h2>
+          </motion.div>
+          <Gallery />
+        </div>
+      </section>
+
       <section className="border-t border-border/50 py-16">
         <div className="container text-center">
           <h2 className="font-heading text-2xl font-bold text-foreground md:text-3xl">Режим работы</h2>
