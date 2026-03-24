@@ -284,9 +284,25 @@ const CalculatorPage = () => {
                     </a>
                   </motion.div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Заполните параметры и нажмите «Рассчитать», чтобы увидеть результат.
-                  </p>
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Заполните параметры и нажмите «Рассчитать», чтобы увидеть результат.
+                    </p>
+                    <div className="rounded-lg border border-dashed border-border/50 bg-secondary/30 p-4 space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-primary">Пример расчёта</p>
+                      <p className="text-sm text-foreground">Toyota Camry 2.5л, бензин</p>
+                      <p className="text-xs text-muted-foreground">Возраст 3–5 лет · Физлицо · ~$15 000</p>
+                      <div className="border-t border-border/30 pt-2 mt-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Ориентировочный итог</span>
+                          <span className="font-bold text-primary">~850 000 ₽</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      💡 Совет: для авто 3–5 лет с объёмом до 3.0л таможенные платежи для физлиц обычно ниже, чем для юрлиц.
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
