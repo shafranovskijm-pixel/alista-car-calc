@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Layout from "@/components/Layout";
+import CalculatorDocs from "@/components/CalculatorDocs";
 import {
   calculate,
   vehicleTypeLabels,
@@ -290,6 +291,7 @@ const CalculatorPage = () => {
               </div>
             </div>
           </div>
+          <CalculatorDocs />
         </div>
       </section>
     </Layout>
