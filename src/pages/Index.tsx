@@ -1,9 +1,45 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
-import { Calculator, Shield, Clock, TrendingUp, ChevronRight } from "lucide-react";
+import { Calculator, Shield, Clock, TrendingUp, ChevronRight, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Layout from "@/components/Layout";
+
+const faqItems = [
+  {
+    q: "Сколько стоит растаможка автомобиля?",
+    a: "Стоимость зависит от типа ТС, объёма двигателя, возраста, стоимости и статуса импортёра (физлицо/юрлицо). Воспользуйтесь нашим калькулятором для предварительного расчёта или свяжитесь с нами для точной оценки.",
+  },
+  {
+    q: "Какие документы нужны для растаможки?",
+    a: "Основные документы: паспорт владельца, договор купли-продажи (инвойс), коносамент (Bill of Lading), экспортный сертификат страны отправления, а также документы, подтверждающие стоимость авто. Мы поможем подготовить полный пакет.",
+  },
+  {
+    q: "Сколько времени занимает растаможка?",
+    a: "При наличии всех документов — от 1 до 5 рабочих дней. Сроки могут увеличиться при необходимости дополнительных проверок или экспертиз. Мы делаем всё возможное для ускорения процесса.",
+  },
+  {
+    q: "Можно ли растаможить авто старше 7 лет?",
+    a: "Да, но таможенные пошлины для таких автомобилей значительно выше. Ставка рассчитывается по объёму двигателя (от 3.0 до 5.7 €/см³ для физлиц). Рекомендуем предварительно рассчитать стоимость через наш калькулятор.",
+  },
+  {
+    q: "В чём разница растаможки для физлиц и юрлиц?",
+    a: "Физлица платят единую таможенную пошлину и освобождены от НДС и акциза (при ввозе для личного пользования). Юрлица оплачивают пошлину, акциз и НДС (22%) отдельно. Утилизационный сбор различается по коэффициентам.",
+  },
+  {
+    q: "Что входит в утилизационный сбор?",
+    a: "Утилизационный сбор — обязательный платёж, размер которого зависит от типа ТС, объёма двигателя и возраста. С декабря 2025 года коэффициенты значительно увеличены (Постановление № 1713). Например, для авто 2.0л сбор может составить более 600 000 ₽.",
+  },
+  {
+    q: "Какие виды транспорта вы растамаживаете?",
+    a: "Мы работаем со всеми видами: легковые автомобили, грузовики, мотоциклы, автобусы, прицепы, квадроциклы, снегоходы и водный транспорт. Для каждого типа ТС свои ставки и порядок оформления.",
+  },
+  {
+    q: "Можно ли ввезти электромобиль? Есть ли льготы?",
+    a: "Да, электромобили можно ввозить. Они освобождены от акциза, но утилизационный сбор рассчитывается по мощности электродвигателя (в кВт). Таможенная пошлина начисляется на общих основаниях.",
+  },
+];
 
 const features = [
   {
@@ -109,6 +145,48 @@ const Index = () => {
               <span className="font-semibold text-destructive">Выходной</span>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="border-t border-border/50 py-20">
+        <div className="container max-w-3xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex items-center justify-center gap-3 mb-10">
+              <HelpCircle className="h-7 w-7 text-primary" />
+              <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl text-center">
+                Частые вопросы
+              </h2>
+            </div>
+          </motion.div>
+
+          <Accordion type="single" collapsible className="space-y-3">
+            {faqItems.map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <AccordionItem
+                  value={`faq-${i}`}
+                  className="rounded-xl border border-border/50 bg-card px-5 data-[state=open]:border-primary/30"
+                >
+                  <AccordionTrigger className="text-left font-semibold text-foreground hover:text-primary hover:no-underline py-4">
+                    {item.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pb-4 leading-relaxed">
+                    {item.a}
+                  </AccordionContent>
+                </AccordionItem>
+              </motion.div>
+            ))}
+          </Accordion>
         </div>
       </section>
     </Layout>
