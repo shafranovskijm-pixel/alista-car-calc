@@ -131,25 +131,35 @@ function calcRecyclingFee(
   importerType: ImporterType,
   fuelType: FuelType
 ): number {
-  const isNew = age === 'new' || age === '1-3' || age === '3-5';
-  const isOld = !isNew; // 5-7 and 7+
+  const isNew = age === 'new' || age === '1-3' || age === '3-5'; // ≤3 лет
+  const isOld = !isNew; // >3 лет
 
-  // Electric vehicles
-  if (fuelType === 'electric') {
-    const baseRate = 20000;
-    // Power in kW (approximate: 1 hp ≈ 0.7355 kW)
-    const powerKw = power * 0.7355;
-    if (powerKw <= 90) return baseRate * (isNew ? 2.41 : 8.26);
-    if (powerKw <= 150) return baseRate * (isNew ? 8.86 : 24.38);
-    if (powerKw <= 200) return baseRate * (isNew ? 12.56 : 33.95);
-    return baseRate * (isNew ? 22.25 : 55.02);
-  }
-
+  // --- Легковые / мотоциклы ---
   if (vehicleType === 'car' || vehicleType === 'motorcycle') {
     const baseRate = 20000;
 
-    // Coefficients per Decree 1291 ed. 1713 (from 01.12.2025)
-    // For cars with ICE/hybrid, by engine volume
+    // Льготный утильсбор для физлиц (личное пользование)
+    // ДВС/гибрид ≤160 л.с. или электро ≤80 л.с.
+    if (importerType === 'individual') {
+      const isPreferential =
+        fuelType === 'electric' ? power <= 80 : power <= 160;
+
+      if (isPreferential) {
+        return baseRate * (isNew ? 0.17 : 0.26);
+      }
+      // Физлицо с мощностью выше порога — коммерческие коэффициенты (ниже)
+    }
+
+    // Электромобили — коммерческие коэффициенты по мощности
+    if (fuelType === 'electric') {
+      const powerKw = power * 0.7355;
+      if (powerKw <= 90) return baseRate * (isNew ? 2.41 : 8.26);
+      if (powerKw <= 150) return baseRate * (isNew ? 8.86 : 24.38);
+      if (powerKw <= 200) return baseRate * (isNew ? 12.56 : 33.95);
+      return baseRate * (isNew ? 22.25 : 55.02);
+    }
+
+    // Коммерческие коэффициенты (юрлица + физлица >160 л.с.)
     if (engineVolume <= 1000) return baseRate * (isNew ? 4.06 : 10.36);
     if (engineVolume <= 1500) return baseRate * (isNew ? 15.69 : 24.38);
     if (engineVolume <= 2000) return baseRate * (isNew ? 33.37 : 47.15);
@@ -159,16 +169,16 @@ function calcRecyclingFee(
     return baseRate * (isNew ? 74.25 : 105.58);
   }
 
+  // --- Грузовики / автобусы ---
   if (vehicleType === 'truck' || vehicleType === 'bus') {
     const baseRate = 150000;
-    // Simplified truck/bus coefficients by mass category
     if (engineVolume <= 2500) return baseRate * (isNew ? 1.44 : 4.56);
     if (engineVolume <= 5000) return baseRate * (isNew ? 2.21 : 6.91);
     if (engineVolume <= 8000) return baseRate * (isNew ? 4.56 : 14.0);
     return baseRate * (isNew ? 8.39 : 24.01);
   }
 
-  // ATV, snowmobile, watercraft, trailer
+  // --- ATV, снегоходы, водный транспорт, прицепы ---
   const baseRate = vehicleType === 'trailer' ? 150000 : 20000;
   return baseRate * (isNew ? 0.5 : 1.52);
 }
