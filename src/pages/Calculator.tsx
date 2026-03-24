@@ -231,9 +231,17 @@ const CalculatorPage = () => {
                       </div>
                     </div>
 
-                    <p className="mt-4 text-xs text-muted-foreground">
-                      * Расчёт является приблизительным. Для точного расчёта свяжитесь с нами.
-                    </p>
+                    <div className="mt-4 space-y-1">
+                      <p className="text-xs text-muted-foreground">
+                        * Расчёт является приблизительным. Для точного расчёта свяжитесь с нами.
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        ** Курсы валют актуальны на {RATES_DATE}. Реальные курсы могут отличаться.
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Расчёт по: ЕТТ ЕАЭС, ФЗ № 425-ФЗ (акцизы, НДС 22%), Постановление 1291 ред. 1713 (утиль. сбор).
+                      </p>
+                    </div>
 
                     <a
                       href={`https://wa.me/79841982733?text=${encodeURIComponent(
