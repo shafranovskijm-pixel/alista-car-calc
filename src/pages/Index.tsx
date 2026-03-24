@@ -71,8 +71,16 @@ const Index = () => {
     <PageTransition>
     <Layout>
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 gradient-premium" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(199_89%_48%/0.08),transparent_60%)]" />
+        {/* Hero background image */}
+        <img
+          src={heroBg}
+          alt=""
+          width={1920}
+          height={1080}
+          className="absolute inset-0 h-full w-full object-cover opacity-30"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--neon-glow)/0.1),transparent_60%)]" />
         <div className="container relative flex min-h-[80vh] flex-col items-center justify-center text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
