@@ -188,6 +188,7 @@ const ContactsPage = () => {
         </div>
       </section>
     </Layout>
+    </PageTransition>
   );
 };
 
