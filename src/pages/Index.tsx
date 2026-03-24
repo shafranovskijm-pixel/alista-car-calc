@@ -71,7 +71,6 @@ const features = [
 
 const heroCounters = [
   { value: 700, suffix: "+", label: "авто оформлено" },
-  { value: 5, suffix: " лет", label: "опыта" },
   { value: 1, suffix: " день", label: "минимум оформления" },
 ];
 
