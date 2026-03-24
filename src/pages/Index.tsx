@@ -195,6 +195,10 @@ const Index = () => {
       <div className="gradient-divider" />
       <StatsSection />
 
+      {/* Testimonials */}
+      <div className="gradient-divider" />
+      <TestimonialsCarousel />
+
       {/* Working hours */}
       <div className="gradient-divider" />
       <section className="py-16">
