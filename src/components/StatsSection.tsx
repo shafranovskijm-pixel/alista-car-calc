@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import AnimatedCounter from "@/components/AnimatedCounter";
-import { Car, Users, Zap } from "lucide-react";
+import { Car, Zap } from "lucide-react";
 
 const stats = [
   { icon: Car, value: 700, suffix: "+", label: "Авто оформлено" },
