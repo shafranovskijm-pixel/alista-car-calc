@@ -7,6 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import Layout from "@/components/Layout";
 import Gallery from "@/components/Gallery";
 import StatsSection from "@/components/StatsSection";
+import TestimonialsCarousel from "@/components/TestimonialsCarousel";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import heroBg from "@/assets/hero-bg.jpg";
 
