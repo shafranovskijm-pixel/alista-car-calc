@@ -95,6 +95,7 @@ const AboutPage = () => {
         </div>
       </section>
     </Layout>
+    </PageTransition>
   );
 };
 

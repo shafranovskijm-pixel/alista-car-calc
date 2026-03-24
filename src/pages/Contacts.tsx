@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
+import PageTransition from "@/components/PageTransition";
 
 const contacts = [
   { role: "Директор", name: "", phone: "+7 984 198-27-33", phoneRaw: "79841982733" },

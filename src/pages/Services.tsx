@@ -70,6 +70,7 @@ const ServicesPage = () => {
         </div>
       </section>
     </Layout>
+    </PageTransition>
   );
 };
 

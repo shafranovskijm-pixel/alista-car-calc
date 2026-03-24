@@ -112,6 +112,7 @@ const Index = () => {
         </div>
       </section>
     </Layout>
+    </PageTransition>
   );
 };
 
