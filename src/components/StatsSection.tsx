@@ -1,11 +1,10 @@
 import { motion } from "framer-motion";
 import AnimatedCounter from "@/components/AnimatedCounter";
-import { Car, CalendarCheck, Users, Zap } from "lucide-react";
+import { Car, Users, Zap } from "lucide-react";
 
 const stats = [
   { icon: Car, value: 700, suffix: "+", label: "Авто оформлено" },
-  { icon: CalendarCheck, value: 5, suffix: " лет", label: "На рынке" },
-  { icon: Users, value: 1200, suffix: "+", label: "Довольных клиентов" },
+  { icon: Users, value: 700, suffix: "+", label: "Довольных клиентов" },
   { icon: Zap, value: 1, suffix: " день", label: "Минимальный срок" },
 ];
 

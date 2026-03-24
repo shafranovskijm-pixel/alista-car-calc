@@ -71,7 +71,6 @@ const features = [
 
 const heroCounters = [
   { value: 700, suffix: "+", label: "авто оформлено" },
-  { value: 5, suffix: " лет", label: "опыта" },
   { value: 1, suffix: " день", label: "минимум оформления" },
 ];
 
@@ -100,9 +99,9 @@ const Index = () => {
               ALISTA — таможенное оформление
             </p>
             <h1 className="font-heading text-4xl font-bold leading-tight text-foreground md:text-6xl lg:text-7xl text-glow">
-              Импорт авто из Японии
+              Импорт авто из Японии,
               <br />
-              и Кореи под ключ
+              Кореи и Китая под ключ
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
               Профессиональная растаможка автомобилей и спецтехники во Владивостоке. Быстро, надёжно, прозрачно.
