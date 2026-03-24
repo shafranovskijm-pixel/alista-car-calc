@@ -276,7 +276,7 @@ const CalculatorPage = () => {
 const Row = ({ label, value }: { label: string; value: number }) => (
   <div className="flex items-center justify-between text-sm">
     <span className="text-muted-foreground">{label}</span>
-    <span className="font-medium text-foreground">{formatNum(value)} ₽</span>
+    <AnimatedCounter value={value} suffix=" ₽" className="font-medium text-foreground" />
   </div>
 );
 
