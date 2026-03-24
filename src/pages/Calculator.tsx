@@ -228,8 +228,7 @@ const CalculatorPage = () => {
                     <div className="border-t border-border/50 pt-3 mt-4">
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-bold text-foreground">Итого</span>
-                        <span className="text-xl font-bold text-primary text-glow">
-                          {formatNum(result.total)} ₽
+                        <AnimatedCounter value={result.total} suffix=" ₽" className="text-xl font-bold text-primary text-glow" />
                         </span>
                       </div>
                     </div>
