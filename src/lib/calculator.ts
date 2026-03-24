@@ -131,7 +131,7 @@ function calcRecyclingFee(
   importerType: ImporterType,
   fuelType: FuelType
 ): number {
-  const isNew = age === 'new' || age === '1-3' || age === '3-5'; // ≤3 лет
+  const isNew = age === 'new' || age === '1-3'; // ≤3 лет
   const isOld = !isNew; // >3 лет
 
   // --- Легковые / мотоциклы ---
