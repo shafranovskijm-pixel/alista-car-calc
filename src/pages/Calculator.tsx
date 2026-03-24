@@ -269,6 +269,7 @@ const CalculatorPage = () => {
         </div>
       </section>
     </Layout>
+    </PageTransition>
   );
 };
 
