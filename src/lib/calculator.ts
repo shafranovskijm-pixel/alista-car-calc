@@ -74,7 +74,7 @@ function individualCarDuty(priceEur: number, engineVolume: number, age: AgeCateg
 
 // Customs duty for legal entities — differentiated by age & engine volume
 // Based on ЕТТ ЕАЭС, codes 8703
-function legalEntityCarDuty(priceRub: number, priceEur: number, engineVolume: number, age: AgeCategory, vehicleType: VehicleType): number {
+function legalEntityCarDuty(priceRub: number, priceEur: number, engineVolume: number, age: AgeCategory, vehicleType: VehicleType, eurRate: number): number {
   if (vehicleType !== 'car' && vehicleType !== 'motorcycle') {
     // Trucks, buses, trailers etc. — 10–15% but min 0.5–1.0 €/cm³
     const dutyRate = vehicleType === 'truck' || vehicleType === 'bus' ? 0.15 : 0.10;
