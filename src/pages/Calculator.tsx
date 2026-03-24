@@ -52,8 +52,9 @@ const CalculatorPage = () => {
 
   return (
     <PageTransition>
-    <Layout>
-        <div className="container max-w-5xl">
+      <Layout>
+        <section className="py-12 md:py-20">
+          <div className="container max-w-5xl">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <h1 className="font-heading text-3xl font-bold text-foreground md:text-4xl text-center">
               <CalcIcon className="mr-3 inline h-8 w-8 text-primary" />
