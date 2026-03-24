@@ -13,6 +13,7 @@ import {
   fuelTypeLabels,
   ageCategoryLabels,
   currencyLabels,
+  RATES_DATE,
   type CalcInput,
   type CalcResult,
   type VehicleType,
