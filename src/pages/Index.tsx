@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Layout from "@/components/Layout";
 import Gallery from "@/components/Gallery";
+import heroBg from "@/assets/hero-bg.jpg";
 
 const faqItems = [
   {
