@@ -38,6 +38,7 @@ const services = [
 
 const ServicesPage = () => {
   return (
+    <PageTransition>
     <Layout>
       <section className="py-12 md:py-20">
         <div className="container max-w-5xl">
