@@ -4,14 +4,13 @@ import { Car, Users, Zap } from "lucide-react";
 
 const stats = [
   { icon: Car, value: 700, suffix: "+", label: "Авто оформлено" },
-  { icon: Users, value: 700, suffix: "+", label: "Довольных клиентов" },
   { icon: Zap, value: 1, suffix: " день", label: "Минимальный срок" },
 ];
 
 const StatsSection = () => (
   <section className="relative py-16">
     <div className="container">
-      <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+      <div className="flex flex-wrap justify-center gap-6">
         {stats.map((s, i) => (
           <motion.div
             key={s.label}
