@@ -102,12 +102,12 @@ function legalEntityCarDuty(priceRub: number, priceEur: number, engineVolume: nu
   }
 
   // 5-7 and 7+ years — higher specific rates
-  if (engineVolume <= 1000) return engineVolume * 1.4 * rates.EUR;
-  if (engineVolume <= 1500) return engineVolume * 1.5 * rates.EUR;
-  if (engineVolume <= 1800) return engineVolume * 1.6 * rates.EUR;
-  if (engineVolume <= 2300) return engineVolume * 2.2 * rates.EUR;
-  if (engineVolume <= 3000) return engineVolume * 2.2 * rates.EUR;
-  return engineVolume * 3.2 * rates.EUR;
+  if (engineVolume <= 1000) return engineVolume * 1.4 * eurRate;
+  if (engineVolume <= 1500) return engineVolume * 1.5 * eurRate;
+  if (engineVolume <= 1800) return engineVolume * 1.6 * eurRate;
+  if (engineVolume <= 2300) return engineVolume * 2.2 * eurRate;
+  if (engineVolume <= 3000) return engineVolume * 2.2 * eurRate;
+  return engineVolume * 3.2 * eurRate;
 }
 
 // Excise tax based on horsepower (2026 rates, ФЗ № 425-ФЗ)
