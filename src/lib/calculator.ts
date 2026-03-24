@@ -188,8 +188,9 @@ function calcCustomsFee(valueRub: number): number {
   return 30000;
 }
 
-export function calculate(input: CalcInput): CalcResult {
-  const priceRub = toRub(input.price, input.currency);
+export function calculate(input: CalcInput, customRates?: Record<Currency, number>): CalcResult {
+  const rates = customRates || DEFAULT_RATES;
+  const priceRub = toRub(input.price, input.currency, rates);
   const priceEur = priceRub / rates.EUR;
 
   let customsDuty: number;
@@ -198,7 +199,7 @@ export function calculate(input: CalcInput): CalcResult {
     // Individual duty in EUR, convert to RUB
     customsDuty = individualCarDuty(priceEur, input.engineVolume, input.age) * rates.EUR;
   } else if (input.importerType === 'legal') {
-    customsDuty = legalEntityCarDuty(priceRub, priceEur, input.engineVolume, input.age, input.vehicleType);
+    customsDuty = legalEntityCarDuty(priceRub, priceEur, input.engineVolume, input.age, input.vehicleType, rates.EUR);
   } else {
     // Individual importing non-car (truck, bus, etc.) — simplified
     const dutyRate = 0.15;
