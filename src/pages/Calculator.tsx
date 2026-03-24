@@ -15,7 +15,6 @@ import {
   fuelTypeLabels,
   ageCategoryLabels,
   currencyLabels,
-  RATES_DATE,
   type CalcInput,
   type CalcResult,
   type VehicleType,
@@ -24,6 +23,7 @@ import {
   type AgeCategory,
   type ImporterType,
 } from "@/lib/calculator";
+import { useCurrencyRates } from "@/hooks/useCurrencyRates";
 
 const formatNum = (n: number) => n.toLocaleString("ru-RU");
 
