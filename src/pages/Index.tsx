@@ -111,6 +111,48 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* FAQ */}
+      <section className="border-t border-border/50 py-20">
+        <div className="container max-w-3xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex items-center justify-center gap-3 mb-10">
+              <HelpCircle className="h-7 w-7 text-primary" />
+              <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl text-center">
+                Частые вопросы
+              </h2>
+            </div>
+          </motion.div>
+
+          <Accordion type="single" collapsible className="space-y-3">
+            {faqItems.map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <AccordionItem
+                  value={`faq-${i}`}
+                  className="rounded-xl border border-border/50 bg-card px-5 data-[state=open]:border-primary/30"
+                >
+                  <AccordionTrigger className="text-left font-semibold text-foreground hover:text-primary hover:no-underline py-4">
+                    {item.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pb-4 leading-relaxed">
+                    {item.a}
+                  </AccordionContent>
+                </AccordionItem>
+              </motion.div>
+            ))}
+          </Accordion>
+        </div>
+      </section>
     </Layout>
     </PageTransition>
   );
