@@ -177,7 +177,8 @@ const Index = () => {
       </section>
 
       {/* FAQ */}
-      <section className="border-t border-border/50 py-20">
+      <div className="gradient-divider" />
+      <section className="relative py-20">
         <div className="container max-w-3xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
