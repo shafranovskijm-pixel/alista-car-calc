@@ -78,7 +78,7 @@ function legalEntityCarDuty(priceRub: number, priceEur: number, engineVolume: nu
   if (vehicleType !== 'car' && vehicleType !== 'motorcycle') {
     // Trucks, buses, trailers etc. — 10–15% but min 0.5–1.0 €/cm³
     const dutyRate = vehicleType === 'truck' || vehicleType === 'bus' ? 0.15 : 0.10;
-    return Math.max(priceRub * dutyRate, engineVolume * 0.5 * rates.EUR);
+    return Math.max(priceRub * dutyRate, engineVolume * 0.5 * eurRate);
   }
 
   if (age === 'new' || age === '1-3') {
