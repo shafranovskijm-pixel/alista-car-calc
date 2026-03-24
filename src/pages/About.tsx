@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
 import { Building2, MapPin, FileText, Users } from "lucide-react";
 import Layout from "@/components/Layout";
+import PageTransition from "@/components/PageTransition";
 
 const AboutPage = () => {
   return (
+    <PageTransition>
     <Layout>
       <section className="py-12 md:py-20">
         <div className="container max-w-4xl">
@@ -93,6 +95,7 @@ const AboutPage = () => {
         </div>
       </section>
     </Layout>
+    </PageTransition>
   );
 };
 

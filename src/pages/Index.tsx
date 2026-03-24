@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import PageTransition from "@/components/PageTransition";
 import { Calculator, Shield, Clock, TrendingUp, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
@@ -29,8 +30,8 @@ const features = [
 
 const Index = () => {
   return (
+    <PageTransition>
     <Layout>
-      {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 gradient-premium" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(199_89%_48%/0.08),transparent_60%)]" />
@@ -111,6 +112,7 @@ const Index = () => {
         </div>
       </section>
     </Layout>
+    </PageTransition>
   );
 };
 

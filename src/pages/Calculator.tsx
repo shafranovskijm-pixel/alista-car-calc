@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Calculator as CalcIcon, Send } from "lucide-react";
+import AnimatedCounter from "@/components/AnimatedCounter";
+import PageTransition from "@/components/PageTransition";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,9 +51,10 @@ const CalculatorPage = () => {
     setForm((p) => ({ ...p, [key]: val }));
 
   return (
-    <Layout>
-      <section className="py-12 md:py-20">
-        <div className="container max-w-5xl">
+    <PageTransition>
+      <Layout>
+        <section className="py-12 md:py-20">
+          <div className="container max-w-5xl">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <h1 className="font-heading text-3xl font-bold text-foreground md:text-4xl text-center">
               <CalcIcon className="mr-3 inline h-8 w-8 text-primary" />
@@ -225,9 +228,7 @@ const CalculatorPage = () => {
                     <div className="border-t border-border/50 pt-3 mt-4">
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-bold text-foreground">Итого</span>
-                        <span className="text-xl font-bold text-primary text-glow">
-                          {formatNum(result.total)} ₽
-                        </span>
+                        <AnimatedCounter value={result.total} suffix=" ₽" className="text-xl font-bold text-primary text-glow" />
                       </div>
                     </div>
 
@@ -267,13 +268,14 @@ const CalculatorPage = () => {
         </div>
       </section>
     </Layout>
+    </PageTransition>
   );
 };
 
 const Row = ({ label, value }: { label: string; value: number }) => (
   <div className="flex items-center justify-between text-sm">
     <span className="text-muted-foreground">{label}</span>
-    <span className="font-medium text-foreground">{formatNum(value)} ₽</span>
+    <AnimatedCounter value={value} suffix=" ₽" className="font-medium text-foreground" />
   </div>
 );
 

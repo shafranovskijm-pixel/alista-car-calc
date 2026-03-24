@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Car, Truck, Bike, Bus, Anchor, Snowflake, FileText, Scale } from "lucide-react";
 import Layout from "@/components/Layout";
+import PageTransition from "@/components/PageTransition";
 
 const services = [
   {
@@ -37,6 +38,7 @@ const services = [
 
 const ServicesPage = () => {
   return (
+    <PageTransition>
     <Layout>
       <section className="py-12 md:py-20">
         <div className="container max-w-5xl">
@@ -68,6 +70,7 @@ const ServicesPage = () => {
         </div>
       </section>
     </Layout>
+    </PageTransition>
   );
 };
 
