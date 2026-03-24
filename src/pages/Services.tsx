@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Car, Truck, Bike, Bus, Anchor, Snowflake, FileText, Scale } from "lucide-react";
 import Layout from "@/components/Layout";
+import PageTransition from "@/components/PageTransition";
 
 const services = [
   {
