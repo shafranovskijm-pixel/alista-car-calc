@@ -5,6 +5,7 @@ import { Calculator, Shield, Clock, TrendingUp, ChevronRight, HelpCircle } from 
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Layout from "@/components/Layout";
+import Gallery from "@/components/Gallery";
 
 const faqItems = [
   {
