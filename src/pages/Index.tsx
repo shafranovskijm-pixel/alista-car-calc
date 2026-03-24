@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Layout from "@/components/Layout";
 import Gallery from "@/components/Gallery";
+import heroBg from "@/assets/hero-bg.jpg";
 
 const faqItems = [
   {
@@ -70,8 +71,16 @@ const Index = () => {
     <PageTransition>
     <Layout>
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 gradient-premium" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(199_89%_48%/0.08),transparent_60%)]" />
+        {/* Hero background image */}
+        <img
+          src={heroBg}
+          alt=""
+          width={1920}
+          height={1080}
+          className="absolute inset-0 h-full w-full object-cover opacity-30"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--neon-glow)/0.1),transparent_60%)]" />
         <div className="container relative flex min-h-[80vh] flex-col items-center justify-center text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -106,7 +115,8 @@ const Index = () => {
       </section>
 
       {/* Features */}
-      <section className="border-t border-border/50 py-20">
+      <div className="gradient-divider" />
+      <section className="relative py-20">
         <div className="container">
           <h2 className="text-center font-heading text-3xl font-bold text-foreground md:text-4xl">
             Почему выбирают нас
@@ -133,7 +143,8 @@ const Index = () => {
       </section>
 
       {/* Gallery */}
-      <section className="border-t border-border/50 py-20">
+      <div className="gradient-divider" />
+      <section className="relative py-20">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -148,7 +159,8 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="border-t border-border/50 py-16">
+      <div className="gradient-divider" />
+      <section className="py-16">
         <div className="container text-center">
           <h2 className="font-heading text-2xl font-bold text-foreground md:text-3xl">Режим работы</h2>
           <div className="mx-auto mt-8 max-w-md rounded-xl border border-border/50 bg-card p-6">
@@ -165,7 +177,8 @@ const Index = () => {
       </section>
 
       {/* FAQ */}
-      <section className="border-t border-border/50 py-20">
+      <div className="gradient-divider" />
+      <section className="relative py-20">
         <div className="container max-w-3xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
