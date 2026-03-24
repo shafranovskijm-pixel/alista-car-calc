@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Building2, MapPin, FileText, Users } from "lucide-react";
 import Layout from "@/components/Layout";
+import PageTransition from "@/components/PageTransition";
 
 const AboutPage = () => {
   return (
