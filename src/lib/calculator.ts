@@ -28,16 +28,17 @@ export interface CalcResult {
   total: number;
 }
 
-// Approximate exchange rates to RUB (updated March 2026)
-export const RATES_DATE = '24.03.2026';
-const rates: Record<Currency, number> = {
+// Default fallback exchange rates to RUB
+export const DEFAULT_RATES: Record<Currency, number> = {
   RUB: 1,
   EUR: 95,
   USD: 87,
   JPY: 0.58,
 };
 
-function toRub(amount: number, currency: Currency): number {
+export const RATES_DATE = '24.03.2026';
+
+function toRub(amount: number, currency: Currency, rates: Record<Currency, number>): number {
   return amount * rates[currency];
 }
 
@@ -73,40 +74,40 @@ function individualCarDuty(priceEur: number, engineVolume: number, age: AgeCateg
 
 // Customs duty for legal entities — differentiated by age & engine volume
 // Based on ЕТТ ЕАЭС, codes 8703
-function legalEntityCarDuty(priceRub: number, priceEur: number, engineVolume: number, age: AgeCategory, vehicleType: VehicleType): number {
+function legalEntityCarDuty(priceRub: number, priceEur: number, engineVolume: number, age: AgeCategory, vehicleType: VehicleType, eurRate: number): number {
   if (vehicleType !== 'car' && vehicleType !== 'motorcycle') {
     // Trucks, buses, trailers etc. — 10–15% but min 0.5–1.0 €/cm³
     const dutyRate = vehicleType === 'truck' || vehicleType === 'bus' ? 0.15 : 0.10;
-    return Math.max(priceRub * dutyRate, engineVolume * 0.5 * rates.EUR);
+    return Math.max(priceRub * dutyRate, engineVolume * 0.5 * eurRate);
   }
 
   if (age === 'new' || age === '1-3') {
     // New cars for legal entities: 15% but not less than specific €/cm³
-    if (engineVolume <= 1000) return Math.max(priceRub * 0.15, engineVolume * 0.36 * rates.EUR);
-    if (engineVolume <= 1500) return Math.max(priceRub * 0.15, engineVolume * 0.4 * rates.EUR);
-    if (engineVolume <= 1800) return Math.max(priceRub * 0.15, engineVolume * 0.36 * rates.EUR);
-    if (engineVolume <= 2300) return Math.max(priceRub * 0.15, engineVolume * 0.44 * rates.EUR);
-    if (engineVolume <= 3000) return Math.max(priceRub * 0.15, engineVolume * 0.44 * rates.EUR);
-    return Math.max(priceRub * 0.15, engineVolume * 0.8 * rates.EUR);
+    if (engineVolume <= 1000) return Math.max(priceRub * 0.15, engineVolume * 0.36 * eurRate);
+    if (engineVolume <= 1500) return Math.max(priceRub * 0.15, engineVolume * 0.4 * eurRate);
+    if (engineVolume <= 1800) return Math.max(priceRub * 0.15, engineVolume * 0.36 * eurRate);
+    if (engineVolume <= 2300) return Math.max(priceRub * 0.15, engineVolume * 0.44 * eurRate);
+    if (engineVolume <= 3000) return Math.max(priceRub * 0.15, engineVolume * 0.44 * eurRate);
+    return Math.max(priceRub * 0.15, engineVolume * 0.8 * eurRate);
   }
 
   if (age === '3-5') {
     // 3-5 years: 20% but not less than specific €/cm³
-    if (engineVolume <= 1000) return Math.max(priceRub * 0.20, engineVolume * 0.36 * rates.EUR);
-    if (engineVolume <= 1500) return Math.max(priceRub * 0.20, engineVolume * 0.4 * rates.EUR);
-    if (engineVolume <= 1800) return Math.max(priceRub * 0.20, engineVolume * 0.36 * rates.EUR);
-    if (engineVolume <= 2300) return Math.max(priceRub * 0.20, engineVolume * 0.44 * rates.EUR);
-    if (engineVolume <= 3000) return Math.max(priceRub * 0.20, engineVolume * 0.44 * rates.EUR);
-    return Math.max(priceRub * 0.20, engineVolume * 0.8 * rates.EUR);
+    if (engineVolume <= 1000) return Math.max(priceRub * 0.20, engineVolume * 0.36 * eurRate);
+    if (engineVolume <= 1500) return Math.max(priceRub * 0.20, engineVolume * 0.4 * eurRate);
+    if (engineVolume <= 1800) return Math.max(priceRub * 0.20, engineVolume * 0.36 * eurRate);
+    if (engineVolume <= 2300) return Math.max(priceRub * 0.20, engineVolume * 0.44 * eurRate);
+    if (engineVolume <= 3000) return Math.max(priceRub * 0.20, engineVolume * 0.44 * eurRate);
+    return Math.max(priceRub * 0.20, engineVolume * 0.8 * eurRate);
   }
 
   // 5-7 and 7+ years — higher specific rates
-  if (engineVolume <= 1000) return engineVolume * 1.4 * rates.EUR;
-  if (engineVolume <= 1500) return engineVolume * 1.5 * rates.EUR;
-  if (engineVolume <= 1800) return engineVolume * 1.6 * rates.EUR;
-  if (engineVolume <= 2300) return engineVolume * 2.2 * rates.EUR;
-  if (engineVolume <= 3000) return engineVolume * 2.2 * rates.EUR;
-  return engineVolume * 3.2 * rates.EUR;
+  if (engineVolume <= 1000) return engineVolume * 1.4 * eurRate;
+  if (engineVolume <= 1500) return engineVolume * 1.5 * eurRate;
+  if (engineVolume <= 1800) return engineVolume * 1.6 * eurRate;
+  if (engineVolume <= 2300) return engineVolume * 2.2 * eurRate;
+  if (engineVolume <= 3000) return engineVolume * 2.2 * eurRate;
+  return engineVolume * 3.2 * eurRate;
 }
 
 // Excise tax based on horsepower (2026 rates, ФЗ № 425-ФЗ)
@@ -187,8 +188,9 @@ function calcCustomsFee(valueRub: number): number {
   return 30000;
 }
 
-export function calculate(input: CalcInput): CalcResult {
-  const priceRub = toRub(input.price, input.currency);
+export function calculate(input: CalcInput, customRates?: Record<Currency, number>): CalcResult {
+  const rates = customRates || DEFAULT_RATES;
+  const priceRub = toRub(input.price, input.currency, rates);
   const priceEur = priceRub / rates.EUR;
 
   let customsDuty: number;
@@ -197,7 +199,7 @@ export function calculate(input: CalcInput): CalcResult {
     // Individual duty in EUR, convert to RUB
     customsDuty = individualCarDuty(priceEur, input.engineVolume, input.age) * rates.EUR;
   } else if (input.importerType === 'legal') {
-    customsDuty = legalEntityCarDuty(priceRub, priceEur, input.engineVolume, input.age, input.vehicleType);
+    customsDuty = legalEntityCarDuty(priceRub, priceEur, input.engineVolume, input.age, input.vehicleType, rates.EUR);
   } else {
     // Individual importing non-car (truck, bus, etc.) — simplified
     const dutyRate = 0.15;

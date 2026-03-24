@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Calculator as CalcIcon, Send } from "lucide-react";
+import { Calculator as CalcIcon, Send, RefreshCw } from "lucide-react";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import PageTransition from "@/components/PageTransition";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ import {
   fuelTypeLabels,
   ageCategoryLabels,
   currencyLabels,
-  RATES_DATE,
   type CalcInput,
   type CalcResult,
   type VehicleType,
@@ -24,10 +23,13 @@ import {
   type AgeCategory,
   type ImporterType,
 } from "@/lib/calculator";
+import { useCurrencyRates } from "@/hooks/useCurrencyRates";
 
 const formatNum = (n: number) => n.toLocaleString("ru-RU");
 
 const CalculatorPage = () => {
+  const { rates, date: ratesDate, isLoading: ratesLoading, isError: ratesError } = useCurrencyRates();
+
   const [form, setForm] = useState<CalcInput>({
     vehicleType: "car",
     price: 0,
@@ -44,7 +46,7 @@ const CalculatorPage = () => {
 
   const handleCalc = () => {
     if (form.price <= 0) return;
-    setResult(calculate(form));
+    setResult(calculate(form, rates));
   };
 
   const update = <K extends keyof CalcInput>(key: K, val: CalcInput[K]) =>
@@ -63,6 +65,29 @@ const CalculatorPage = () => {
             <p className="mt-3 text-center text-muted-foreground">
               Рассчитайте стоимость таможенных платежей для любого транспортного средства
             </p>
+
+            {/* Live rates banner */}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3 rounded-lg border border-border/50 bg-card px-4 py-2.5 text-sm">
+              {ratesLoading ? (
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  Загрузка курсов ЦБ РФ…
+                </span>
+              ) : (
+                <>
+                  <span className="text-muted-foreground">
+                    Курсы ЦБ РФ на {ratesDate}
+                    {ratesError && " (резервные)"}:
+                  </span>
+                  <span className="font-medium text-foreground">$ {rates.USD}</span>
+                  <span className="font-medium text-foreground">€ {rates.EUR}</span>
+                  <span className="font-medium text-foreground">¥ {rates.JPY}</span>
+                  {ratesError && (
+                    <span className="text-xs text-destructive">(не удалось загрузить)</span>
+                  )}
+                </>
+              )}
+            </div>
           </motion.div>
 
           <div className="mt-10 grid gap-8 lg:grid-cols-5">
@@ -237,7 +262,7 @@ const CalculatorPage = () => {
                         * Расчёт является приблизительным. Для точного расчёта свяжитесь с нами.
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        ** Курсы валют актуальны на {RATES_DATE}. Реальные курсы могут отличаться.
+                        ** Курсы валют ЦБ РФ на {ratesDate}.{ratesError ? ' Используются резервные курсы.' : ''}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         Расчёт по: ЕТТ ЕАЭС, ФЗ № 425-ФЗ (акцизы, НДС 22%), Постановление 1291 ред. 1713 (утиль. сбор).
