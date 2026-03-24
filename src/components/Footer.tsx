@@ -66,8 +66,13 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-border/50 pt-6 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} ООО «Алиста». Все права защищены.
+        <div className="mt-8 border-t border-border/50 pt-6 text-center text-xs text-muted-foreground space-y-2">
+          <div>© {new Date().getFullYear()} ООО «Алиста». Все права защищены.</div>
+          <div className="flex items-center justify-center gap-1">
+            <span>Сделано</span>
+            <Heart className="h-3.5 w-3.5 text-red-500 fill-red-500 animate-pulse" />
+            <a href="https://24zxc.ru" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">24zxc.ru</a>
+          </div>
         </div>
       </div>
     </footer>
