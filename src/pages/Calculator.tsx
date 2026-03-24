@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Calculator as CalcIcon, Send } from "lucide-react";
+import { Calculator as CalcIcon, Send, RefreshCw } from "lucide-react";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import PageTransition from "@/components/PageTransition";
 import { Button } from "@/components/ui/button";
