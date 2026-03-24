@@ -93,12 +93,12 @@ function legalEntityCarDuty(priceRub: number, priceEur: number, engineVolume: nu
 
   if (age === '3-5') {
     // 3-5 years: 20% but not less than specific €/cm³
-    if (engineVolume <= 1000) return Math.max(priceRub * 0.20, engineVolume * 0.36 * rates.EUR);
-    if (engineVolume <= 1500) return Math.max(priceRub * 0.20, engineVolume * 0.4 * rates.EUR);
-    if (engineVolume <= 1800) return Math.max(priceRub * 0.20, engineVolume * 0.36 * rates.EUR);
-    if (engineVolume <= 2300) return Math.max(priceRub * 0.20, engineVolume * 0.44 * rates.EUR);
-    if (engineVolume <= 3000) return Math.max(priceRub * 0.20, engineVolume * 0.44 * rates.EUR);
-    return Math.max(priceRub * 0.20, engineVolume * 0.8 * rates.EUR);
+    if (engineVolume <= 1000) return Math.max(priceRub * 0.20, engineVolume * 0.36 * eurRate);
+    if (engineVolume <= 1500) return Math.max(priceRub * 0.20, engineVolume * 0.4 * eurRate);
+    if (engineVolume <= 1800) return Math.max(priceRub * 0.20, engineVolume * 0.36 * eurRate);
+    if (engineVolume <= 2300) return Math.max(priceRub * 0.20, engineVolume * 0.44 * eurRate);
+    if (engineVolume <= 3000) return Math.max(priceRub * 0.20, engineVolume * 0.44 * eurRate);
+    return Math.max(priceRub * 0.20, engineVolume * 0.8 * eurRate);
   }
 
   // 5-7 and 7+ years — higher specific rates
