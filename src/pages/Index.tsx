@@ -54,7 +54,7 @@ const features = [
   },
   {
     icon: Clock,
-    title: "Оформление от 1 дня",
+    title: "В кратчайшие сроки",
     desc: "Оперативная подготовка документов без задержек и бюрократии.",
   },
   {
@@ -71,7 +71,6 @@ const features = [
 
 const heroCounters = [
   { value: 700, suffix: "+", label: "авто оформлено" },
-  { value: 1, suffix: " день", label: "минимум оформления" },
 ];
 
 const Index = () => {
