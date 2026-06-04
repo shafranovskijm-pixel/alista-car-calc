@@ -13,6 +13,8 @@ import NotFound from "./pages/NotFound.tsx";
 import AdminLogin from "./pages/admin/AdminLogin.tsx";
 import AdminLayout from "./components/admin/AdminLayout.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
+import AdminLeads from "./pages/admin/AdminLeads.tsx";
+import AdminLeadDetail from "./pages/admin/AdminLeadDetail.tsx";
 import { AuthProvider } from "./hooks/useAuth.tsx";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,8 @@ const AnimatedRoutes = () => {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
+          <Route path="leads" element={<AdminLeads />} />
+          <Route path="leads/:id" element={<AdminLeadDetail />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
