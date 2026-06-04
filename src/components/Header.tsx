@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Phone } from "lucide-react";
+import { Menu, X, Phone, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import logoImg from "@/assets/logo-alista.png";
@@ -49,6 +49,14 @@ const Header = () => {
             <Phone className="h-4 w-4" />
             +7 984 198-27-33
           </a>
+          <Link
+            to="/admin/login"
+            className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+            title="Вход в CRM"
+          >
+            <LogIn className="h-4 w-4" />
+            Войти
+          </Link>
           <Link to="/calculator">
             <Button className="gradient-accent font-semibold text-primary-foreground hover:opacity-90">
               Рассчитать
@@ -85,6 +93,14 @@ const Header = () => {
                   <Phone className="h-4 w-4" />
                   +7 984 198-27-33
                 </a>
+                <Link
+                  to="/admin/login"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-primary"
+                >
+                  <LogIn className="h-4 w-4" />
+                  Войти в CRM
+                </Link>
               </div>
             </nav>
           </SheetContent>
