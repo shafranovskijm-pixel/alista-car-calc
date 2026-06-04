@@ -226,6 +226,13 @@ const AdminDealDetail = () => {
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Документы</CardTitle></CardHeader>
+        <CardContent>
+          <DocumentsList dealId={deal.id} />
+        </CardContent>
+      </Card>
     </div>
   );
 };
