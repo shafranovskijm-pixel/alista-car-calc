@@ -14,6 +14,158 @@ export type Database = {
   }
   public: {
     Tables: {
+      clients: {
+        Row: {
+          address: string | null
+          client_type: Database["public"]["Enums"]["client_type"]
+          company_name: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          full_name: string
+          id: string
+          inn: string | null
+          note: string | null
+          passport: string | null
+          phone: string | null
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          client_type?: Database["public"]["Enums"]["client_type"]
+          company_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          inn?: string | null
+          note?: string | null
+          passport?: string | null
+          phone?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          client_type?: Database["public"]["Enums"]["client_type"]
+          company_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          inn?: string | null
+          note?: string | null
+          passport?: string | null
+          phone?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      deal_stage_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          deal_id: string
+          from_stage: Database["public"]["Enums"]["deal_stage"] | null
+          id: string
+          to_stage: Database["public"]["Enums"]["deal_stage"]
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          deal_id: string
+          from_stage?: Database["public"]["Enums"]["deal_stage"] | null
+          id?: string
+          to_stage: Database["public"]["Enums"]["deal_stage"]
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          deal_id?: string
+          from_stage?: Database["public"]["Enums"]["deal_stage"] | null
+          id?: string
+          to_stage?: Database["public"]["Enums"]["deal_stage"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_stage_history_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deals: {
+        Row: {
+          assigned_to: string | null
+          budget: number | null
+          client_id: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          deal_type: Database["public"]["Enums"]["deal_type"]
+          id: string
+          lead_id: string | null
+          margin: number | null
+          note: string | null
+          stage: Database["public"]["Enums"]["deal_stage"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          budget?: number | null
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deal_type?: Database["public"]["Enums"]["deal_type"]
+          id?: string
+          lead_id?: string | null
+          margin?: number | null
+          note?: string | null
+          stage?: Database["public"]["Enums"]["deal_stage"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          budget?: number | null
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deal_type?: Database["public"]["Enums"]["deal_type"]
+          id?: string
+          lead_id?: string | null
+          margin?: number | null
+          note?: string | null
+          stage?: Database["public"]["Enums"]["deal_stage"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_status_history: {
         Row: {
           changed_at: string
@@ -169,6 +321,17 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "manager"
+      client_type: "individual" | "company"
+      deal_stage:
+        | "new"
+        | "qualification"
+        | "calculation"
+        | "payment"
+        | "delivery"
+        | "customs"
+        | "completed"
+        | "cancelled"
+      deal_type: "import_car" | "import_special" | "customs_only" | "other"
       lead_status:
         | "new"
         | "in_progress"
@@ -305,6 +468,18 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "manager"],
+      client_type: ["individual", "company"],
+      deal_stage: [
+        "new",
+        "qualification",
+        "calculation",
+        "payment",
+        "delivery",
+        "customs",
+        "completed",
+        "cancelled",
+      ],
+      deal_type: ["import_car", "import_special", "customs_only", "other"],
       lead_status: [
         "new",
         "in_progress",
