@@ -19,6 +19,7 @@ import AdminClients from "./pages/admin/AdminClients.tsx";
 import AdminClientDetail from "./pages/admin/AdminClientDetail.tsx";
 import AdminDeals from "./pages/admin/AdminDeals.tsx";
 import AdminDealDetail from "./pages/admin/AdminDealDetail.tsx";
+import AdminDocuments from "./pages/admin/AdminDocuments.tsx";
 import { AuthProvider } from "./hooks/useAuth.tsx";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const AnimatedRoutes = () => {
           <Route path="clients/:id" element={<AdminClientDetail />} />
           <Route path="deals" element={<AdminDeals />} />
           <Route path="deals/:id" element={<AdminDealDetail />} />
+          <Route path="documents" element={<AdminDocuments />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
 import { ArrowLeft } from "lucide-react";
+import DocumentsList from "@/components/admin/DocumentsList";
 import {
   DEAL_STAGES,
   DEAL_STAGE_COLOR,
@@ -223,6 +224,13 @@ const AdminDealDetail = () => {
               ))}
             </ul>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Документы</CardTitle></CardHeader>
+        <CardContent>
+          <DocumentsList dealId={deal.id} />
         </CardContent>
       </Card>
     </div>
