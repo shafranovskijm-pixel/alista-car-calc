@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
+import DocumentsList from "@/components/admin/DocumentsList";
 import {
   CLIENT_TYPE_LABELS,
   DEAL_STAGE_COLOR,
@@ -110,6 +111,13 @@ const AdminClientDetail = () => {
               ))}
             </ul>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Документы клиента</CardTitle></CardHeader>
+        <CardContent>
+          <DocumentsList clientId={client.id} />
         </CardContent>
       </Card>
     </div>
