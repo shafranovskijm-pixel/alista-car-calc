@@ -84,7 +84,18 @@ const AdminDealDetail = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const update = async (patch: Partial<Deal>) => {
+  type DealUpdate = Partial<{
+    title: string;
+    stage: DealStage;
+    deal_type: DealType;
+    budget: number | null;
+    margin: number | null;
+    currency: string;
+    note: string | null;
+    assigned_to: string | null;
+  }>;
+
+  const update = async (patch: DealUpdate) => {
     if (!deal) return;
     setSaving(true);
     const { error } = await supabase.from("deals").update(patch).eq("id", deal.id);
