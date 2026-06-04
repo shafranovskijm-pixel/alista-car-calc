@@ -12,7 +12,7 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Inbox, Users, Briefcase, FileText, Car, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Inbox, Users, Briefcase, FileText, Car, Settings, LogOut, BarChart3 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
@@ -22,6 +22,7 @@ const items = [
   { title: "Клиенты", url: "/admin/clients", icon: Users },
   { title: "Сделки", url: "/admin/deals", icon: Briefcase },
   { title: "Документы", url: "/admin/documents", icon: FileText },
+  { title: "Отчёты", url: "/admin/reports", icon: BarChart3 },
   { title: "Каталог", url: "/admin/catalog", icon: Car },
   { title: "Настройки", url: "/admin/settings", icon: Settings },
 ];
