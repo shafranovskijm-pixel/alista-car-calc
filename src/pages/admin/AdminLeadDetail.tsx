@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Briefcase } from "lucide-react";
 import {
   LEAD_STATUSES,
   LEAD_STATUS_LABELS,
@@ -52,6 +52,7 @@ type HistoryRow = {
 const AdminLeadDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [lead, setLead] = useState<Lead | null>(null);
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [note, setNote] = useState("");
@@ -112,6 +113,51 @@ const AdminLeadDetail = () => {
     else toast.success("Заметка сохранена");
   };
 
+  const createDealFromLead = async () => {
+    if (!lead) return;
+    setSaving(true);
+    const { data: userRes } = await supabase.auth.getUser();
+    const uid = userRes.user?.id ?? null;
+
+    const { data: client, error: cErr } = await supabase
+      .from("clients")
+      .insert({
+        full_name: lead.full_name,
+        phone: lead.phone,
+        email: lead.email,
+        source: lead.utm_source ?? lead.source ?? null,
+        created_by: uid,
+      })
+      .select("id")
+      .single();
+    if (cErr || !client) {
+      setSaving(false);
+      toast.error("Не удалось создать клиента");
+      return;
+    }
+
+    const { data: deal, error: dErr } = await supabase
+      .from("deals")
+      .insert({
+        title: `Заявка ${lead.full_name}`,
+        client_id: client.id,
+        lead_id: lead.id,
+        assigned_to: uid,
+        created_by: uid,
+      })
+      .select("id")
+      .single();
+    setSaving(false);
+    if (dErr || !deal) {
+      toast.error("Не удалось создать сделку");
+      return;
+    }
+
+    await supabase.from("leads").update({ status: "in_progress" }).eq("id", lead.id);
+    toast.success("Сделка создана");
+    navigate(`/admin/deals/${deal.id}`);
+  };
+
   if (!lead) {
     return <div className="text-muted-foreground">Загрузка...</div>;
   }
@@ -124,7 +170,12 @@ const AdminLeadDetail = () => {
             <ArrowLeft className="h-4 w-4 mr-1" /> К списку
           </Link>
         </Button>
-        <Badge variant={LEAD_STATUS_VARIANT[lead.status]}>{LEAD_STATUS_LABELS[lead.status]}</Badge>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={createDealFromLead} disabled={saving}>
+            <Briefcase className="h-4 w-4 mr-1" /> Создать сделку
+          </Button>
+          <Badge variant={LEAD_STATUS_VARIANT[lead.status]}>{LEAD_STATUS_LABELS[lead.status]}</Badge>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
