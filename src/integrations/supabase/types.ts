@@ -166,6 +166,93 @@ export type Database = {
           },
         ]
       }
+      document_templates: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: Database["public"]["Enums"]["document_kind"]
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["document_kind"]
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["document_kind"]
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      documents: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          deal_id: string | null
+          id: string
+          kind: Database["public"]["Enums"]["document_kind"]
+          mime_type: string | null
+          size_bytes: number | null
+          storage_path: string
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["document_kind"]
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path: string
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["document_kind"]
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_status_history: {
         Row: {
           changed_at: string
@@ -332,6 +419,14 @@ export type Database = {
         | "completed"
         | "cancelled"
       deal_type: "import_car" | "import_special" | "customs_only" | "other"
+      document_kind:
+        | "contract"
+        | "invoice"
+        | "passport"
+        | "title"
+        | "dkp"
+        | "act"
+        | "other"
       lead_status:
         | "new"
         | "in_progress"
@@ -480,6 +575,15 @@ export const Constants = {
         "cancelled",
       ],
       deal_type: ["import_car", "import_special", "customs_only", "other"],
+      document_kind: [
+        "contract",
+        "invoice",
+        "passport",
+        "title",
+        "dkp",
+        "act",
+        "other",
+      ],
       lead_status: [
         "new",
         "in_progress",
