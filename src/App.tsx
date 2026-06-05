@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import Calculator from "./pages/Calculator.tsx";
 import Services from "./pages/Services.tsx";
+import Works from "./pages/Works.tsx";
 import About from "./pages/About.tsx";
 import Contacts from "./pages/Contacts.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -33,6 +34,7 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<Index />} />
         <Route path="/calculator" element={<Calculator />} />
         <Route path="/services" element={<Services />} />
+        <Route path="/works" element={<Works />} />
         <Route path="/about" element={<About />} />
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/admin/login" element={<AdminLogin />} />
