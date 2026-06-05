@@ -1,15 +1,14 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, Calendar, MapPin, Search } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Calendar, MapPin, Search, Loader2 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import worksData from "@/data/works.json";
+import { fetchPublishedWorks, type WorkWithPhotos } from "@/lib/works";
 
 type Work = {
   id: string;
   date: string;
-  dateIso: string;
   title: string;
   price: number | null;
   country: string | null;
@@ -17,19 +16,46 @@ type Work = {
   photos: string[];
 };
 
-const works = worksData as Work[];
-
 const formatPrice = (p: number | null) =>
   p ? new Intl.NumberFormat("ru-RU").format(p) + " ₽" : "Цена по запросу";
+
+const formatDate = (iso: string | null): string => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString("ru-RU");
+};
 
 const PAGE = 12;
 
 const Works = () => {
+  const [works, setWorks] = useState<Work[]>([]);
+  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [country, setCountry] = useState<string | null>(null);
   const [shown, setShown] = useState(PAGE);
   const [active, setActive] = useState<Work | null>(null);
   const [slide, setSlide] = useState(0);
+
+  useEffect(() => {
+    document.title = "Наши работы — 700+ оформленных авто | ALISTA";
+    (async () => {
+      try {
+        const rows = await fetchPublishedWorks();
+        const mapped: Work[] = rows.map((w: WorkWithPhotos) => ({
+          id: w.id,
+          date: formatDate(w.source_date),
+          title: w.title,
+          price: w.price,
+          country: w.country,
+          description: w.description,
+          photos: w.photos.map((p) => p.url).filter(Boolean),
+        }));
+        setWorks(mapped);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -38,14 +64,10 @@ const Works = () => {
       if (q && !(`${w.title} ${w.description ?? ""}`).toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [query, country]);
+  }, [query, country, works]);
 
   const visible = filtered.slice(0, shown);
   const countries = ["Китай", "Япония", "Корея"].filter((c) => works.some((w) => w.country === c));
-
-  useEffect(() => {
-    document.title = "Наши работы — 700+ оформленных авто | ALISTA";
-  }, []);
 
   const navigate = (dir: number) => {
     if (!active) return;
@@ -116,7 +138,9 @@ const Works = () => {
           </div>
         </div>
 
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+        ) : filtered.length === 0 ? (
           <p className="py-20 text-center text-muted-foreground">Ничего не найдено</p>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

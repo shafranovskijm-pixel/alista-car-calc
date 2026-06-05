@@ -423,6 +423,92 @@ export type Database = {
         }
         Relationships: []
       }
+      work_photos: {
+        Row: {
+          created_at: string
+          id: string
+          is_cover: boolean
+          sort_order: number
+          url: string
+          work_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_cover?: boolean
+          sort_order?: number
+          url: string
+          work_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_cover?: boolean
+          sort_order?: number
+          url?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_photos_work_id_fkey"
+            columns: ["work_id"]
+            isOneToOne: false
+            referencedRelation: "works"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      works: {
+        Row: {
+          brand: string | null
+          country: string | null
+          created_at: string
+          description: string | null
+          id: string
+          model: string | null
+          price: number | null
+          slug: string
+          sort_order: number
+          source_date: string | null
+          status: string
+          title: string
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          brand?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          model?: string | null
+          price?: number | null
+          slug: string
+          sort_order?: number
+          source_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          brand?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          model?: string | null
+          price?: number | null
+          slug?: string
+          sort_order?: number
+          source_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
