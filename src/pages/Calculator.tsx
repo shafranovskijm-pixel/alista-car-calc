@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Layout from "@/components/Layout";
 import CalculatorDocs from "@/components/CalculatorDocs";
+import LeadForm from "@/components/LeadForm";
 import {
   calculate,
   vehicleTypeLabels,
