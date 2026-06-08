@@ -50,7 +50,14 @@ const AdminLayout = () => {
                 <SidebarMenu>
                   {items.map((item) => (
                     <SidebarMenuItem key={item.url}>
-                      <SidebarMenuButton asChild>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={
+                          item.end
+                            ? location.pathname === item.url
+                            : location.pathname === item.url || location.pathname.startsWith(item.url + "/")
+                        }
+                      >
                         <NavLink to={item.url} end={item.end}>
                           <item.icon />
                           <span>{item.title}</span>
