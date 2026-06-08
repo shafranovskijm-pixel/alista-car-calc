@@ -425,12 +425,16 @@ export type Database = {
       leads: {
         Row: {
           assigned_to: string | null
+          calc_snapshot: Json | null
           created_at: string
           email: string | null
           full_name: string
+          gclid: string | null
           id: string
           message: string | null
+          messenger: string | null
           note: string | null
+          object_interest: string | null
           page_url: string | null
           phone: string
           source: string | null
@@ -441,15 +445,20 @@ export type Database = {
           utm_medium: string | null
           utm_source: string | null
           utm_term: string | null
+          yclid: string | null
         }
         Insert: {
           assigned_to?: string | null
+          calc_snapshot?: Json | null
           created_at?: string
           email?: string | null
           full_name: string
+          gclid?: string | null
           id?: string
           message?: string | null
+          messenger?: string | null
           note?: string | null
+          object_interest?: string | null
           page_url?: string | null
           phone: string
           source?: string | null
@@ -460,15 +469,20 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          yclid?: string | null
         }
         Update: {
           assigned_to?: string | null
+          calc_snapshot?: Json | null
           created_at?: string
           email?: string | null
           full_name?: string
+          gclid?: string | null
           id?: string
           message?: string | null
+          messenger?: string | null
           note?: string | null
+          object_interest?: string | null
           page_url?: string | null
           phone?: string
           source?: string | null
@@ -479,6 +493,7 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          yclid?: string | null
         }
         Relationships: []
       }
@@ -659,6 +674,9 @@ export type Database = {
         | "contract"
         | "won"
         | "lost"
+        | "awaiting_payment"
+        | "in_transit"
+        | "delivered"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -820,6 +838,9 @@ export const Constants = {
         "contract",
         "won",
         "lost",
+        "awaiting_payment",
+        "in_transit",
+        "delivered",
       ],
     },
   },
