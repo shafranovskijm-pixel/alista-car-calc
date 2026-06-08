@@ -9,6 +9,7 @@ import Gallery from "@/components/Gallery";
 import StatsSection from "@/components/StatsSection";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
 import AnimatedCounter from "@/components/AnimatedCounter";
+import LeadForm from "@/components/LeadForm";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const faqItems = [
