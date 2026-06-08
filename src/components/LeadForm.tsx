@@ -28,6 +28,8 @@ export type LeadFormProps = {
   compact?: boolean;
   showEmail?: boolean;
   onSubmitted?: () => void;
+  objectInterest?: string;
+  calcSnapshot?: Record<string, unknown> | null;
 };
 
 const LeadForm = ({
@@ -37,6 +39,8 @@ const LeadForm = ({
   compact = false,
   showEmail = false,
   onSubmitted,
+  objectInterest,
+  calcSnapshot,
 }: LeadFormProps) => {
   const { toast } = useToast();
   const [form, setForm] = useState({
@@ -72,6 +76,8 @@ const LeadForm = ({
         source,
         page_url: typeof window !== "undefined" ? window.location.href.slice(0, 500) : null,
         status: "new",
+        object_interest: objectInterest ?? null,
+        calc_snapshot: calcSnapshot ?? null,
         ...utm,
       });
       if (error) throw error;
