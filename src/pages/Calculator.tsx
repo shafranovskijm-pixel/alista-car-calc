@@ -283,6 +283,18 @@ const CalculatorPage = () => {
                         Оставить заявку в WhatsApp
                       </Button>
                     </a>
+
+                    <div className="mt-5 rounded-lg border border-primary/20 bg-primary/5 p-4">
+                      <p className="text-sm font-semibold text-foreground mb-3">
+                        Хотите точный расчёт от менеджера?
+                      </p>
+                      <LeadForm
+                        source="calculator"
+                        compact
+                        buttonLabel="Уточнить у менеджера"
+                        defaultMessage={`Расчёт калькулятора: ${formatNum(result.total)} ₽. Прошу уточнить точную стоимость.`}
+                      />
+                    </div>
                   </motion.div>
                 ) : (
                   <div className="space-y-4">
