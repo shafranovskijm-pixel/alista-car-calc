@@ -290,6 +290,13 @@ const Index = () => {
                 </Button>
               </Link>
             </div>
+
+            <div className="mx-auto mt-10 max-w-lg rounded-2xl border border-border/50 bg-card/60 backdrop-blur p-6 text-left">
+              <h3 className="font-heading text-lg font-bold text-foreground mb-4 text-center">
+                Оставьте заявку — перезвоним за 15 минут
+              </h3>
+              <LeadForm source="home_final_cta" buttonLabel="Получить расчёт" />
+            </div>
           </motion.div>
         </div>
       </section>
