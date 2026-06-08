@@ -497,6 +497,133 @@ export type Database = {
         }
         Relationships: []
       }
+      product_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      product_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          product_id: string
+          sort_order: number
+          storage_path: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          product_id: string
+          sort_order?: number
+          storage_path: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          product_id?: string
+          sort_order?: number
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_photos_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          description: string | null
+          dimensions: string | null
+          hero_photo_path: string | null
+          id: string
+          min_order: number | null
+          name: string
+          price_cny: number | null
+          slug: string
+          sort_order: number
+          status: Database["public"]["Enums"]["product_status"]
+          updated_at: string
+          weight_kg: number | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          dimensions?: string | null
+          hero_photo_path?: string | null
+          id?: string
+          min_order?: number | null
+          name: string
+          price_cny?: number | null
+          slug: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["product_status"]
+          updated_at?: string
+          weight_kg?: number | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          dimensions?: string | null
+          hero_photo_path?: string | null
+          id?: string
+          min_order?: number | null
+          name?: string
+          price_cny?: number | null
+          slug?: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["product_status"]
+          updated_at?: string
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -677,6 +804,7 @@ export type Database = {
         | "awaiting_payment"
         | "in_transit"
         | "delivered"
+      product_status: "draft" | "published" | "archived"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -842,6 +970,7 @@ export const Constants = {
         "in_transit",
         "delivered",
       ],
+      product_status: ["draft", "published", "archived"],
     },
   },
 } as const
