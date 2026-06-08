@@ -4,6 +4,8 @@ export type UtmFields = {
   utm_campaign?: string;
   utm_term?: string;
   utm_content?: string;
+  gclid?: string;
+  yclid?: string;
 };
 
 const STORAGE_KEY = "alista_utm";
@@ -17,6 +19,8 @@ export const captureUtm = (): UtmFields => {
     "utm_campaign",
     "utm_term",
     "utm_content",
+    "gclid",
+    "yclid",
   ];
   const captured: UtmFields = {};
   keys.forEach((k) => {
