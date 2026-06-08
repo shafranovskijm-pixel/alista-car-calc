@@ -24,8 +24,11 @@ import AdminDocuments from "./pages/admin/AdminDocuments.tsx";
 import AdminReports from "./pages/admin/AdminReports.tsx";
 import AdminWorks from "./pages/admin/AdminWorks.tsx";
 import AdminWorkEdit from "./pages/admin/AdminWorkEdit.tsx";
-import AdminCatalog from "./pages/admin/AdminCatalog.tsx";
 import AdminSettings from "./pages/admin/AdminSettings.tsx";
+import AdminCars from "./pages/admin/AdminCars.tsx";
+import AdminCarEdit from "./pages/admin/AdminCarEdit.tsx";
+import Cars from "./pages/Cars.tsx";
+import CarDetail from "./pages/CarDetail.tsx";
 import { AuthProvider } from "./hooks/useAuth.tsx";
 
 const queryClient = new QueryClient();
@@ -39,6 +42,11 @@ const AnimatedRoutes = () => {
         <Route path="/calculator" element={<Calculator />} />
         <Route path="/services" element={<Services />} />
         <Route path="/works" element={<Works />} />
+        <Route path="/cars" element={<Cars />} />
+        <Route path="/cars/japan" element={<Cars />} />
+        <Route path="/cars/korea" element={<Cars />} />
+        <Route path="/cars/china" element={<Cars />} />
+        <Route path="/cars/:slug" element={<CarDetail />} />
         <Route path="/about" element={<About />} />
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/admin/login" element={<AdminLogin />} />
@@ -54,7 +62,8 @@ const AnimatedRoutes = () => {
           <Route path="reports" element={<AdminReports />} />
           <Route path="works" element={<AdminWorks />} />
           <Route path="works/:id" element={<AdminWorkEdit />} />
-          <Route path="catalog" element={<AdminCatalog />} />
+          <Route path="cars" element={<AdminCars />} />
+          <Route path="cars/:id" element={<AdminCarEdit />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>
         <Route path="*" element={<NotFound />} />

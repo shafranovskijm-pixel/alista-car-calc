@@ -7,6 +7,7 @@ import logoImg from "@/assets/logo-alista.png";
 
 const navLinks = [
   { to: "/", label: "Главная" },
+  { to: "/cars", label: "Авто" },
   { to: "/calculator", label: "Калькулятор" },
   { to: "/services", label: "Услуги" },
   { to: "/works", label: "Наши работы" },

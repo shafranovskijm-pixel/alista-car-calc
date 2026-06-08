@@ -44,6 +44,110 @@ export type Database = {
         }
         Relationships: []
       }
+      car_photos: {
+        Row: {
+          car_id: string
+          created_at: string
+          id: string
+          is_cover: boolean
+          sort_order: number
+          url: string
+        }
+        Insert: {
+          car_id: string
+          created_at?: string
+          id?: string
+          is_cover?: boolean
+          sort_order?: number
+          url: string
+        }
+        Update: {
+          car_id?: string
+          created_at?: string
+          id?: string
+          is_cover?: boolean
+          sort_order?: number
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "car_photos_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cars: {
+        Row: {
+          auction_sheet_url: string | null
+          brand: string
+          country: Database["public"]["Enums"]["car_country"]
+          created_at: string
+          currency: string
+          description: string | null
+          engine_volume: number | null
+          fuel: Database["public"]["Enums"]["car_fuel"] | null
+          id: string
+          mileage_km: number | null
+          model: string
+          power_hp: number | null
+          price: number | null
+          slug: string
+          sort_order: number
+          status: Database["public"]["Enums"]["car_status"]
+          title: string
+          transmission: Database["public"]["Enums"]["car_transmission"] | null
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          auction_sheet_url?: string | null
+          brand: string
+          country: Database["public"]["Enums"]["car_country"]
+          created_at?: string
+          currency?: string
+          description?: string | null
+          engine_volume?: number | null
+          fuel?: Database["public"]["Enums"]["car_fuel"] | null
+          id?: string
+          mileage_km?: number | null
+          model: string
+          power_hp?: number | null
+          price?: number | null
+          slug: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["car_status"]
+          title: string
+          transmission?: Database["public"]["Enums"]["car_transmission"] | null
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          auction_sheet_url?: string | null
+          brand?: string
+          country?: Database["public"]["Enums"]["car_country"]
+          created_at?: string
+          currency?: string
+          description?: string | null
+          engine_volume?: number | null
+          fuel?: Database["public"]["Enums"]["car_fuel"] | null
+          id?: string
+          mileage_km?: number | null
+          model?: string
+          power_hp?: number | null
+          price?: number | null
+          slug?: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["car_status"]
+          title?: string
+          transmission?: Database["public"]["Enums"]["car_transmission"] | null
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           address: string | null
@@ -524,6 +628,10 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "manager"
+      car_country: "japan" | "korea" | "china"
+      car_fuel: "petrol" | "diesel" | "hybrid" | "electric" | "gas"
+      car_status: "in_stock" | "in_transit" | "on_order" | "sold" | "draft"
+      car_transmission: "at" | "mt" | "cvt" | "amt" | "dct" | "other"
       client_type: "individual" | "company"
       deal_stage:
         | "new"
@@ -679,6 +787,10 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "manager"],
+      car_country: ["japan", "korea", "china"],
+      car_fuel: ["petrol", "diesel", "hybrid", "electric", "gas"],
+      car_status: ["in_stock", "in_transit", "on_order", "sold", "draft"],
+      car_transmission: ["at", "mt", "cvt", "amt", "dct", "other"],
       client_type: ["individual", "company"],
       deal_stage: [
         "new",

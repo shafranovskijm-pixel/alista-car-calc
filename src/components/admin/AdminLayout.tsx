@@ -24,7 +24,7 @@ const items = [
   { title: "Документы", url: "/admin/documents", icon: FileText },
   { title: "Отчёты", url: "/admin/reports", icon: BarChart3 },
   { title: "Наши работы", url: "/admin/works", icon: Images },
-  { title: "Каталог", url: "/admin/catalog", icon: Car },
+  { title: "Каталог авто", url: "/admin/cars", icon: Car },
   { title: "Настройки", url: "/admin/settings", icon: Settings },
 ];
 
