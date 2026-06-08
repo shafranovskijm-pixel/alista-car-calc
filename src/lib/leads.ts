@@ -4,6 +4,9 @@ export const LEAD_STATUSES = [
   "callback",
   "meeting",
   "contract",
+  "awaiting_payment",
+  "in_transit",
+  "delivered",
   "won",
   "lost",
 ] as const;
@@ -16,6 +19,9 @@ export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
   callback: "Перезвон",
   meeting: "Встреча",
   contract: "Договор",
+  awaiting_payment: "Ожидает оплаты",
+  in_transit: "В пути",
+  delivered: "Доставлена",
   won: "Успех",
   lost: "Отказ",
 };
@@ -29,6 +35,9 @@ export const LEAD_STATUS_VARIANT: Record<
   callback: "outline",
   meeting: "outline",
   contract: "secondary",
+  awaiting_payment: "outline",
+  in_transit: "secondary",
+  delivered: "default",
   won: "default",
   lost: "destructive",
 };
