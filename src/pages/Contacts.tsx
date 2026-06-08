@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { Phone, MessageCircle, Send, MapPin, User, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
