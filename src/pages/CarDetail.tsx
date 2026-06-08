@@ -5,6 +5,7 @@ import { ArrowLeft, Loader2, ExternalLink, Calendar, Gauge, Fuel, Settings2 } fr
 import Layout from "@/components/Layout";
 import PageTransition from "@/components/PageTransition";
 import LeadForm from "@/components/LeadForm";
+import CarPriceEstimate from "@/components/cars/CarPriceEstimate";
 import {
   fetchCarPublic,
   CAR_COUNTRY_LABELS,
@@ -20,6 +21,7 @@ const CarDetailPage = () => {
   const [car, setCar] = useState<CarWithPhotos | null>(null);
   const [loading, setLoading] = useState(true);
   const [activePhoto, setActivePhoto] = useState(0);
+  const [calcSnapshot, setCalcSnapshot] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -166,12 +168,18 @@ const CarDetailPage = () => {
                     source={`car_card:${car.slug}`}
                     compact
                     buttonLabel="Получить расчёт"
+                    objectInterest={`${car.brand} ${car.model}${car.year ? " " + car.year : ""}`}
+                    calcSnapshot={calcSnapshot}
                     defaultMessage={`Интересует: ${car.brand} ${car.model}${
                       car.year ? " " + car.year : ""
                     }. Прошу рассчитать стоимость под ключ во Владивостоке.`}
                   />
                 </div>
               </div>
+            </div>
+
+            <div className="mt-6 max-w-xl">
+              <CarPriceEstimate car={car} onSnapshotChange={setCalcSnapshot} />
             </div>
 
             {car.description && (
