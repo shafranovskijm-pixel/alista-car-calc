@@ -1,13 +1,9 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { Phone, MessageCircle, Send, MapPin, User, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
 import PageTransition from "@/components/PageTransition";
+import LeadForm from "@/components/LeadForm";
 
 const contacts = [
   { role: "Директор", name: "", phone: "+7 984 198-27-33", phoneRaw: "79841982733" },
@@ -16,22 +12,6 @@ const contacts = [
 ];
 
 const ContactsPage = () => {
-  const { toast } = useToast();
-  const [form, setForm] = useState({ name: "", phone: "", message: "" });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.name.trim() || !form.phone.trim()) return;
-
-    const text = encodeURIComponent(
-      `Заявка с сайта:\nИмя: ${form.name}\nТелефон: ${form.phone}\n${form.message ? `Сообщение: ${form.message}` : ""}`
-    );
-    window.open(`https://wa.me/79841982733?text=${text}`, "_blank");
-
-    toast({ title: "Заявка отправлена", description: "Мы свяжемся с вами в ближайшее время" });
-    setForm({ name: "", phone: "", message: "" });
-  };
-
   return (
     <PageTransition>
     <Layout>
@@ -129,45 +109,7 @@ const ContactsPage = () => {
             >
               <div className="rounded-xl border border-border/50 bg-card p-6">
                 <h2 className="font-heading text-xl font-bold text-foreground mb-5">Оставить заявку</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <Label className="text-foreground font-medium mb-2 block">Ваше имя *</Label>
-                    <Input
-                      required
-                      maxLength={100}
-                      value={form.name}
-                      onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                      placeholder="Иван Иванов"
-                      className="bg-secondary border-border"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-foreground font-medium mb-2 block">Телефон *</Label>
-                    <Input
-                      required
-                      maxLength={20}
-                      type="tel"
-                      value={form.phone}
-                      onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-                      placeholder="+7 XXX XXX-XX-XX"
-                      className="bg-secondary border-border"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-foreground font-medium mb-2 block">Сообщение</Label>
-                    <Textarea
-                      maxLength={1000}
-                      value={form.message}
-                      onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))}
-                      placeholder="Опишите ваш запрос..."
-                      className="bg-secondary border-border min-h-[100px]"
-                    />
-                  </div>
-                  <Button type="submit" className="w-full gradient-accent font-semibold text-primary-foreground hover:opacity-90">
-                    <Send className="mr-2 h-4 w-4" />
-                    Отправить заявку
-                  </Button>
-                </form>
+                <LeadForm source="contacts_page" showEmail />
               </div>
 
               {/* Map */}

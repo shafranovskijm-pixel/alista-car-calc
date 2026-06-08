@@ -24,6 +24,8 @@ import AdminDocuments from "./pages/admin/AdminDocuments.tsx";
 import AdminReports from "./pages/admin/AdminReports.tsx";
 import AdminWorks from "./pages/admin/AdminWorks.tsx";
 import AdminWorkEdit from "./pages/admin/AdminWorkEdit.tsx";
+import AdminCatalog from "./pages/admin/AdminCatalog.tsx";
+import AdminSettings from "./pages/admin/AdminSettings.tsx";
 import { AuthProvider } from "./hooks/useAuth.tsx";
 
 const queryClient = new QueryClient();
@@ -52,6 +54,8 @@ const AnimatedRoutes = () => {
           <Route path="reports" element={<AdminReports />} />
           <Route path="works" element={<AdminWorks />} />
           <Route path="works/:id" element={<AdminWorkEdit />} />
+          <Route path="catalog" element={<AdminCatalog />} />
+          <Route path="settings" element={<AdminSettings />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

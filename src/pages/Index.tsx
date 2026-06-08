@@ -9,6 +9,7 @@ import Gallery from "@/components/Gallery";
 import StatsSection from "@/components/StatsSection";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
 import AnimatedCounter from "@/components/AnimatedCounter";
+import LeadForm from "@/components/LeadForm";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const faqItems = [
@@ -288,6 +289,13 @@ const Index = () => {
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </Link>
+            </div>
+
+            <div className="mx-auto mt-10 max-w-lg rounded-2xl border border-border/50 bg-card/60 backdrop-blur p-6 text-left">
+              <h3 className="font-heading text-lg font-bold text-foreground mb-4 text-center">
+                Оставьте заявку — перезвоним за 15 минут
+              </h3>
+              <LeadForm source="home_final_cta" buttonLabel="Получить расчёт" />
             </div>
           </motion.div>
         </div>
