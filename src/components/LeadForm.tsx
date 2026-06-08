@@ -77,7 +77,7 @@ const LeadForm = ({
         page_url: typeof window !== "undefined" ? window.location.href.slice(0, 500) : null,
         status: "new",
         object_interest: objectInterest ?? null,
-        calc_snapshot: calcSnapshot ?? null,
+        calc_snapshot: (calcSnapshot ?? null) as any,
         ...utm,
       });
       if (error) throw error;
