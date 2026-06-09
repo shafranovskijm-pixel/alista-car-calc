@@ -39,7 +39,7 @@ type Item = {
   url: string;
   icon: typeof LayoutDashboard;
   end?: boolean;
-  badgeKey?: "leads_new" | "deals_active";
+  badgeKey?: "leads_new" | "deals_active" | "tasks_overdue";
 };
 
 const groups: { label: string; items: Item[] }[] = [
@@ -84,16 +84,25 @@ const AdminLayout = () => {
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const [leadsNew, dealsActive] = await Promise.all([
+      const [leadsNew, dealsActive, tasksOverdue] = await Promise.all([
         supabase.from("leads").select("id", { count: "exact", head: true }).eq("status", "new"),
         supabase
           .from("deals")
           .select("id", { count: "exact", head: true })
           .not("stage", "in", "(completed,cancelled)"),
+        user
+          ? supabase
+              .from("tasks")
+              .select("id", { count: "exact", head: true })
+              .eq("assigned_to", user.id)
+              .is("completed_at", null)
+              .lt("due_at", new Date().toISOString())
+          : Promise.resolve({ count: 0 }),
       ]);
       setBadges({
         leads_new: leadsNew.count ?? 0,
         deals_active: dealsActive.count ?? 0,
+        tasks_overdue: tasksOverdue.count ?? 0,
       });
     };
     load();
@@ -101,6 +110,7 @@ const AdminLayout = () => {
       .channel("sidebar-badges")
       .on("postgres_changes", { event: "*", schema: "public", table: "leads" }, () => load())
       .on("postgres_changes", { event: "*", schema: "public", table: "deals" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, () => load())
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
