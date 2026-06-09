@@ -283,13 +283,35 @@ const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplate
             </p>
           </div>
           )}
+
+          {templateId === "__alista_docx" && (
+            <div className="rounded-md border border-border/60 bg-white">
+              {previewBlob ? (
+                <div
+                  ref={previewRef}
+                  className="alista-docx-preview max-h-[60vh] overflow-y-auto"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-2 py-12 text-sm text-muted-foreground">
+                  <Eye className="h-6 w-6 opacity-50" />
+                  <span>Нажмите «Предпросмотр», чтобы увидеть готовый договор</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Закрыть</Button>
           {templateId === "__alista_docx" ? (
-            <Button onClick={downloadDocx} disabled={generating} className="gap-1.5">
-              <Download className="h-4 w-4" /> Скачать .docx
-            </Button>
+            <>
+              <Button variant="outline" onClick={buildPreview} disabled={previewing} className="gap-1.5">
+                {previewing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+                Предпросмотр
+              </Button>
+              <Button onClick={downloadDocx} disabled={generating} className="gap-1.5">
+                <Download className="h-4 w-4" /> Скачать .docx
+              </Button>
+            </>
           ) : (
             <Button onClick={printPdf} className="gap-1.5">
               <Printer className="h-4 w-4" /> Печать / PDF
