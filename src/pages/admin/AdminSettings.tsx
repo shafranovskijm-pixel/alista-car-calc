@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import OnboardingGuide from "@/components/admin/OnboardingGuide";
 import HotkeysSheet from "@/components/admin/HotkeysSheet";
 import CRMFaq from "@/components/admin/CRMFaq";
+import TemplatesManager from "@/components/admin/TemplatesManager";
 
 const AdminSettings = () => {
   const { user } = useAuth();
@@ -59,6 +60,7 @@ const AdminSettings = () => {
       >
         <TabsList>
           <TabsTrigger value="profile">Профиль</TabsTrigger>
+          <TabsTrigger value="templates">Шаблоны</TabsTrigger>
           <TabsTrigger value="onboarding">Обучение</TabsTrigger>
           <TabsTrigger value="hotkeys">Горячие клавиши</TabsTrigger>
           <TabsTrigger value="faq">Справка / FAQ</TabsTrigger>
@@ -107,6 +109,9 @@ const AdminSettings = () => {
 
         <TabsContent value="onboarding">
           <OnboardingGuide />
+        </TabsContent>
+        <TabsContent value="templates">
+          <TemplatesManager />
         </TabsContent>
         <TabsContent value="hotkeys">
           <HotkeysSheet />
