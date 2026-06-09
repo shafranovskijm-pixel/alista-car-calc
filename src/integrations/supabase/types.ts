@@ -387,6 +387,73 @@ export type Database = {
           },
         ]
       }
+      lead_activities: {
+        Row: {
+          body: string | null
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          deal_id: string | null
+          done_at: string | null
+          due_at: string | null
+          id: string
+          lead_id: string | null
+          title: string | null
+          type: Database["public"]["Enums"]["activity_type"]
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          done_at?: string | null
+          due_at?: string | null
+          id?: string
+          lead_id?: string | null
+          title?: string | null
+          type?: Database["public"]["Enums"]["activity_type"]
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          done_at?: string | null
+          due_at?: string | null
+          id?: string
+          lead_id?: string | null
+          title?: string | null
+          type?: Database["public"]["Enums"]["activity_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_activities_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_activities_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_status_history: {
         Row: {
           changed_at: string
@@ -769,6 +836,7 @@ export type Database = {
       }
     }
     Enums: {
+      activity_type: "note" | "call" | "meeting" | "email" | "task"
       app_role: "admin" | "manager"
       car_country: "japan" | "korea" | "china"
       car_fuel: "petrol" | "diesel" | "hybrid" | "electric" | "gas"
@@ -932,6 +1000,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_type: ["note", "call", "meeting", "email", "task"],
       app_role: ["admin", "manager"],
       car_country: ["japan", "korea", "china"],
       car_fuel: ["petrol", "diesel", "hybrid", "electric", "gas"],
