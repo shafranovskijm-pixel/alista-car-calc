@@ -1,29 +1,54 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
-import car1 from "@/assets/gallery/car1.jpg";
-import car2 from "@/assets/gallery/car2.jpg";
-import car3 from "@/assets/gallery/car3.jpg";
-import car4 from "@/assets/gallery/car4.jpg";
-import car5 from "@/assets/gallery/car5.jpg";
-import car6 from "@/assets/gallery/car6.jpg";
+import { X, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { fetchPublishedWorks } from "@/lib/works";
 
-const galleryItems = [
-  { src: car1, title: "Toyota Crown", desc: "Седан, порт Владивостока" },
-  { src: car2, title: "Lexus RX", desc: "Кроссовер, таможенный терминал" },
-  { src: car3, title: "Mazda CX-5", desc: "Кроссовер, порт отгрузки" },
-  { src: car4, title: "Nissan Skyline GT-R", desc: "Спорткар, аукцион Японии" },
-  { src: car5, title: "Toyota Land Cruiser Prado", desc: "Внедорожник, контейнерный терминал" },
-  { src: car6, title: "Subaru Forester", desc: "Кроссовер, зона досмотра" },
-];
+type Item = { src: string; title: string; desc: string };
 
 const Gallery = () => {
+  const [galleryItems, setGalleryItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState<number | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const rows = await fetchPublishedWorks();
+        const items: Item[] = rows
+          .map((w) => {
+            const cover = w.photos.find((p) => p.is_cover) ?? w.photos[0];
+            if (!cover?.url) return null;
+            return {
+              src: cover.url,
+              title: w.title,
+              desc: [w.country, w.price ? new Intl.NumberFormat("ru-RU").format(w.price) + " ₽" : null]
+                .filter(Boolean)
+                .join(" · "),
+            };
+          })
+          .filter(Boolean) as Item[];
+        setGalleryItems(items.slice(0, 6));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const navigate = (dir: number) => {
     if (lightbox === null) return;
     setLightbox((lightbox + dir + galleryItems.length) % galleryItems.length);
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (galleryItems.length === 0) return null;
 
   return (
     <>
@@ -53,6 +78,15 @@ const Gallery = () => {
             </div>
           </motion.div>
         ))}
+      </div>
+
+      <div className="mt-8 text-center">
+        <Link
+          to="/works"
+          className="inline-block rounded-full border border-primary/40 bg-primary/10 px-6 py-2 text-sm font-medium text-primary transition hover:bg-primary/20"
+        >
+          Смотреть все работы →
+        </Link>
       </div>
 
       {/* Lightbox */}
