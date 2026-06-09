@@ -30,6 +30,7 @@ import AdminSettings from "./pages/admin/AdminSettings.tsx";
 import AdminCars from "./pages/admin/AdminCars.tsx";
 import AdminCarEdit from "./pages/admin/AdminCarEdit.tsx";
 import AdminAudit from "./pages/admin/AdminAudit.tsx";
+import AdminEmails from "./pages/admin/AdminEmails.tsx";
 import Cars from "./pages/Cars.tsx";
 import CarDetail from "./pages/CarDetail.tsx";
 import { AuthProvider } from "./hooks/useAuth.tsx";
@@ -71,6 +72,7 @@ const AnimatedRoutes = () => {
           <Route path="cars/:id" element={<AdminCarEdit />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="audit" element={<AdminAudit />} />
+          <Route path="emails" element={<AdminEmails />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
