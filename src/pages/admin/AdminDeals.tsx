@@ -316,6 +316,7 @@ const AdminDeals = () => {
         />
       ) : (
         <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -365,6 +366,7 @@ const AdminDeals = () => {
               )}
             </TableBody>
           </Table>
+          </div>
         </Card>
       )}
     </div>

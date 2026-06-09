@@ -189,16 +189,16 @@ const AdminLayout = () => {
         </Sidebar>
 
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center border-b border-border px-4 gap-3 bg-background/80 backdrop-blur-xl sticky top-0 z-30">
+          <header className="h-14 flex items-center border-b border-border px-2 sm:px-4 gap-2 sm:gap-3 bg-background/80 backdrop-blur-xl sticky top-0 z-30">
             <SidebarTrigger />
-            <div className="flex-1 flex items-center gap-3">
+            <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-0">
               <GlobalSearch />
             </div>
-            <CurrencyTicker />
+            <div className="hidden md:block"><CurrencyTicker /></div>
             <NotificationsBell />
-            <div className="hidden md:block text-xs text-muted-foreground max-w-[180px] truncate">{user.email}</div>
+            <div className="hidden lg:block text-xs text-muted-foreground max-w-[180px] truncate">{user.email}</div>
           </header>
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-auto">
             <Outlet />
           </main>
         </div>

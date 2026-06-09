@@ -506,6 +506,7 @@ const AdminLeads = () => {
         />
       ) : (
       <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -696,6 +697,7 @@ const AdminLeads = () => {
             )}
           </TableBody>
         </Table>
+        </div>
       </Card>
       )}
       <ImportLeadsDialog open={importOpen} onOpenChange={setImportOpen} onImported={load} />
