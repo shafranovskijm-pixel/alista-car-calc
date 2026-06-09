@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -30,10 +30,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { KanbanIcon, LayoutGrid, Plus, Table as TableIcon } from "lucide-react";
+import { LayoutGrid, Plus, Table as TableIcon } from "lucide-react";
 import {
   DEAL_STAGES,
-  DEAL_STAGE_COLOR,
   DEAL_STAGE_LABELS,
   DEAL_TYPES,
   DEAL_TYPE_LABELS,
