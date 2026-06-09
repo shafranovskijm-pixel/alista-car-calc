@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import EmptyState from "@/components/admin/EmptyState";
 import TasksWidget from "@/components/admin/TasksWidget";
+import HintCard from "@/components/admin/HintCard";
 import { DEAL_STAGES, DEAL_STAGE_COLOR, DEAL_STAGE_LABELS, DealStage } from "@/lib/deals";
 import { LEAD_STATUSES, LEAD_STATUS_LABELS, LeadStatus } from "@/lib/leads";
 import {
@@ -256,6 +257,11 @@ const AdminDashboard = () => {
           {new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" })}
         </div>
       </div>
+
+      <HintCard storageKey="dashboard" title="Что здесь смотреть">
+        Главная сводка по бизнесу: заявки за неделю, активные сделки, задачи на сегодня и выручка. Все цифры
+        обновляются автоматически в реальном времени. Кликайте по карточкам, чтобы провалиться в раздел.
+      </HintCard>
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
