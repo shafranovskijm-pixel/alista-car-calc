@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Activity } from "lucide-react";
+import EmptyState from "@/components/admin/EmptyState";
 import { DEAL_STAGES, DEAL_STAGE_COLOR, DEAL_STAGE_LABELS, DealStage } from "@/lib/deals";
 import { LEAD_STATUSES, LEAD_STATUS_LABELS, LeadStatus } from "@/lib/leads";
 
@@ -16,7 +19,7 @@ type Stats = {
   revenue: number;
 };
 
-type Activity = {
+type ActivityRow = {
   id: string;
   table_name: string;
   record_id: string;
@@ -29,7 +32,7 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState<Stats | null>(null);
   const [leadsByStatus, setLeadsByStatus] = useState<Record<LeadStatus, number>>({} as Record<LeadStatus, number>);
   const [dealsByStage, setDealsByStage] = useState<Record<DealStage, number>>({} as Record<DealStage, number>);
-  const [activity, setActivity] = useState<Activity[]>([]);
+  const [activity, setActivity] = useState<ActivityRow[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -93,11 +96,25 @@ const AdminDashboard = () => {
       });
       setDealsByStage(dbs);
 
-      setActivity((act.data ?? []) as Activity[]);
+      setActivity((act.data ?? []) as ActivityRow[]);
     })();
   }, []);
 
-  if (!stats) return <div className="text-muted-foreground">Загрузка...</div>;
+  if (!stats)
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-40" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-24" />
+          ))}
+        </div>
+        <div className="grid md:grid-cols-2 gap-3">
+          <Skeleton className="h-72" />
+          <Skeleton className="h-72" />
+        </div>
+      </div>
+    );
 
   return (
     <div className="space-y-4">
@@ -160,7 +177,11 @@ const AdminDashboard = () => {
         <CardHeader><CardTitle className="text-base">Последние действия</CardTitle></CardHeader>
         <CardContent>
           {activity.length === 0 ? (
-            <div className="text-sm text-muted-foreground">Пусто</div>
+            <EmptyState
+              icon={Activity}
+              title="Действий пока нет"
+              description="Здесь появятся изменения по заявкам, клиентам и сделкам"
+            />
           ) : (
             <ul className="space-y-1.5 text-sm">
               {activity.map((a) => {
