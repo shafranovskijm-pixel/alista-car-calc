@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState } from "@/components/admin/EmptyState";
+import TableSkeleton from "@/components/admin/TableSkeleton";
 import { History } from "lucide-react";
 
 type Row = {
