@@ -715,6 +715,51 @@ export type Database = {
         }
         Relationships: []
       }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_at: string | null
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          related_id: string | null
+          related_type: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          related_id?: string | null
+          related_type?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          related_id?: string | null
+          related_type?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -873,6 +918,7 @@ export type Database = {
         | "in_transit"
         | "delivered"
       product_status: "draft" | "published" | "archived"
+      task_priority: "low" | "normal" | "high" | "urgent"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1040,6 +1086,7 @@ export const Constants = {
         "delivered",
       ],
       product_status: ["draft", "published", "archived"],
+      task_priority: ["low", "normal", "high", "urgent"],
     },
   },
 } as const
