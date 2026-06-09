@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import HintCard from "@/components/admin/HintCard";
 import { EmptyState } from "@/components/admin/EmptyState";
 import TableSkeleton from "@/components/admin/TableSkeleton";
 import { History } from "lucide-react";
@@ -100,6 +101,12 @@ const AdminAudit = () => {
           </Select>
         </div>
       </div>
+
+      <HintCard storageKey="audit" title="Аудит изменений">
+        Лог всех важных действий в системе: кто, когда и что изменил в заявках, сделках, клиентах и документах.
+        Используйте для разбора спорных ситуаций и контроля работы менеджеров. Фильтруйте по таблице и типу
+        действия (создание, обновление, удаление).
+      </HintCard>
 
       <Card>
         <Table>

@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import HintCard from "@/components/admin/HintCard";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { Mail } from "lucide-react";
@@ -75,6 +76,11 @@ const AdminEmails = () => {
           </Select>
         </div>
       </div>
+
+      <HintCard storageKey="emails" title="История исходящих писем">
+        Журнал всех email, отправленных из CRM: уведомления клиентам, ответы на заявки, документы. Видны
+        статусы доставки (отправлено, ошибка, ожидает) — если письмо «не дошло», ищите причину здесь.
+      </HintCard>
 
       <Card>
         <Table>

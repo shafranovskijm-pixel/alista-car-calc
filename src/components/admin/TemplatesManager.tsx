@@ -101,22 +101,36 @@ const TemplatesManager = () => {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-base">Шаблоны быстрых ответов</CardTitle>
-        <Button size="sm" onClick={startCreate}>
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 space-y-0">
+        <div>
+          <CardTitle className="text-base">Готовые ответы для мессенджеров и почты</CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">
+            Заготовленные тексты — менеджер вставляет в чат или письмо одним кликом.
+          </p>
+        </div>
+        <Button size="sm" onClick={startCreate} className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-1" /> Новый
         </Button>
       </CardHeader>
       <CardContent>
-        <p className="text-xs text-muted-foreground mb-3">
-          Используйте переменные:{" "}
-          <code className="text-foreground">{"{{client.name}}"}</code>,{" "}
-          <code className="text-foreground">{"{{client.phone}}"}</code>,{" "}
-          <code className="text-foreground">{"{{deal.title}}"}</code>,{" "}
-          <code className="text-foreground">{"{{deal.budget}}"}</code>,{" "}
-          <code className="text-foreground">{"{{lead.name}}"}</code>,{" "}
-          <code className="text-foreground">{"{{manager.name}}"}</code>
-        </p>
+        <div className="rounded-md border border-primary/20 bg-primary/5 p-3 mb-3 text-xs space-y-1.5">
+          <p className="text-foreground font-medium">Что это и зачем</p>
+          <p className="text-muted-foreground">
+            Создайте шаблон — например, «Здравствуйте, {"{{client.name}}"}! Ваш {"{{deal.title}}"} прибыл во Владивосток».
+            При вставке переменные автоматически заменятся реальными данными клиента и сделки.
+          </p>
+          <p className="text-muted-foreground pt-1">
+            <span className="text-foreground font-medium">Доступные переменные:</span>
+          </p>
+          <ul className="text-muted-foreground space-y-0.5 pl-1">
+            <li><code className="text-foreground">{"{{client.name}}"}</code> — имя клиента</li>
+            <li><code className="text-foreground">{"{{client.phone}}"}</code> — телефон клиента</li>
+            <li><code className="text-foreground">{"{{deal.title}}"}</code> — название сделки (марка, модель)</li>
+            <li><code className="text-foreground">{"{{deal.budget}}"}</code> — бюджет сделки</li>
+            <li><code className="text-foreground">{"{{lead.name}}"}</code> — имя из заявки</li>
+            <li><code className="text-foreground">{"{{manager.name}}"}</code> — имя менеджера (вы)</li>
+          </ul>
+        </div>
 
         {loading ? (
           <div className="text-sm text-muted-foreground">Загрузка...</div>
