@@ -193,7 +193,17 @@ const AdminTasks = () => {
       <Card>
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-6 text-sm text-muted-foreground">Загрузка...</div>
+            <ul className="divide-y divide-border">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <li key={i} className="p-4 flex items-center gap-3">
+                  <div className="h-4 w-4 rounded bg-muted animate-pulse" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 w-1/2 rounded bg-muted animate-pulse" />
+                    <div className="h-3 w-1/3 rounded bg-muted animate-pulse" />
+                  </div>
+                </li>
+              ))}
+            </ul>
           ) : filtered.length === 0 ? (
             <div className="p-6">
               <EmptyState
