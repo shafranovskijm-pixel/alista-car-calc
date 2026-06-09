@@ -126,9 +126,10 @@ const AdminReports = () => {
   // Воронка лидов: Все → В работе → Квалифицированы → Won
   const leadFunnel = useMemo(() => {
     const total = leads.length;
-    const workedStatuses: LeadStatus[] = ["in_progress", "qualified", "proposal", "negotiation", "won", "lost"];
+    const workedStatuses: LeadStatus[] = ["in_progress", "callback", "meeting", "contract", "awaiting_payment", "in_transit", "delivered", "won", "lost"];
     const worked = leads.filter((l) => workedStatuses.includes(l.status)).length;
-    const qualified = leads.filter((l) => ["qualified", "proposal", "negotiation", "won"].includes(l.status)).length;
+    const qualifiedStatuses: LeadStatus[] = ["meeting", "contract", "awaiting_payment", "in_transit", "delivered", "won"];
+    const qualified = leads.filter((l) => qualifiedStatuses.includes(l.status)).length;
     const won = leads.filter((l) => l.status === "won").length;
     return [
       { label: "Всего заявок", value: total, color: "bg-sky-500/30 border-sky-500/40" },
