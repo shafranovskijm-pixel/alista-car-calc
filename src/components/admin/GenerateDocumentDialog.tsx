@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import {
   downloadBlob,
   renderContractBlob,
+  nextContractNo,
   type ContractClient,
   type ContractData,
 } from "@/lib/contract";
@@ -45,6 +46,10 @@ type Props = {
   onOpenChange: (v: boolean) => void;
   templates: Template[];
   defaultTemplateId?: string;
+  /** "alista" — открыть диалог сразу на договоре Алиста (.docx) */
+  defaultPreset?: "alista";
+  /** Предзаполнить сделку (например, из карточки сделки) */
+  defaultDealId?: string;
 };
 
 const substitute = (body: string, deal: DealOpt | null) => {
@@ -64,12 +69,21 @@ const substitute = (body: string, deal: DealOpt | null) => {
   );
 };
 
-const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplateId }: Props) => {
-  const [templateId, setTemplateId] = useState<string>(defaultTemplateId ?? templates[0]?.id ?? "");
-  const [dealId, setDealId] = useState<string>("");
+const GenerateDocumentDialog = ({
+  open,
+  onOpenChange,
+  templates,
+  defaultTemplateId,
+  defaultPreset,
+  defaultDealId,
+}: Props) => {
+  const [templateId, setTemplateId] = useState<string>(
+    defaultPreset === "alista" ? "__alista_docx" : defaultTemplateId ?? templates[0]?.id ?? "",
+  );
+  const [dealId, setDealId] = useState<string>(defaultDealId ?? "");
   const [deals, setDeals] = useState<DealOpt[]>([]);
   const [body, setBody] = useState("");
-  const [contractNo, setContractNo] = useState("");
+  const [contractNo, setContractNo] = useState(() => nextContractNo());
   const [contractDate, setContractDate] = useState(
     new Date().toISOString().slice(0, 10),
   );
@@ -94,8 +108,11 @@ const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplate
   }, [open]);
 
   useEffect(() => {
-    if (defaultTemplateId) setTemplateId(defaultTemplateId);
-  }, [defaultTemplateId, open]);
+    if (!open) return;
+    if (defaultPreset === "alista") setTemplateId("__alista_docx");
+    else if (defaultTemplateId) setTemplateId(defaultTemplateId);
+    if (defaultDealId) setDealId(defaultDealId);
+  }, [defaultTemplateId, defaultPreset, defaultDealId, open]);
 
   const template = useMemo(() => templates.find((t) => t.id === templateId) ?? null, [templates, templateId]);
   const deal = useMemo(() => deals.find((d) => d.id === dealId) ?? null, [deals, dealId]);
@@ -207,21 +224,23 @@ const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplate
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[92vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" />
             Сформировать документ
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-3">
+        <div className="space-y-3 flex-1 overflow-y-auto pr-1">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label className="mb-1.5 block">Шаблон</Label>
               <Select value={templateId} onValueChange={setTemplateId}>
                 <SelectTrigger><SelectValue placeholder="Выберите" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__alista_docx">Агентский договор Алиста (.docx)</SelectItem>
+                  <SelectItem value="__alista_docx">
+                    ★ Агентский договор Алиста (.docx) — рекомендуется
+                  </SelectItem>
                   {templates.map((t) => (
                     <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                   ))}
