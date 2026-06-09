@@ -162,48 +162,69 @@ export type Database = {
       clients: {
         Row: {
           address: string | null
+          birth_date: string | null
           client_type: Database["public"]["Enums"]["client_type"]
           company_name: string | null
           created_at: string
           created_by: string | null
+          director_name: string | null
+          director_position: string | null
           email: string | null
           full_name: string
           id: string
           inn: string | null
+          kpp: string | null
           note: string | null
+          ogrn: string | null
           passport: string | null
+          passport_issued_by: string | null
+          passport_issued_date: string | null
           phone: string | null
           source: string | null
           updated_at: string
         }
         Insert: {
           address?: string | null
+          birth_date?: string | null
           client_type?: Database["public"]["Enums"]["client_type"]
           company_name?: string | null
           created_at?: string
           created_by?: string | null
+          director_name?: string | null
+          director_position?: string | null
           email?: string | null
           full_name: string
           id?: string
           inn?: string | null
+          kpp?: string | null
           note?: string | null
+          ogrn?: string | null
           passport?: string | null
+          passport_issued_by?: string | null
+          passport_issued_date?: string | null
           phone?: string | null
           source?: string | null
           updated_at?: string
         }
         Update: {
           address?: string | null
+          birth_date?: string | null
           client_type?: Database["public"]["Enums"]["client_type"]
           company_name?: string | null
           created_at?: string
           created_by?: string | null
+          director_name?: string | null
+          director_position?: string | null
           email?: string | null
           full_name?: string
           id?: string
           inn?: string | null
+          kpp?: string | null
           note?: string | null
+          ogrn?: string | null
           passport?: string | null
+          passport_issued_by?: string | null
+          passport_issued_date?: string | null
           phone?: string | null
           source?: string | null
           updated_at?: string
