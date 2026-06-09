@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import DocumentsList from "@/components/admin/DocumentsList";
+import ClientRequisitesCard, { ClientRequisites } from "@/components/admin/ClientRequisitesCard";
 import {
   CLIENT_TYPE_LABELS,
   DEAL_STAGE_COLOR,
@@ -23,7 +24,14 @@ type Client = {
   client_type: "individual" | "company";
   company_name: string | null;
   inn: string | null;
+  kpp: string | null;
+  ogrn: string | null;
+  director_name: string | null;
+  director_position: string | null;
   passport: string | null;
+  birth_date: string | null;
+  passport_issued_by: string | null;
+  passport_issued_date: string | null;
   address: string | null;
   note: string | null;
   source: string | null;
@@ -61,6 +69,26 @@ const AdminClientDetail = () => {
 
   if (!client) return <div className="text-muted-foreground">Загрузка...</div>;
 
+  const requisites: ClientRequisites = {
+    id: client.id,
+    client_type: client.client_type,
+    full_name: client.full_name,
+    company_name: client.company_name,
+    inn: client.inn,
+    kpp: client.kpp,
+    ogrn: client.ogrn,
+    address: client.address,
+    director_name: client.director_name,
+    director_position: client.director_position,
+    passport: client.passport,
+    birth_date: client.birth_date,
+    passport_issued_by: client.passport_issued_by,
+    passport_issued_date: client.passport_issued_date,
+    phone: client.phone,
+    email: client.email,
+    note: client.note,
+  };
+
   return (
     <div className="space-y-4 max-w-5xl">
       <Button asChild variant="ghost" size="sm">
@@ -75,17 +103,15 @@ const AdminClientDetail = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
-          {client.company_name && <Row label="Компания" value={client.company_name} />}
-          {client.inn && <Row label="ИНН" value={client.inn} />}
-          <Row label="Телефон" value={client.phone ?? "—"} />
-          <Row label="Email" value={client.email ?? "—"} />
-          <Row label="Адрес" value={client.address ?? "—"} />
-          <Row label="Паспорт" value={client.passport ?? "—"} />
           <Row label="Источник" value={client.source ?? "—"} />
-          <Row label="Заметка" value={client.note ?? "—"} />
           <Row label="Создан" value={new Date(client.created_at).toLocaleString("ru-RU")} />
         </CardContent>
       </Card>
+
+      <ClientRequisitesCard
+        client={requisites}
+        onSaved={(r) => setClient((c) => (c ? { ...c, ...r } as Client : c))}
+      />
 
       <Card>
         <CardHeader>
