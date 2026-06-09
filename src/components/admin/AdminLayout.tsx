@@ -35,6 +35,7 @@ import { supabase } from "@/integrations/supabase/client";
 import GlobalSearch from "./GlobalSearch";
 import NotificationsBell from "./NotificationsBell";
 import CurrencyTicker from "./CurrencyTicker";
+import ThemeToggle from "@/components/ThemeToggle";
 
 type Item = {
   title: string;
@@ -195,6 +196,7 @@ const AdminLayout = () => {
               <GlobalSearch />
             </div>
             <div className="hidden md:block"><CurrencyTicker /></div>
+            <ThemeToggle />
             <NotificationsBell />
             <div className="hidden lg:block text-xs text-muted-foreground max-w-[180px] truncate">{user.email}</div>
           </header>
