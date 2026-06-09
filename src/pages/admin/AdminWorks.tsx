@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchAllWorks, resolvePhotoUrl, slugify, ensureUniqueSlug, type WorkWithPhotos } from "@/lib/works";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import HintCard from "@/components/admin/HintCard";
 
 const AdminWorks = () => {
   const navigate = useNavigate();

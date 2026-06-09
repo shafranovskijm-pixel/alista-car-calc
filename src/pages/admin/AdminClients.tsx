@@ -29,6 +29,7 @@ import { CLIENT_TYPE_LABELS } from "@/lib/deals";
 import DuplicatesBanner from "@/components/admin/DuplicatesBanner";
 import { EmptyState } from "@/components/admin/EmptyState";
 import TableSkeleton from "@/components/admin/TableSkeleton";
+import HintCard from "@/components/admin/HintCard";
 
 type Client = {
   id: string;

@@ -14,6 +14,7 @@ import CRMFaq from "@/components/admin/CRMFaq";
 import TemplatesManager from "@/components/admin/TemplatesManager";
 import EmailSettings from "@/components/admin/EmailSettings";
 import AlistaContractSample from "@/components/admin/AlistaContractSample";
+import HintCard from "@/components/admin/HintCard";
 
 const AdminSettings = () => {
   const { user } = useAuth();

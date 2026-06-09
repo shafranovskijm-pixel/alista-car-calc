@@ -32,6 +32,7 @@ import {
 import { toast } from "sonner";
 import { Download, LayoutGrid, Plus, Table as TableIcon } from "lucide-react";
 import { downloadCSV, toCSV } from "@/lib/csv";
+import HintCard from "@/components/admin/HintCard";
 import {
   DEAL_STAGES,
   DEAL_STAGE_LABELS,

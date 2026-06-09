@@ -14,6 +14,7 @@ import {
 } from "@/lib/cars";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import HintCard from "@/components/admin/HintCard";
 
 const AdminCars = () => {
   const navigate = useNavigate();
