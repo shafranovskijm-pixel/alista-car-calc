@@ -29,6 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { DOCUMENT_KINDS, DOCUMENT_KIND_LABELS, DocumentKind, formatBytes } from "@/lib/documents";
 import SendDocumentDialog from "@/components/admin/SendDocumentDialog";
 import GenerateDocumentDialog from "@/components/admin/GenerateDocumentDialog";
+import AlistaContractSample from "@/components/admin/AlistaContractSample";
 
 type Doc = {
   id: string;
@@ -237,6 +238,7 @@ const AdminDocuments = () => {
         </TabsContent>
 
         <TabsContent value="templates" className="space-y-3">
+          <AlistaContractSample />
           <Dialog open={tplOpen} onOpenChange={setTplOpen}>
             <DialogTrigger asChild>
               <Button><Plus className="h-4 w-4 mr-1" /> Новый шаблон</Button>
