@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Printer, FileText, Download, Eye, Loader2 } from "lucide-react";
+import { Printer, FileText, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   downloadBlob,
@@ -27,7 +27,6 @@ import {
   type ContractClient,
   type ContractData,
 } from "@/lib/contract";
-import { renderAsync } from "docx-preview";
 
 type Template = { id: string; name: string; kind: string; body: string };
 type DealOpt = {
