@@ -13,6 +13,7 @@ import HotkeysSheet from "@/components/admin/HotkeysSheet";
 import CRMFaq from "@/components/admin/CRMFaq";
 import TemplatesManager from "@/components/admin/TemplatesManager";
 import EmailSettings from "@/components/admin/EmailSettings";
+import AlistaContractSample from "@/components/admin/AlistaContractSample";
 
 const AdminSettings = () => {
   const { user } = useAuth();
@@ -113,7 +114,10 @@ const AdminSettings = () => {
           <OnboardingGuide />
         </TabsContent>
         <TabsContent value="templates">
-          <TemplatesManager />
+          <div className="space-y-4">
+            <AlistaContractSample />
+            <TemplatesManager />
+          </div>
         </TabsContent>
         <TabsContent value="email">
           <EmailSettings />
