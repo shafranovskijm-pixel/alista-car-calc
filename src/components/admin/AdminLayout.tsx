@@ -25,6 +25,7 @@ import {
   BarChart3,
   Images,
   GraduationCap,
+  ListTodo,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ const groups: { label: string; items: Item[] }[] = [
     items: [
       { title: "Дашборд", url: "/admin", icon: LayoutDashboard, end: true },
       { title: "Заявки", url: "/admin/leads", icon: Inbox, badgeKey: "leads_new" },
+      { title: "Задачи", url: "/admin/tasks", icon: ListTodo, badgeKey: "tasks_overdue" },
       { title: "Клиенты", url: "/admin/clients", icon: Users },
       { title: "Сделки", url: "/admin/deals", icon: Briefcase, badgeKey: "deals_active" },
     ],

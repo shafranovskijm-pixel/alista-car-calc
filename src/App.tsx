@@ -17,6 +17,7 @@ import AdminLayout from "./components/admin/AdminLayout.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AdminLeads from "./pages/admin/AdminLeads.tsx";
 import AdminLeadDetail from "./pages/admin/AdminLeadDetail.tsx";
+import AdminTasks from "./pages/admin/AdminTasks.tsx";
 import AdminClients from "./pages/admin/AdminClients.tsx";
 import AdminClientDetail from "./pages/admin/AdminClientDetail.tsx";
 import AdminDeals from "./pages/admin/AdminDeals.tsx";
@@ -56,6 +57,7 @@ const AnimatedRoutes = () => {
           <Route index element={<AdminDashboard />} />
           <Route path="leads" element={<AdminLeads />} />
           <Route path="leads/:id" element={<AdminLeadDetail />} />
+          <Route path="tasks" element={<AdminTasks />} />
           <Route path="clients" element={<AdminClients />} />
           <Route path="clients/:id" element={<AdminClientDetail />} />
           <Route path="deals" element={<AdminDeals />} />
