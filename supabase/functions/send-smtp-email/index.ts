@@ -1,6 +1,6 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2.45.0';
-import { SMTPClient } from 'npm:emailjs@4.0.3';
+import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts';
 
 type Attachment = {
   name: string;
@@ -155,12 +155,15 @@ Deno.serve(async (req) => {
   }
 
   const client = new SMTPClient({
-    user: SMTP_USER,
-    password: SMTP_PASSWORD,
-    host: 'smtp.timeweb.ru',
-    port: 465,
-    ssl: true,
-    timeout: 20_000,
+    connection: {
+      hostname: 'smtp.timeweb.ru',
+      port: 465,
+      tls: true,
+      auth: {
+        username: SMTP_USER,
+        password: SMTP_PASSWORD,
+      },
+    },
   });
 
   // Get from-name from settings (fallback to env).
@@ -175,32 +178,24 @@ Deno.serve(async (req) => {
   let err: string | null = null;
 
   try {
-    const message: Record<string, unknown> = {
+    await client.send({
       from: fromHeader,
-      to: recipient,
+      to: recipients,
       subject: body.subject,
-      text: body.text ?? body.html?.replace(/<[^>]+>/g, ' ') ?? '',
-    };
-    if (body.html) {
-      message.attachment = [
-        { data: body.html, alternative: true },
-        ...attachments.map((a) => ({
-          name: a.name,
-          data: a.data,
-          type: a.type,
-        })),
-      ];
-    } else if (attachments.length) {
-      message.attachment = attachments.map((a) => ({
-        name: a.name,
-        data: a.data,
-        type: a.type,
-      }));
-    }
-    await client.sendAsync(message as never);
+      content: body.text ?? body.html?.replace(/<[^>]+>/g, ' ') ?? '',
+      html: body.html,
+      attachments: attachments.map((a) => ({
+        filename: a.name,
+        content: a.data,
+        contentType: a.type ?? 'application/octet-stream',
+        encoding: 'binary' as const,
+      })),
+    });
+    await client.close();
   } catch (e) {
     status = 'failed';
     err = (e as Error).message ?? String(e);
+    try { await client.close(); } catch { /* ignore */ }
   }
 
   await logEmail({
