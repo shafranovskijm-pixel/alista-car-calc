@@ -116,11 +116,11 @@ Deno.serve(async (req) => {
   if (body.documentId) {
     const { data: doc, error: docErr } = await sb
       .from('documents')
-      .select('id, file_url, file_name, title')
+      .select('id, storage_path, mime_type, title')
       .eq('id', body.documentId)
       .maybeSingle();
     if (docErr || !doc) return json({ error: 'Document not found' }, 404);
-    const path: string = doc.file_url;
+    const path: string = doc.storage_path;
     const { data: file, error: dlErr } = await sb.storage.from('documents').download(path);
     if (dlErr || !file) return json({ error: 'Cannot download document' }, 500);
     const buf = new Uint8Array(await file.arrayBuffer());
@@ -134,10 +134,11 @@ Deno.serve(async (req) => {
       body.text = (body.text ?? '') + note;
       if (body.html) body.html = `${body.html}<p>Файл во вложении заменён ссылкой: <a href="${link}">${link}</a></p>`;
     } else {
+      const baseName = path.split('/').pop() || `${doc.title ?? 'document'}.pdf`;
       attachments.push({
-        name: doc.file_name ?? `${doc.title ?? 'document'}.pdf`,
+        name: baseName,
         data: buf,
-        type: file.type || 'application/octet-stream',
+        type: doc.mime_type || file.type || 'application/octet-stream',
       });
     }
   }
