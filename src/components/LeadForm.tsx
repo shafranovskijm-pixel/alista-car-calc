@@ -68,7 +68,7 @@ const LeadForm = ({
     setLoading(true);
     try {
       const utm = captureUtm();
-      const { error } = await supabase.from("leads").insert({
+      const { data: inserted, error } = await supabase.from("leads").insert({
         full_name: parsed.data.full_name,
         phone: parsed.data.phone,
         email: parsed.data.email || null,
@@ -79,8 +79,14 @@ const LeadForm = ({
         object_interest: objectInterest ?? null,
         calc_snapshot: (calcSnapshot ?? null) as any,
         ...utm,
-      });
+      }).select("id").maybeSingle();
       if (error) throw error;
+      // Уведомление по email — не блокируем UX при ошибке.
+      if (inserted?.id) {
+        supabase.functions
+          .invoke("notify-new-lead", { body: { leadId: inserted.id } })
+          .catch(() => {});
+      }
       toast({
         title: "Заявка отправлена",
         description: "Менеджер свяжется с вами в ближайшее время",
