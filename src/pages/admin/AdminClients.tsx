@@ -78,6 +78,18 @@ const AdminClients = () => {
       toast.error("Введите ФИО / название");
       return;
     }
+    const normPhone = (form.phone ?? "").replace(/\D/g, "");
+    const normEmail = (form.email ?? "").trim().toLowerCase();
+    const dupCandidate = clients.find(
+      (c) =>
+        (normPhone.length >= 10 && (c.phone ?? "").replace(/\D/g, "") === normPhone) ||
+        (normEmail && (c.email ?? "").trim().toLowerCase() === normEmail),
+    );
+    if (dupCandidate) {
+      if (!confirm(`Похоже, такой клиент уже есть: ${dupCandidate.full_name}. Всё равно создать?`)) {
+        return;
+      }
+    }
     setSaving(true);
     const { data: userRes } = await supabase.auth.getUser();
     const { error } = await supabase.from("clients").insert({
