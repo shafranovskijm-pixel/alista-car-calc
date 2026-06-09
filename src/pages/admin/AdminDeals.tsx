@@ -41,6 +41,8 @@ import {
   DealType,
 } from "@/lib/deals";
 import { KanbanBoard, KanbanColumn } from "@/components/admin/KanbanBoard";
+import StatusBadge from "@/components/admin/StatusBadge";
+import TableSkeleton from "@/components/admin/TableSkeleton";
 
 type Deal = {
   id: string;
@@ -273,7 +275,19 @@ const AdminDeals = () => {
       </div>
 
       {loading ? (
-        <div className="text-muted-foreground">Загрузка...</div>
+        view === "table" ? (
+          <TableSkeleton rows={8} cols={5} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Card key={i} className="p-3 space-y-2">
+                <div className="h-4 w-2/3 rounded bg-muted animate-pulse" />
+                <div className="h-3 w-1/2 rounded bg-muted animate-pulse" />
+                <div className="h-3 w-1/3 rounded bg-muted animate-pulse" />
+              </Card>
+            ))}
+          </div>
+        )
       ) : view === "board" ? (
         <KanbanBoard
           columns={kanbanColumns}
@@ -323,11 +337,8 @@ const AdminDeals = () => {
                   <TableCell className="text-muted-foreground">{d.clients?.full_name ?? "—"}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Select value={d.stage} onValueChange={(v) => moveStage(d, v as DealStage)}>
-                      <SelectTrigger className="h-7 w-auto min-w-[140px] border-0 bg-transparent px-2 hover:bg-muted">
-                        <span className="inline-flex items-center gap-1.5">
-                          <span className={`h-1.5 w-1.5 rounded-full ${STAGE_DOT[d.stage]}`} />
-                          <span className="text-xs">{DEAL_STAGE_LABELS[d.stage]}</span>
-                        </span>
+                      <SelectTrigger className="h-7 w-auto min-w-[140px] border-0 bg-transparent px-0 hover:bg-transparent">
+                        <StatusBadge label={DEAL_STAGE_LABELS[d.stage]} dot={STAGE_DOT[d.stage]} />
                       </SelectTrigger>
                       <SelectContent>
                         {DEAL_STAGES.map((s) => (
