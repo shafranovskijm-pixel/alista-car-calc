@@ -24,7 +24,7 @@ import {
   LogOut,
   BarChart3,
   Images,
-  HelpCircle,
+  GraduationCap,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,7 @@ const groups: { label: string; items: Item[] }[] = [
   {
     label: "Система",
     items: [
-      { title: "Карта CRM", url: "/admin/settings?tab=map", icon: HelpCircle },
+      { title: "Обучение", url: "/admin/settings?tab=onboarding", icon: GraduationCap },
       { title: "Настройки", url: "/admin/settings", icon: Settings, end: true },
     ],
   },
