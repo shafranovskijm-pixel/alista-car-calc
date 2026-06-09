@@ -9,6 +9,7 @@ import { Download } from "lucide-react";
 import { downloadCSV, toCSV } from "@/lib/csv";
 import { LEAD_STATUS_LABELS, LeadStatus } from "@/lib/leads";
 import { DEAL_STAGE_LABELS, DealStage } from "@/lib/deals";
+import { Filter as FilterIcon } from "lucide-react";
 
 type LeadRow = {
   id: string;
@@ -22,6 +23,7 @@ type LeadRow = {
   utm_campaign: string | null;
   assigned_to: string | null;
   created_at: string;
+  lost_reason: string | null;
 };
 
 type DealRow = {
@@ -33,6 +35,8 @@ type DealRow = {
   currency: string;
   assigned_to: string | null;
   created_at: string;
+  updated_at: string;
+  lost_reason: string | null;
 };
 
 type Profile = { id: string; full_name: string | null; email: string | null };
@@ -54,13 +58,13 @@ const AdminReports = () => {
     const [{ data: l }, { data: d }, { data: ps }] = await Promise.all([
       supabase
         .from("leads")
-        .select("id, full_name, phone, email, status, source, utm_source, utm_medium, utm_campaign, assigned_to, created_at")
+        .select("id, full_name, phone, email, status, source, utm_source, utm_medium, utm_campaign, assigned_to, created_at, lost_reason")
         .gte("created_at", fromIso)
         .lte("created_at", toIso)
         .limit(5000),
       supabase
         .from("deals")
-        .select("id, title, stage, budget, margin, currency, assigned_to, created_at")
+        .select("id, title, stage, budget, margin, currency, assigned_to, created_at, updated_at, lost_reason")
         .gte("created_at", fromIso)
         .lte("created_at", toIso)
         .limit(5000),
@@ -119,6 +123,58 @@ const AdminReports = () => {
       .sort((a, b) => b.deals - a.deals);
   }, [leads, deals, profiles]);
 
+  // Воронка лидов: Все → В работе → Квалифицированы → Won
+  const leadFunnel = useMemo(() => {
+    const total = leads.length;
+    const workedStatuses: LeadStatus[] = ["in_progress", "callback", "meeting", "contract", "awaiting_payment", "in_transit", "delivered", "won", "lost"];
+    const worked = leads.filter((l) => workedStatuses.includes(l.status)).length;
+    const qualifiedStatuses: LeadStatus[] = ["meeting", "contract", "awaiting_payment", "in_transit", "delivered", "won"];
+    const qualified = leads.filter((l) => qualifiedStatuses.includes(l.status)).length;
+    const won = leads.filter((l) => l.status === "won").length;
+    return [
+      { label: "Всего заявок", value: total, color: "bg-sky-500/30 border-sky-500/40" },
+      { label: "В работе", value: worked, color: "bg-blue-500/30 border-blue-500/40" },
+      { label: "Квалифицировано", value: qualified, color: "bg-violet-500/30 border-violet-500/40" },
+      { label: "Конвертировано", value: won, color: "bg-emerald-500/30 border-emerald-500/40" },
+    ].map((s, i, arr) => ({ ...s, pct: arr[0].value ? (s.value / arr[0].value) * 100 : 0 }));
+  }, [leads]);
+
+  // Средний цикл сделки (created → completed)
+  const dealAvgCycle = useMemo(() => {
+    const completed = deals.filter((d) => d.stage === "completed");
+    if (completed.length === 0) return null;
+    const days =
+      completed.reduce((s, d) => {
+        const diff = new Date(d.updated_at).getTime() - new Date(d.created_at).getTime();
+        return s + diff / (1000 * 60 * 60 * 24);
+      }, 0) / completed.length;
+    return Math.round(days * 10) / 10;
+  }, [deals]);
+
+  // Причины отказа
+  const lostReasons = useMemo(() => {
+    const map = new Map<string, { leads: number; deals: number }>();
+    leads
+      .filter((l) => l.status === "lost" && l.lost_reason)
+      .forEach((l) => {
+        const k = l.lost_reason!.trim() || "Без причины";
+        const cur = map.get(k) ?? { leads: 0, deals: 0 };
+        cur.leads += 1;
+        map.set(k, cur);
+      });
+    deals
+      .filter((d) => d.stage === "cancelled" && d.lost_reason)
+      .forEach((d) => {
+        const k = d.lost_reason!.trim() || "Без причины";
+        const cur = map.get(k) ?? { leads: 0, deals: 0 };
+        cur.deals += 1;
+        map.set(k, cur);
+      });
+    return Array.from(map.entries())
+      .map(([reason, v]) => ({ reason, ...v, total: v.leads + v.deals }))
+      .sort((a, b) => b.total - a.total);
+  }, [leads, deals]);
+
   const exportLeads = () =>
     downloadCSV(
       `leads_${from}_${to}.csv`,
@@ -167,6 +223,90 @@ const AdminReports = () => {
           </div>
         </div>
       </div>
+
+      {/* Воронка + средний цикл */}
+      <div className="grid md:grid-cols-3 gap-3">
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <FilterIcon className="h-4 w-4 text-primary" /> Воронка конверсии
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {leadFunnel.map((s, i) => {
+              const prev = i > 0 ? leadFunnel[i - 1].value : null;
+              const stepConv = prev && prev > 0 ? (s.value / prev) * 100 : null;
+              return (
+                <div key={s.label} className="flex items-center gap-3">
+                  <div className="w-40 shrink-0 text-xs text-muted-foreground">{s.label}</div>
+                  <div className="flex-1 h-7 rounded-md bg-muted/40 overflow-hidden relative">
+                    <div className={`h-full rounded-md border ${s.color}`} style={{ width: `${Math.max(s.pct, 2)}%` }} />
+                    <span className="absolute inset-y-0 right-2 flex items-center text-xs font-medium">
+                      {s.value} <span className="text-muted-foreground ml-2">{s.pct.toFixed(0)}%</span>
+                    </span>
+                  </div>
+                  <div className="w-20 shrink-0 text-right text-[11px] text-muted-foreground">
+                    {stepConv !== null ? `→ ${stepConv.toFixed(0)}%` : ""}
+                  </div>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Средний цикл сделки</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-semibold tabular-nums">
+              {dealAvgCycle !== null ? `${dealAvgCycle}` : "—"}
+              {dealAvgCycle !== null && <span className="text-sm text-muted-foreground ml-2">дн</span>}
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              От создания сделки до её закрытия
+            </div>
+            <div className="mt-4 pt-3 border-t border-border space-y-1.5 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">Сделок всего</span><span>{deals.length}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Закрыто</span><span>{deals.filter(d => d.stage === "completed").length}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Отменено</span><span>{deals.filter(d => d.stage === "cancelled").length}</span></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Причины отказа */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Причины отказа</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {lostReasons.length === 0 ? (
+            <div className="text-sm text-muted-foreground">Нет данных — указывайте причину при отметке заявки/сделки как «Отказ».</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Причина</TableHead>
+                  <TableHead className="text-right">Заявок</TableHead>
+                  <TableHead className="text-right">Сделок</TableHead>
+                  <TableHead className="text-right">Всего</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {lostReasons.map((r) => (
+                  <TableRow key={r.reason}>
+                    <TableCell>{r.reason}</TableCell>
+                    <TableCell className="text-right">{r.leads}</TableCell>
+                    <TableCell className="text-right">{r.deals}</TableCell>
+                    <TableCell className="text-right font-semibold">{r.total}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid md:grid-cols-2 gap-3">
         <Card>

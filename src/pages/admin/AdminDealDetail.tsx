@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import DealCarLink from "@/components/admin/DealCarLink";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -61,6 +62,7 @@ type Deal = {
   assigned_to: string | null;
   created_at: string;
   clients: { id: string; full_name: string } | null;
+  lost_reason: string | null;
 };
 
 type StageHistory = {
@@ -115,6 +117,7 @@ const AdminDealDetail = () => {
     currency: string;
     note: string | null;
     assigned_to: string | null;
+    lost_reason: string | null;
   }>;
 
   const update = async (patch: DealUpdate) => {
@@ -187,6 +190,8 @@ const AdminDealDetail = () => {
               <DocumentsList dealId={deal.id} />
             </CardContent>
           </Card>
+
+          <DealCarLink dealId={deal.id} />
         </div>
 
         {/* CENTER */}
@@ -253,6 +258,19 @@ const AdminDealDetail = () => {
                 <Button size="sm" variant="outline" className="w-full" onClick={() => update({ assigned_to: user?.id ?? null })}>
                   Взять в работу
                 </Button>
+              )}
+              {deal.stage === "cancelled" && (
+                <div className="pt-2 border-t border-border">
+                  <label className="text-xs text-muted-foreground mb-1 block">Причина отказа</label>
+                  <Textarea
+                    rows={2}
+                    value={deal.lost_reason ?? ""}
+                    onChange={(e) => setDeal({ ...deal, lost_reason: e.target.value })}
+                    onBlur={() => update({ lost_reason: deal.lost_reason ?? null })}
+                    placeholder="Не сошлись по цене..."
+                    className="text-sm"
+                  />
+                </div>
               )}
             </CardContent>
           </Card>

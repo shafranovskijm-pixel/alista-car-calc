@@ -17,6 +17,7 @@ import {
   Wallet,
 } from "lucide-react";
 import EmptyState from "@/components/admin/EmptyState";
+import TasksWidget from "@/components/admin/TasksWidget";
 import { DEAL_STAGES, DEAL_STAGE_COLOR, DEAL_STAGE_LABELS, DealStage } from "@/lib/deals";
 import { LEAD_STATUSES, LEAD_STATUS_LABELS, LeadStatus } from "@/lib/leads";
 import {
@@ -290,37 +291,9 @@ const AdminDashboard = () => {
 
       {/* Today + Trend */}
       <div className="grid lg:grid-cols-3 gap-3">
-        <Card className="lg:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <PhoneCall className="h-4 w-4 text-primary" />
-              Задачи на сегодня
-            </CardTitle>
-            <Badge variant="secondary">{tasksToday.length}</Badge>
-          </CardHeader>
-          <CardContent>
-            {tasksToday.length === 0 ? (
-              <EmptyState icon={PhoneCall} title="Всё под контролем" description="Активных задач нет" />
-            ) : (
-              <ul className="space-y-1.5">
-                {tasksToday.map((l) => (
-                  <li key={l.id}>
-                    <Link
-                      to={`/admin/leads/${l.id}`}
-                      className="group flex items-center gap-2 px-2 py-1.5 -mx-2 rounded-md hover:bg-muted/50 transition-colors"
-                    >
-                      <span className={`h-2 w-2 rounded-full shrink-0 ${statusDot(l.status)}`} />
-                      <span className="text-sm truncate flex-1">{l.full_name}</span>
-                      <span className="text-[11px] text-muted-foreground shrink-0">
-                        {LEAD_STATUS_LABELS[l.status]}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-1">
+          <TasksWidget />
+        </div>
 
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2">

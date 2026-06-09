@@ -86,6 +86,7 @@ export type Database = {
           country: Database["public"]["Enums"]["car_country"]
           created_at: string
           currency: string
+          deal_id: string | null
           description: string | null
           engine_volume: number | null
           fuel: Database["public"]["Enums"]["car_fuel"] | null
@@ -108,6 +109,7 @@ export type Database = {
           country: Database["public"]["Enums"]["car_country"]
           created_at?: string
           currency?: string
+          deal_id?: string | null
           description?: string | null
           engine_volume?: number | null
           fuel?: Database["public"]["Enums"]["car_fuel"] | null
@@ -130,6 +132,7 @@ export type Database = {
           country?: Database["public"]["Enums"]["car_country"]
           created_at?: string
           currency?: string
+          deal_id?: string | null
           description?: string | null
           engine_volume?: number | null
           fuel?: Database["public"]["Enums"]["car_fuel"] | null
@@ -146,7 +149,15 @@ export type Database = {
           updated_at?: string
           year?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cars_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       clients: {
         Row: {
@@ -245,6 +256,7 @@ export type Database = {
           deal_type: Database["public"]["Enums"]["deal_type"]
           id: string
           lead_id: string | null
+          lost_reason: string | null
           margin: number | null
           note: string | null
           stage: Database["public"]["Enums"]["deal_stage"]
@@ -261,6 +273,7 @@ export type Database = {
           deal_type?: Database["public"]["Enums"]["deal_type"]
           id?: string
           lead_id?: string | null
+          lost_reason?: string | null
           margin?: number | null
           note?: string | null
           stage?: Database["public"]["Enums"]["deal_stage"]
@@ -277,6 +290,7 @@ export type Database = {
           deal_type?: Database["public"]["Enums"]["deal_type"]
           id?: string
           lead_id?: string | null
+          lost_reason?: string | null
           margin?: number | null
           note?: string | null
           stage?: Database["public"]["Enums"]["deal_stage"]
@@ -498,6 +512,7 @@ export type Database = {
           full_name: string
           gclid: string | null
           id: string
+          lost_reason: string | null
           message: string | null
           messenger: string | null
           note: string | null
@@ -522,6 +537,7 @@ export type Database = {
           full_name: string
           gclid?: string | null
           id?: string
+          lost_reason?: string | null
           message?: string | null
           messenger?: string | null
           note?: string | null
@@ -546,6 +562,7 @@ export type Database = {
           full_name?: string
           gclid?: string | null
           id?: string
+          lost_reason?: string | null
           message?: string | null
           messenger?: string | null
           note?: string | null
@@ -715,6 +732,51 @@ export type Database = {
         }
         Relationships: []
       }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_at: string | null
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          related_id: string | null
+          related_type: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          related_id?: string | null
+          related_type?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          related_id?: string | null
+          related_type?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -873,6 +935,7 @@ export type Database = {
         | "in_transit"
         | "delivered"
       product_status: "draft" | "published" | "archived"
+      task_priority: "low" | "normal" | "high" | "urgent"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1040,6 +1103,7 @@ export const Constants = {
         "delivered",
       ],
       product_status: ["draft", "published", "archived"],
+      task_priority: ["low", "normal", "high", "urgent"],
     },
   },
 } as const

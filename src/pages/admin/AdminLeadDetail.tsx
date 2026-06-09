@@ -39,6 +39,7 @@ type Lead = {
   status: LeadStatus;
   assigned_to: string | null;
   note: string | null;
+  lost_reason: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -317,6 +318,21 @@ const AdminLeadDetail = () => {
                 <Button size="sm" variant="outline" className="w-full" onClick={takeOwnership} disabled={saving}>
                   Взять в работу
                 </Button>
+              )}
+              {lead.status === "lost" && (
+                <div className="pt-2 border-t border-border">
+                  <label className="text-xs text-muted-foreground mb-1 block">Причина отказа</label>
+                  <Textarea
+                    rows={2}
+                    value={lead.lost_reason ?? ""}
+                    onChange={(e) => setLead({ ...lead, lost_reason: e.target.value })}
+                    onBlur={async () => {
+                      await supabase.from("leads").update({ lost_reason: lead.lost_reason ?? null }).eq("id", lead.id);
+                    }}
+                    placeholder="Дорого, ушёл к конкуренту..."
+                    className="text-sm"
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
