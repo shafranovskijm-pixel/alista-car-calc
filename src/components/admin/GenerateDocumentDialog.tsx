@@ -182,8 +182,38 @@ const GenerateDocumentDialog = ({
     try {
       const blob = previewBlob ?? (await renderContractBlob(data));
       const fileName = `Договор Алиста №${data.contract_no} — ${deal?.clients?.full_name ?? ""}`;
-      downloadBlob(blob, `${fileName.trim()}.docx`);
-      toast.success("Договор скачан");
+      const safeName = `${fileName.trim()}.docx`;
+      downloadBlob(blob, safeName);
+
+      // Сохраняем копию в Документы сделки, чтобы появилась в списке «Договоры Алиста»
+      if (deal?.id) {
+        try {
+          const { data: userRes } = await supabase.auth.getUser();
+          const storagePath = `deals/${deal.id}/contracts/${Date.now()}_${safeName.replace(/[^\w.\-]+/g, "_")}`;
+          const file = new File([blob], safeName, {
+            type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          });
+          const { error: upErr } = await supabase.storage
+            .from("documents")
+            .upload(storagePath, file, { upsert: false, contentType: file.type });
+          if (!upErr) {
+            await supabase.from("documents").insert({
+              kind: "contract",
+              title: `Договор Алиста №${data.contract_no}`,
+              storage_path: storagePath,
+              mime_type: file.type,
+              size_bytes: file.size,
+              deal_id: deal.id,
+              client_id: deal.clients?.id ?? null,
+              uploaded_by: userRes.user?.id ?? null,
+            });
+            window.dispatchEvent(new CustomEvent("alista-contracts-updated", { detail: { dealId: deal.id } }));
+          }
+        } catch (e) {
+          console.warn("contract auto-save failed", e);
+        }
+      }
+      toast.success("Договор скачан и сохранён в карточке сделки");
     } catch (e) {
       toast.error((e as Error).message || "Ошибка генерации");
     } finally {
