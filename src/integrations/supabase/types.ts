@@ -401,6 +401,84 @@ export type Database = {
           },
         ]
       }
+      email_log: {
+        Row: {
+          created_at: string
+          document_id: string | null
+          error: string | null
+          id: string
+          kind: string
+          lead_id: string | null
+          recipient: string
+          sent_by: string | null
+          status: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          document_id?: string | null
+          error?: string | null
+          id?: string
+          kind?: string
+          lead_id?: string | null
+          recipient: string
+          sent_by?: string | null
+          status?: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          document_id?: string | null
+          error?: string | null
+          id?: string
+          kind?: string
+          lead_id?: string | null
+          recipient?: string
+          sent_by?: string | null
+          status?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_log_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_log_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_settings: {
+        Row: {
+          from_name: string
+          id: boolean
+          notifications_enabled: boolean
+          notify_emails: string[]
+          updated_at: string
+        }
+        Insert: {
+          from_name?: string
+          id?: boolean
+          notifications_enabled?: boolean
+          notify_emails?: string[]
+          updated_at?: string
+        }
+        Update: {
+          from_name?: string
+          id?: boolean
+          notifications_enabled?: boolean
+          notify_emails?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lead_activities: {
         Row: {
           body: string | null
