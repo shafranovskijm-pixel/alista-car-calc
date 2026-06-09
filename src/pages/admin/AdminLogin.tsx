@@ -79,6 +79,15 @@ const AdminLogin = () => {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Вход..." : "Войти"}
                 </Button>
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/admin/reset-password")}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Забыли пароль?
+                  </button>
+                </div>
               </form>
             </TabsContent>
             <TabsContent value="signup">
