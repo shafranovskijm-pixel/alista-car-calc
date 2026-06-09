@@ -4,6 +4,7 @@ import { Menu, X, Phone, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import logoImg from "@/assets/logo-alista.png";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const navLinks = [
   { to: "/", label: "Главная" },
@@ -51,6 +52,7 @@ const Header = () => {
             <Phone className="h-4 w-4" />
             +7 984 198-27-33
           </a>
+          <ThemeToggle />
           <Link
             to="/admin/login"
             className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-primary"
@@ -69,9 +71,12 @@ const Header = () => {
         {/* Mobile nav */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild className="lg:hidden">
-            <Button variant="ghost" size="icon">
-              <Menu className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <ThemeToggle />
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </div>
           </SheetTrigger>
           <SheetContent side="right" className="w-72 bg-background border-border">
             <SheetTitle className="sr-only">Навигация</SheetTitle>
