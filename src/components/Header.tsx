@@ -69,15 +69,14 @@ const Header = () => {
         </div>
 
         {/* Mobile nav */}
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild className="lg:hidden">
-            <div className="flex items-center gap-1">
-              <ThemeToggle />
+        <div className="flex items-center gap-1 lg:hidden">
+          <ThemeToggle />
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="h-5 w-5" />
               </Button>
-            </div>
-          </SheetTrigger>
+            </SheetTrigger>
           <SheetContent side="right" className="w-72 bg-background border-border">
             <SheetTitle className="sr-only">Навигация</SheetTitle>
             <nav className="mt-8 flex flex-col gap-2">
@@ -112,6 +111,7 @@ const Header = () => {
             </nav>
           </SheetContent>
         </Sheet>
+        </div>
       </div>
     </header>
   );
