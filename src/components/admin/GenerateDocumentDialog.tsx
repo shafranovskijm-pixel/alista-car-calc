@@ -224,21 +224,23 @@ const GenerateDocumentDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[92vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" />
             Сформировать документ
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-3">
+        <div className="space-y-3 flex-1 overflow-y-auto pr-1">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label className="mb-1.5 block">Шаблон</Label>
               <Select value={templateId} onValueChange={setTemplateId}>
                 <SelectTrigger><SelectValue placeholder="Выберите" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__alista_docx">Агентский договор Алиста (.docx)</SelectItem>
+                  <SelectItem value="__alista_docx">
+                    ★ Агентский договор Алиста (.docx) — рекомендуется
+                  </SelectItem>
                   {templates.map((t) => (
                     <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                   ))}
