@@ -24,6 +24,7 @@ import {
   LogOut,
   BarChart3,
   Images,
+  HelpCircle,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -66,7 +67,10 @@ const groups: { label: string; items: Item[] }[] = [
   },
   {
     label: "Система",
-    items: [{ title: "Настройки", url: "/admin/settings", icon: Settings }],
+    items: [
+      { title: "Карта CRM", url: "/admin/settings?tab=map", icon: HelpCircle },
+      { title: "Настройки", url: "/admin/settings", icon: Settings, end: true },
+    ],
   },
 ];
 
@@ -125,9 +129,20 @@ const AdminLayout = () => {
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {g.items.map((item) => {
-                      const active = item.end
-                        ? location.pathname === item.url
-                        : location.pathname === item.url || location.pathname.startsWith(item.url + "/");
+                      const [itemPath, itemQuery] = item.url.split("?");
+                      const pathMatch = item.end
+                        ? location.pathname === itemPath
+                        : location.pathname === itemPath || location.pathname.startsWith(itemPath + "/");
+                      let active = pathMatch;
+                      if (itemQuery) {
+                        const want = new URLSearchParams(itemQuery);
+                        const have = new URLSearchParams(location.search);
+                        active = pathMatch && Array.from(want.entries()).every(([k, v]) => have.get(k) === v);
+                      } else if (pathMatch && location.search) {
+                        // plain settings item should not light up when ?tab=... is present
+                        const tab = new URLSearchParams(location.search).get("tab");
+                        if (item.url === "/admin/settings" && tab && tab !== "profile") active = false;
+                      }
                       const badge = item.badgeKey ? badges[item.badgeKey] ?? 0 : 0;
                       return (
                         <SidebarMenuItem key={item.url}>
