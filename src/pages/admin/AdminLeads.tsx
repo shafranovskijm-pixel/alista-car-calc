@@ -636,6 +636,7 @@ const AdminLeads = () => {
           </TableBody>
         </Table>
       </Card>
+      )}
     </div>
   );
 };
