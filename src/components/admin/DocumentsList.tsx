@@ -9,13 +9,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
-import { Download, Trash2, Upload, FileText } from "lucide-react";
+import { Download, Trash2, Upload, FileText, Sparkles } from "lucide-react";
 import {
   DOCUMENT_KINDS,
   DOCUMENT_KIND_LABELS,
   DocumentKind,
   formatBytes,
 } from "@/lib/documents";
+import GenerateDocumentDialog from "@/components/admin/GenerateDocumentDialog";
 
 type Doc = {
   id: string;
@@ -37,6 +38,7 @@ const DocumentsList = ({ dealId, clientId }: Props) => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [kind, setKind] = useState<DocumentKind>("other");
+  const [genOpen, setGenOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
@@ -141,6 +143,11 @@ const DocumentsList = ({ dealId, clientId }: Props) => {
         <Button size="sm" onClick={onPick} disabled={uploading}>
           <Upload className="h-4 w-4 mr-1" /> {uploading ? "Загрузка..." : "Загрузить"}
         </Button>
+        {dealId && (
+          <Button size="sm" variant="outline" onClick={() => setGenOpen(true)} className="gap-1.5">
+            <Sparkles className="h-4 w-4 text-primary" /> Договор Алиста
+          </Button>
+        )}
       </div>
 
       {loading ? (
@@ -171,6 +178,15 @@ const DocumentsList = ({ dealId, clientId }: Props) => {
             </li>
           ))}
         </ul>
+      )}
+      {dealId && (
+        <GenerateDocumentDialog
+          open={genOpen}
+          onOpenChange={setGenOpen}
+          templates={[]}
+          defaultPreset="alista"
+          defaultDealId={dealId}
+        />
       )}
     </div>
   );
