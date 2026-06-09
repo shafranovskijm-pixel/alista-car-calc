@@ -24,8 +24,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
-import { Download, Plus, Trash2 } from "lucide-react";
+import { Download, Mail, Plus, Trash2 } from "lucide-react";
 import { DOCUMENT_KINDS, DOCUMENT_KIND_LABELS, DocumentKind, formatBytes } from "@/lib/documents";
+import SendDocumentDialog from "@/components/admin/SendDocumentDialog";
 
 type Doc = {
   id: string;
@@ -52,6 +53,7 @@ const AdminDocuments = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [tplOpen, setTplOpen] = useState(false);
   const [tplForm, setTplForm] = useState({ name: "", kind: "contract" as DocumentKind, body: "" });
+  const [sendDoc, setSendDoc] = useState<{ id: string; title: string; email: string; name: string } | null>(null);
 
   const load = async () => {
     const { data } = await supabase
@@ -161,6 +163,36 @@ const AdminDocuments = () => {
                         {new Date(d.created_at).toLocaleDateString("ru-RU")}
                       </TableCell>
                       <TableCell className="text-right">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Отправить на email"
+                          onClick={async () => {
+                            let email = "";
+                            let name = "";
+                            if (d.client_id) {
+                              const { data: c } = await supabase
+                                .from("clients")
+                                .select("email, full_name")
+                                .eq("id", d.client_id)
+                                .maybeSingle();
+                              email = c?.email ?? "";
+                              name = c?.full_name ?? "";
+                            } else if (d.deal_id) {
+                              const { data: deal } = await supabase
+                                .from("deals")
+                                .select("clients(email, full_name)")
+                                .eq("id", d.deal_id)
+                                .maybeSingle();
+                              const c = (deal as { clients?: { email: string | null; full_name: string | null } } | null)?.clients;
+                              email = c?.email ?? "";
+                              name = c?.full_name ?? "";
+                            }
+                            setSendDoc({ id: d.id, title: d.title, email, name });
+                          }}
+                        >
+                          <Mail className="h-4 w-4" />
+                        </Button>
                         <Button size="icon" variant="ghost" onClick={() => download(d)}>
                           <Download className="h-4 w-4" />
                         </Button>
@@ -252,6 +284,16 @@ const AdminDocuments = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      {sendDoc && (
+        <SendDocumentDialog
+          open={!!sendDoc}
+          onOpenChange={(v) => !v && setSendDoc(null)}
+          documentId={sendDoc.id}
+          documentTitle={sendDoc.title}
+          defaultEmail={sendDoc.email}
+          defaultName={sendDoc.name}
+        />
+      )}
     </div>
   );
 };
