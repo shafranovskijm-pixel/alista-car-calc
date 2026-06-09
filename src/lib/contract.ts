@@ -109,7 +109,7 @@ export const renderContractText = (templateText: string, data: ContractData) => 
   return templateText.replace(/\{([a-z_]+)\}/g, (_, k) => (k in ph ? ph[k] : `{${k}}`));
 };
 
-export const generateContractDocx = async (data: ContractData, fileName?: string) => {
+export const renderContractBlob = async (data: ContractData): Promise<Blob> => {
   const res = await fetch("/templates/alista-contract.docx");
   if (!res.ok) throw new Error("Не удалось загрузить шаблон договора");
   const buf = await res.arrayBuffer();
@@ -121,10 +121,16 @@ export const generateContractDocx = async (data: ContractData, fileName?: string
     nullGetter: () => "",
   });
   doc.render(buildPlaceholders(data));
-  const out = doc.getZip().generate({
+  return doc.getZip().generate({
     type: "blob",
     mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   });
+};
+
+export const downloadBlob = (blob: Blob, fileName: string) => saveAs(blob, fileName);
+
+export const generateContractDocx = async (data: ContractData, fileName?: string) => {
+  const blob = await renderContractBlob(data);
   const safeName = (fileName ?? `Договор Алиста ${data.contract_no || ""}`).trim();
-  saveAs(out, `${safeName}.docx`);
+  saveAs(blob, `${safeName}.docx`);
 };

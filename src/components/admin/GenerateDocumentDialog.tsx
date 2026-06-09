@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,9 +18,15 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Printer, FileText, Download } from "lucide-react";
+import { Printer, FileText, Download, Eye, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { generateContractDocx, type ContractClient, type ContractData } from "@/lib/contract";
+import {
+  downloadBlob,
+  renderContractBlob,
+  type ContractClient,
+  type ContractData,
+} from "@/lib/contract";
+import { renderAsync } from "docx-preview";
 
 type Template = { id: string; name: string; kind: string; body: string };
 type DealOpt = {
@@ -69,6 +75,9 @@ const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplate
   );
   const [principalType, setPrincipalType] = useState<"individual" | "company">("individual");
   const [generating, setGenerating] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -100,22 +109,63 @@ const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplate
     if (deal?.clients?.client_type) setPrincipalType(deal.clients.client_type);
   }, [deal]);
 
+  // Reset preview when inputs change
+  useEffect(() => {
+    setPreviewBlob(null);
+  }, [dealId, templateId, contractNo, contractDate, principalType]);
+
+  const buildContractData = (): ContractData | null => {
+    if (!deal?.clients) return null;
+    return {
+      contract_no: contractNo || new Date().toISOString().slice(0, 10).replace(/-/g, ""),
+      contract_date: new Date(contractDate).toLocaleDateString("ru-RU"),
+      client: deal.clients,
+      deal,
+      principalType,
+    };
+  };
+
+  const buildPreview = async () => {
+    const data = buildContractData();
+    if (!data) {
+      toast.error("Выберите сделку с клиентом");
+      return;
+    }
+    setPreviewing(true);
+    try {
+      const blob = await renderContractBlob(data);
+      setPreviewBlob(blob);
+      // Render after the preview container mounts
+      requestAnimationFrame(async () => {
+        if (!previewRef.current) return;
+        previewRef.current.innerHTML = "";
+        await renderAsync(blob, previewRef.current, undefined, {
+          className: "alista-docx",
+          inWrapper: true,
+          ignoreWidth: false,
+          ignoreHeight: false,
+          experimental: true,
+          useBase64URL: true,
+        });
+      });
+    } catch (e) {
+      toast.error((e as Error).message || "Ошибка предпросмотра");
+    } finally {
+      setPreviewing(false);
+    }
+  };
+
   const downloadDocx = async () => {
-    if (!deal?.clients) {
+    const data = buildContractData();
+    if (!data) {
       toast.error("Выберите сделку с клиентом");
       return;
     }
     setGenerating(true);
     try {
-      const data: ContractData = {
-        contract_no: contractNo || new Date().toISOString().slice(0, 10).replace(/-/g, ""),
-        contract_date: new Date(contractDate).toLocaleDateString("ru-RU"),
-        client: deal.clients,
-        deal,
-        principalType,
-      };
-      const fileName = `Договор Алиста №${data.contract_no} — ${deal.clients.full_name ?? ""}`;
-      await generateContractDocx(data, fileName);
+      const blob = previewBlob ?? (await renderContractBlob(data));
+      const fileName = `Договор Алиста №${data.contract_no} — ${deal?.clients?.full_name ?? ""}`;
+      downloadBlob(blob, `${fileName.trim()}.docx`);
       toast.success("Договор скачан");
     } catch (e) {
       toast.error((e as Error).message || "Ошибка генерации");
@@ -157,7 +207,7 @@ const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplate
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" />
@@ -233,13 +283,35 @@ const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplate
             </p>
           </div>
           )}
+
+          {templateId === "__alista_docx" && (
+            <div className="rounded-md border border-border/60 bg-white">
+              {previewBlob ? (
+                <div
+                  ref={previewRef}
+                  className="alista-docx-preview max-h-[60vh] overflow-y-auto"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-2 py-12 text-sm text-muted-foreground">
+                  <Eye className="h-6 w-6 opacity-50" />
+                  <span>Нажмите «Предпросмотр», чтобы увидеть готовый договор</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Закрыть</Button>
           {templateId === "__alista_docx" ? (
-            <Button onClick={downloadDocx} disabled={generating} className="gap-1.5">
-              <Download className="h-4 w-4" /> Скачать .docx
-            </Button>
+            <>
+              <Button variant="outline" onClick={buildPreview} disabled={previewing} className="gap-1.5">
+                {previewing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+                Предпросмотр
+              </Button>
+              <Button onClick={downloadDocx} disabled={generating} className="gap-1.5">
+                <Download className="h-4 w-4" /> Скачать .docx
+              </Button>
+            </>
           ) : (
             <Button onClick={printPdf} className="gap-1.5">
               <Printer className="h-4 w-4" /> Печать / PDF
