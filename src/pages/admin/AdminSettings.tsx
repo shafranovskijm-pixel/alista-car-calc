@@ -1,17 +1,24 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import CRMMap from "@/components/admin/CRMMap";
+import HotkeysSheet from "@/components/admin/HotkeysSheet";
+import CRMFaq from "@/components/admin/CRMFaq";
 
 const AdminSettings = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get("tab") ?? "profile";
 
   useEffect(() => {
     if (!user) return;
@@ -39,10 +46,26 @@ const AdminSettings = () => {
   };
 
   return (
-    <div className="space-y-4 max-w-2xl">
+    <div className="space-y-4 max-w-6xl">
       <h1 className="text-2xl font-semibold">Настройки</h1>
+      <Tabs
+        value={tab}
+        onValueChange={(v) => {
+          const next = new URLSearchParams(searchParams);
+          if (v === "profile") next.delete("tab");
+          else next.set("tab", v);
+          setSearchParams(next, { replace: true });
+        }}
+      >
+        <TabsList>
+          <TabsTrigger value="profile">Профиль</TabsTrigger>
+          <TabsTrigger value="map">Карта CRM</TabsTrigger>
+          <TabsTrigger value="hotkeys">Горячие клавиши</TabsTrigger>
+          <TabsTrigger value="faq">Справка / FAQ</TabsTrigger>
+        </TabsList>
 
-      <Card>
+        <TabsContent value="profile" className="space-y-4 max-w-2xl">
+          <Card>
         <CardHeader>
           <CardTitle className="text-base">Профиль</CardTitle>
         </CardHeader>
@@ -80,6 +103,18 @@ const AdminSettings = () => {
           </ul>
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="map">
+          <CRMMap />
+        </TabsContent>
+        <TabsContent value="hotkeys">
+          <HotkeysSheet />
+        </TabsContent>
+        <TabsContent value="faq">
+          <CRMFaq />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
