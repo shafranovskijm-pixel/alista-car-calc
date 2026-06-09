@@ -23,18 +23,22 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowUpDown,
   Columns3,
   Filter,
   Inbox,
+  LayoutGrid,
   MoreHorizontal,
   Search,
+  Table as TableIcon,
   UserPlus,
   X,
 } from "lucide-react";
 import { LEAD_STATUSES, LEAD_STATUS_LABELS, LeadStatus } from "@/lib/leads";
 import EmptyState from "@/components/admin/EmptyState";
+import { KanbanBoard, KanbanColumn } from "@/components/admin/KanbanBoard";
 
 type Lead = {
   id: string;
