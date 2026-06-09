@@ -28,6 +28,7 @@ import { Plus, Users } from "lucide-react";
 import { CLIENT_TYPE_LABELS } from "@/lib/deals";
 import DuplicatesBanner from "@/components/admin/DuplicatesBanner";
 import { EmptyState } from "@/components/admin/EmptyState";
+import TableSkeleton from "@/components/admin/TableSkeleton";
 
 type Client = {
   id: string;
