@@ -30,7 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { LayoutGrid, Plus, Table as TableIcon } from "lucide-react";
+import { Download, LayoutGrid, Plus, Table as TableIcon } from "lucide-react";
+import { downloadCSV, toCSV } from "@/lib/csv";
 import {
   DEAL_STAGES,
   DEAL_STAGE_LABELS,
@@ -47,9 +48,11 @@ type Deal = {
   stage: DealStage;
   deal_type: DealType;
   budget: number | null;
+  margin: number | null;
   currency: string;
   client_id: string;
   clients: { full_name: string } | null;
+  created_at?: string;
 };
 
 type ClientOpt = { id: string; full_name: string };
@@ -87,7 +90,7 @@ const AdminDeals = () => {
     setLoading(true);
     const { data } = await supabase
       .from("deals")
-      .select("id, title, stage, deal_type, budget, currency, client_id, clients(full_name)")
+      .select("id, title, stage, deal_type, budget, margin, currency, client_id, created_at, clients(full_name)")
       .order("created_at", { ascending: false })
       .limit(500);
     setDeals((data ?? []) as unknown as Deal[]);
@@ -168,6 +171,25 @@ const AdminDeals = () => {
     }
   };
 
+  const exportCsv = () => {
+    if (deals.length === 0) {
+      toast.info("Нет сделок для экспорта");
+      return;
+    }
+    const rows = deals.map((d) => ({
+      Название: d.title,
+      Клиент: d.clients?.full_name ?? "",
+      Этап: DEAL_STAGE_LABELS[d.stage],
+      Тип: DEAL_TYPE_LABELS[d.deal_type],
+      Бюджет: d.budget ?? "",
+      Маржа: d.margin ?? "",
+      Валюта: d.currency,
+      Создана: d.created_at ? new Date(d.created_at).toLocaleDateString("ru-RU") : "",
+    }));
+    downloadCSV(`deals-${new Date().toISOString().slice(0, 10)}.csv`, toCSV(rows));
+    toast.success(`Экспортировано: ${deals.length}`);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -182,6 +204,9 @@ const AdminDeals = () => {
             <TabsTrigger value="table" className="gap-1.5"><TableIcon className="h-3.5 w-3.5" /> Таблица</TabsTrigger>
           </TabsList>
         </Tabs>
+        <Button variant="outline" size="sm" onClick={exportCsv} className="gap-1.5">
+          <Download className="h-3.5 w-3.5" /> Экспорт
+        </Button>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="h-4 w-4 mr-1" /> Новая сделка</Button>
