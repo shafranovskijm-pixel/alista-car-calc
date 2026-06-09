@@ -28,6 +28,7 @@ import { Plus, Users } from "lucide-react";
 import { CLIENT_TYPE_LABELS } from "@/lib/deals";
 import DuplicatesBanner from "@/components/admin/DuplicatesBanner";
 import { EmptyState } from "@/components/admin/EmptyState";
+import TableSkeleton from "@/components/admin/TableSkeleton";
 
 type Client = {
   id: string;
@@ -221,7 +222,9 @@ const AdminClients = () => {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">Загрузка...</TableCell>
+                <TableCell colSpan={5} className="p-0">
+                  <TableSkeleton rows={6} cols={5} className="border-0 shadow-none rounded-none" />
+                </TableCell>
               </TableRow>
             ) : filtered.length === 0 ? (
               <TableRow>

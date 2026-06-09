@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState } from "@/components/admin/EmptyState";
+import TableSkeleton from "@/components/admin/TableSkeleton";
 import { History } from "lucide-react";
 
 type Row = {
@@ -114,7 +115,7 @@ const AdminAudit = () => {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Загрузка...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="p-0"><TableSkeleton rows={6} cols={6} className="border-0 shadow-none rounded-none" /></TableCell></TableRow>
             ) : filtered.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6}>

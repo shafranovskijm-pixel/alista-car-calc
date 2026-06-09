@@ -46,6 +46,8 @@ import { downloadCSV, toCSV } from "@/lib/csv";
 import { Download } from "lucide-react";
 import { KanbanBoard, KanbanColumn } from "@/components/admin/KanbanBoard";
 import ImportLeadsDialog from "@/components/admin/ImportLeadsDialog";
+import StatusBadge from "@/components/admin/StatusBadge";
+import TableSkeleton from "@/components/admin/TableSkeleton";
 
 type Lead = {
   id: string;
@@ -504,6 +506,7 @@ const AdminLeads = () => {
         />
       ) : (
       <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -551,7 +554,7 @@ const AdminLeads = () => {
             {loading ? (
               <TableRow>
                 <TableCell colSpan={colCount + 1} className="text-center text-muted-foreground py-8">
-                  Загрузка...
+                  <TableSkeleton rows={6} cols={prefs.cols.length || 5} className="border-0 shadow-none" />
                 </TableCell>
               </TableRow>
             ) : filtered.length === 0 ? (
@@ -627,11 +630,8 @@ const AdminLeads = () => {
                     {showCol("status") && (
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <Select value={l.status} onValueChange={(v) => updateStatus(l.id, v as LeadStatus)}>
-                          <SelectTrigger className="h-7 w-auto min-w-[130px] border-0 bg-transparent px-2 hover:bg-muted [&>svg]:opacity-0 group-hover:[&>svg]:opacity-50">
-                            <span className="inline-flex items-center gap-1.5">
-                              <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[l.status]}`} />
-                              <span className="text-xs">{LEAD_STATUS_LABELS[l.status]}</span>
-                            </span>
+                          <SelectTrigger className="h-7 w-auto min-w-[130px] border-0 bg-transparent px-0 hover:bg-transparent [&>svg]:opacity-0 group-hover:[&>svg]:opacity-50">
+                            <StatusBadge label={LEAD_STATUS_LABELS[l.status]} dot={STATUS_DOT[l.status]} />
                           </SelectTrigger>
                           <SelectContent>
                             {LEAD_STATUSES.map((s) => (
@@ -697,6 +697,7 @@ const AdminLeads = () => {
             )}
           </TableBody>
         </Table>
+        </div>
       </Card>
       )}
       <ImportLeadsDialog open={importOpen} onOpenChange={setImportOpen} onImported={load} />
