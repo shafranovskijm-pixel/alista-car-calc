@@ -24,8 +24,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
-import { Plus } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import { CLIENT_TYPE_LABELS } from "@/lib/deals";
+import DuplicatesBanner from "@/components/admin/DuplicatesBanner";
+import { EmptyState } from "@/components/admin/EmptyState";
 
 type Client = {
   id: string;
@@ -191,6 +193,8 @@ const AdminClients = () => {
         </div>
       </div>
 
+      <DuplicatesBanner />
+
       <Card>
         <Table>
           <TableHeader>
@@ -209,7 +213,13 @@ const AdminClients = () => {
               </TableRow>
             ) : filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">Клиентов нет</TableCell>
+                <TableCell colSpan={5}>
+                  <EmptyState
+                    icon={Users}
+                    title={search.trim() ? "Ничего не найдено" : "Клиентов пока нет"}
+                    description={search.trim() ? "Попробуйте изменить запрос." : "Добавьте первого клиента кнопкой выше."}
+                  />
+                </TableCell>
               </TableRow>
             ) : (
               filtered.map((c) => (
