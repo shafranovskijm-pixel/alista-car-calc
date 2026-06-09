@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import {
   downloadBlob,
   renderContractBlob,
+  nextContractNo,
   type ContractClient,
   type ContractData,
 } from "@/lib/contract";
@@ -45,6 +46,10 @@ type Props = {
   onOpenChange: (v: boolean) => void;
   templates: Template[];
   defaultTemplateId?: string;
+  /** "alista" — открыть диалог сразу на договоре Алиста (.docx) */
+  defaultPreset?: "alista";
+  /** Предзаполнить сделку (например, из карточки сделки) */
+  defaultDealId?: string;
 };
 
 const substitute = (body: string, deal: DealOpt | null) => {
@@ -64,12 +69,21 @@ const substitute = (body: string, deal: DealOpt | null) => {
   );
 };
 
-const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplateId }: Props) => {
-  const [templateId, setTemplateId] = useState<string>(defaultTemplateId ?? templates[0]?.id ?? "");
-  const [dealId, setDealId] = useState<string>("");
+const GenerateDocumentDialog = ({
+  open,
+  onOpenChange,
+  templates,
+  defaultTemplateId,
+  defaultPreset,
+  defaultDealId,
+}: Props) => {
+  const [templateId, setTemplateId] = useState<string>(
+    defaultPreset === "alista" ? "__alista_docx" : defaultTemplateId ?? templates[0]?.id ?? "",
+  );
+  const [dealId, setDealId] = useState<string>(defaultDealId ?? "");
   const [deals, setDeals] = useState<DealOpt[]>([]);
   const [body, setBody] = useState("");
-  const [contractNo, setContractNo] = useState("");
+  const [contractNo, setContractNo] = useState(() => nextContractNo());
   const [contractDate, setContractDate] = useState(
     new Date().toISOString().slice(0, 10),
   );
@@ -94,8 +108,11 @@ const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplate
   }, [open]);
 
   useEffect(() => {
-    if (defaultTemplateId) setTemplateId(defaultTemplateId);
-  }, [defaultTemplateId, open]);
+    if (!open) return;
+    if (defaultPreset === "alista") setTemplateId("__alista_docx");
+    else if (defaultTemplateId) setTemplateId(defaultTemplateId);
+    if (defaultDealId) setDealId(defaultDealId);
+  }, [defaultTemplateId, defaultPreset, defaultDealId, open]);
 
   const template = useMemo(() => templates.find((t) => t.id === templateId) ?? null, [templates, templateId]);
   const deal = useMemo(() => deals.find((d) => d.id === dealId) ?? null, [deals, dealId]);
