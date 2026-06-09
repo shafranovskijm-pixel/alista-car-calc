@@ -245,6 +245,7 @@ export type Database = {
           deal_type: Database["public"]["Enums"]["deal_type"]
           id: string
           lead_id: string | null
+          lost_reason: string | null
           margin: number | null
           note: string | null
           stage: Database["public"]["Enums"]["deal_stage"]
@@ -261,6 +262,7 @@ export type Database = {
           deal_type?: Database["public"]["Enums"]["deal_type"]
           id?: string
           lead_id?: string | null
+          lost_reason?: string | null
           margin?: number | null
           note?: string | null
           stage?: Database["public"]["Enums"]["deal_stage"]
@@ -277,6 +279,7 @@ export type Database = {
           deal_type?: Database["public"]["Enums"]["deal_type"]
           id?: string
           lead_id?: string | null
+          lost_reason?: string | null
           margin?: number | null
           note?: string | null
           stage?: Database["public"]["Enums"]["deal_stage"]
@@ -498,6 +501,7 @@ export type Database = {
           full_name: string
           gclid: string | null
           id: string
+          lost_reason: string | null
           message: string | null
           messenger: string | null
           note: string | null
@@ -522,6 +526,7 @@ export type Database = {
           full_name: string
           gclid?: string | null
           id?: string
+          lost_reason?: string | null
           message?: string | null
           messenger?: string | null
           note?: string | null
@@ -546,6 +551,7 @@ export type Database = {
           full_name?: string
           gclid?: string | null
           id?: string
+          lost_reason?: string | null
           message?: string | null
           messenger?: string | null
           note?: string | null
