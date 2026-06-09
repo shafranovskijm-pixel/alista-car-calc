@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import DealCarLink from "@/components/admin/DealCarLink";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -189,6 +190,8 @@ const AdminDealDetail = () => {
               <DocumentsList dealId={deal.id} />
             </CardContent>
           </Card>
+
+          <DealCarLink dealId={deal.id} />
         </div>
 
         {/* CENTER */}
