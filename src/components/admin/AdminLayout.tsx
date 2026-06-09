@@ -12,7 +12,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
   SidebarFooter,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
