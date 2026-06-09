@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { LEAD_STATUSES, LEAD_STATUS_LABELS, LeadStatus } from "@/lib/leads";
 import EmptyState from "@/components/admin/EmptyState";
+import SavedViews from "@/components/admin/SavedViews";
 import { KanbanBoard, KanbanColumn } from "@/components/admin/KanbanBoard";
 
 type Lead = {
@@ -372,6 +373,15 @@ const AdminLeads = () => {
               <X className="h-3.5 w-3.5" /> Сбросить
             </Button>
           )}
+          <SavedViews
+            storageKey="leads_saved_views_v1"
+            current={{ status: prefs.status, source: prefs.source, search }}
+            onApply={(v) => {
+              setSearch(v.search);
+              setStatus(v.status);
+              setPrefs((p) => ({ ...p, source: v.source }));
+            }}
+          />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5">
