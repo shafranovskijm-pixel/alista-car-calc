@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import DocumentsList from "@/components/admin/DocumentsList";
+import AlistaContractsList from "@/components/admin/AlistaContractsList";
 import ActivityTimeline from "@/components/admin/ActivityTimeline";
 import MessageTemplates from "@/components/admin/MessageTemplates";
 import MarginCalculator from "@/components/admin/MarginCalculator";
@@ -199,6 +200,8 @@ const AdminDealDetail = () => {
             }}
             onSaved={load}
           />
+
+          <AlistaContractsList dealId={deal.id} />
 
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm">Документы</CardTitle></CardHeader>
