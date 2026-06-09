@@ -428,6 +428,39 @@ const AdminLeads = () => {
         </div>
       )}
 
+      {view === "board" ? (
+        <KanbanBoard<LeadStatus, Lead>
+          columns={LEAD_STATUSES.map((s) => ({
+            key: s,
+            label: LEAD_STATUS_LABELS[s],
+            accent: STATUS_DOT[s],
+          })) as KanbanColumn<LeadStatus>[]}
+          items={filtered}
+          groupKey={(l) => l.status}
+          onMove={(l, to) => updateStatus(l.id, to)}
+          renderCard={(l) => {
+            const sla = slaTone(l);
+            return (
+              <Card
+                onClick={() => navigate(`/admin/leads/${l.id}`)}
+                className="p-3 hover:border-primary/60 transition-colors"
+              >
+                <div className="font-medium text-sm leading-snug">{l.full_name}</div>
+                <div className="text-[11px] text-muted-foreground mt-1 tabular-nums">{l.phone}</div>
+                <div className="flex items-center justify-between mt-2 text-[11px]">
+                  <span className="text-muted-foreground truncate">
+                    {l.utm_source ?? l.source ?? "—"}
+                  </span>
+                  <span className="inline-flex items-center gap-1 shrink-0">
+                    <span className={`h-1.5 w-1.5 rounded-full ${sla.color}`} />
+                    <span className="text-muted-foreground">{sla.label}</span>
+                  </span>
+                </div>
+              </Card>
+            );
+          }}
+        />
+      ) : (
       <Card className="overflow-hidden">
         <Table>
           <TableHeader>
