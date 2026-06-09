@@ -24,7 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
-import { Download, FileText, Mail, Plus, Trash2, Wand2 } from "lucide-react";
+import { Download, Eye, FileText, Mail, Plus, Sparkles, Trash2, Wand2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { DOCUMENT_KINDS, DOCUMENT_KIND_LABELS, DocumentKind, formatBytes } from "@/lib/documents";
 import SendDocumentDialog from "@/components/admin/SendDocumentDialog";
 import GenerateDocumentDialog from "@/components/admin/GenerateDocumentDialog";
@@ -57,6 +58,7 @@ const AdminDocuments = () => {
   const [sendDoc, setSendDoc] = useState<{ id: string; title: string; email: string; name: string } | null>(null);
   const [genOpen, setGenOpen] = useState(false);
   const [genTplId, setGenTplId] = useState<string | undefined>(undefined);
+  const [genPreset, setGenPreset] = useState<"alista" | undefined>(undefined);
 
   const load = async () => {
     const { data } = await supabase
@@ -138,11 +140,21 @@ const AdminDocuments = () => {
               className="gap-1.5"
               onClick={() => {
                 setGenTplId(undefined);
+                setGenPreset(undefined);
                 setGenOpen(true);
               }}
-              disabled={templates.length === 0}
             >
-              <Wand2 className="h-4 w-4" /> Сформировать из шаблона
+              <Wand2 className="h-4 w-4" /> Сформировать документ
+            </Button>
+            <Button
+              className="gap-1.5"
+              onClick={() => {
+                setGenTplId(undefined);
+                setGenPreset("alista");
+                setGenOpen(true);
+              }}
+            >
+              <Sparkles className="h-4 w-4" /> Договор Алиста (.docx)
             </Button>
           </div>
           <Card>
@@ -275,9 +287,48 @@ const AdminDocuments = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                <TableRow className="bg-primary/5 hover:bg-primary/10">
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                      Агентский договор Алиста (.docx)
+                      <Badge variant="secondary" className="text-[10px]">системный</Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell>Договор</TableCell>
+                  <TableCell className="text-muted-foreground text-sm">всегда актуален</TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      title="Предпросмотр"
+                      onClick={() => {
+                        setGenTplId(undefined);
+                        setGenPreset("alista");
+                        setGenOpen(true);
+                      }}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      title="Сформировать"
+                      onClick={() => {
+                        setGenTplId(undefined);
+                        setGenPreset("alista");
+                        setGenOpen(true);
+                      }}
+                    >
+                      <FileText className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
                 {templates.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">Шаблонов нет</TableCell>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground text-sm py-3">
+                      Пользовательских шаблонов нет — можно создать свой
+                    </TableCell>
                   </TableRow>
                 ) : (
                   templates.map((t) => (
@@ -294,6 +345,7 @@ const AdminDocuments = () => {
                           title="Сформировать"
                           onClick={() => {
                             setGenTplId(t.id);
+                            setGenPreset(undefined);
                             setGenOpen(true);
                           }}
                         >
@@ -326,6 +378,7 @@ const AdminDocuments = () => {
         onOpenChange={setGenOpen}
         templates={templates}
         defaultTemplateId={genTplId}
+        defaultPreset={genPreset}
       />
     </div>
   );
