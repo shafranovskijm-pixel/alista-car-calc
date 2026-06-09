@@ -46,6 +46,8 @@ import { downloadCSV, toCSV } from "@/lib/csv";
 import { Download } from "lucide-react";
 import { KanbanBoard, KanbanColumn } from "@/components/admin/KanbanBoard";
 import ImportLeadsDialog from "@/components/admin/ImportLeadsDialog";
+import StatusBadge from "@/components/admin/StatusBadge";
+import TableSkeleton from "@/components/admin/TableSkeleton";
 
 type Lead = {
   id: string;
