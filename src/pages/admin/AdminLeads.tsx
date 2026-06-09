@@ -39,6 +39,8 @@ import {
 import { LEAD_STATUSES, LEAD_STATUS_LABELS, LeadStatus } from "@/lib/leads";
 import EmptyState from "@/components/admin/EmptyState";
 import SavedViews from "@/components/admin/SavedViews";
+import { downloadCSV, toCSV } from "@/lib/csv";
+import { Download } from "lucide-react";
 import { KanbanBoard, KanbanColumn } from "@/components/admin/KanbanBoard";
 
 type Lead = {
@@ -382,6 +384,28 @@ const AdminLeads = () => {
               setPrefs((p) => ({ ...p, source: v.source }));
             }}
           />
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() =>
+              downloadCSV(
+                `leads_${new Date().toISOString().slice(0, 10)}.csv`,
+                toCSV(
+                  filtered.map((l) => ({
+                    Создана: new Date(l.created_at).toLocaleString("ru-RU"),
+                    ФИО: l.full_name,
+                    Телефон: l.phone,
+                    Email: l.email ?? "",
+                    Статус: LEAD_STATUS_LABELS[l.status],
+                    Источник: l.utm_source || l.source || "",
+                  })),
+                ),
+              )
+            }
+          >
+            <Download className="h-3.5 w-3.5" /> CSV
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5">
