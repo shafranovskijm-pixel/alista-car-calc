@@ -12,6 +12,7 @@ import OnboardingGuide from "@/components/admin/OnboardingGuide";
 import HotkeysSheet from "@/components/admin/HotkeysSheet";
 import CRMFaq from "@/components/admin/CRMFaq";
 import TemplatesManager from "@/components/admin/TemplatesManager";
+import EmailSettings from "@/components/admin/EmailSettings";
 
 const AdminSettings = () => {
   const { user } = useAuth();
@@ -60,6 +61,7 @@ const AdminSettings = () => {
       >
         <TabsList>
           <TabsTrigger value="profile">Профиль</TabsTrigger>
+          <TabsTrigger value="email">Почта</TabsTrigger>
           <TabsTrigger value="templates">Шаблоны</TabsTrigger>
           <TabsTrigger value="onboarding">Обучение</TabsTrigger>
           <TabsTrigger value="hotkeys">Горячие клавиши</TabsTrigger>
@@ -112,6 +114,9 @@ const AdminSettings = () => {
         </TabsContent>
         <TabsContent value="templates">
           <TemplatesManager />
+        </TabsContent>
+        <TabsContent value="email">
+          <EmailSettings />
         </TabsContent>
         <TabsContent value="hotkeys">
           <HotkeysSheet />

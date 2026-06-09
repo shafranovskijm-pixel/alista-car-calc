@@ -27,6 +27,7 @@ import {
   GraduationCap,
   ListTodo,
   History,
+  Mail,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,7 @@ const groups: { label: string; items: Item[] }[] = [
       { title: "Документы", url: "/admin/documents", icon: FileText },
       { title: "Отчёты", url: "/admin/reports", icon: BarChart3 },
       { title: "Журнал", url: "/admin/audit", icon: History },
+      { title: "Письма", url: "/admin/emails", icon: Mail },
     ],
   },
   {
