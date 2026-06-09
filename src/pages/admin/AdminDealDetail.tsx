@@ -19,6 +19,7 @@ import { ArrowLeft } from "lucide-react";
 import DocumentsList from "@/components/admin/DocumentsList";
 import ActivityTimeline from "@/components/admin/ActivityTimeline";
 import MessageTemplates from "@/components/admin/MessageTemplates";
+import MarginCalculator from "@/components/admin/MarginCalculator";
 import {
   DEAL_STAGES,
   DEAL_STAGE_COLOR,
@@ -56,6 +57,11 @@ type Deal = {
   deal_type: DealType;
   budget: number | null;
   margin: number | null;
+  sale_price: number | null;
+  purchase_cost: number | null;
+  customs_cost: number | null;
+  logistics_cost: number | null;
+  other_cost: number | null;
   currency: string;
   note: string | null;
   client_id: string;
@@ -80,7 +86,6 @@ const AdminDealDetail = () => {
   const [history, setHistory] = useState<StageHistory[]>([]);
   const [note, setNote] = useState("");
   const [budget, setBudget] = useState("");
-  const [margin, setMargin] = useState("");
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
@@ -95,7 +100,6 @@ const AdminDealDetail = () => {
     setDeal(d);
     setNote(d.note ?? "");
     setBudget(d.budget != null ? String(d.budget) : "");
-    setMargin(d.margin != null ? String(d.margin) : "");
     const { data: hist } = await supabase
       .from("deal_stage_history")
       .select("id, from_stage, to_stage, changed_at")
@@ -174,16 +178,26 @@ const AdminDealDetail = () => {
               )}
               <div className="grid grid-cols-2 gap-2 pt-2 mt-2 border-t border-border/60">
                 <div>
-                  <label className="text-[11px] text-muted-foreground">Бюджет</label>
+                  <label className="text-[11px] text-muted-foreground">Бюджет клиента</label>
                   <Input type="number" value={budget} onChange={(e) => setBudget(e.target.value)} onBlur={() => update({ budget: budget ? Number(budget) : null })} className="h-8 text-sm" />
-                </div>
-                <div>
-                  <label className="text-[11px] text-muted-foreground">Маржа</label>
-                  <Input type="number" value={margin} onChange={(e) => setMargin(e.target.value)} onBlur={() => update({ margin: margin ? Number(margin) : null })} className="h-8 text-sm" />
                 </div>
               </div>
             </CardContent>
           </Card>
+
+          <MarginCalculator
+            dealId={deal.id}
+            currency={deal.currency}
+            initial={{
+              sale_price: deal.sale_price,
+              purchase_cost: deal.purchase_cost,
+              customs_cost: deal.customs_cost,
+              logistics_cost: deal.logistics_cost,
+              other_cost: deal.other_cost,
+              margin: deal.margin,
+            }}
+            onSaved={load}
+          />
 
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm">Документы</CardTitle></CardHeader>
