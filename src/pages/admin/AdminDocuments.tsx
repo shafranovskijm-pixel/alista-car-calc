@@ -24,9 +24,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
-import { Download, Mail, Plus, Trash2 } from "lucide-react";
+import { Download, FileText, Mail, Plus, Trash2, Wand2 } from "lucide-react";
 import { DOCUMENT_KINDS, DOCUMENT_KIND_LABELS, DocumentKind, formatBytes } from "@/lib/documents";
 import SendDocumentDialog from "@/components/admin/SendDocumentDialog";
+import GenerateDocumentDialog from "@/components/admin/GenerateDocumentDialog";
 
 type Doc = {
   id: string;
@@ -54,6 +55,8 @@ const AdminDocuments = () => {
   const [tplOpen, setTplOpen] = useState(false);
   const [tplForm, setTplForm] = useState({ name: "", kind: "contract" as DocumentKind, body: "" });
   const [sendDoc, setSendDoc] = useState<{ id: string; title: string; email: string; name: string } | null>(null);
+  const [genOpen, setGenOpen] = useState(false);
+  const [genTplId, setGenTplId] = useState<string | undefined>(undefined);
 
   const load = async () => {
     const { data } = await supabase
@@ -123,12 +126,25 @@ const AdminDocuments = () => {
         </TabsList>
 
         <TabsContent value="files" className="space-y-3">
-          <Input
-            placeholder="Поиск по названию"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-80"
-          />
+          <div className="flex items-center gap-2 flex-wrap">
+            <Input
+              placeholder="Поиск по названию"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-80"
+            />
+            <Button
+              variant="outline"
+              className="gap-1.5"
+              onClick={() => {
+                setGenTplId(undefined);
+                setGenOpen(true);
+              }}
+              disabled={templates.length === 0}
+            >
+              <Wand2 className="h-4 w-4" /> Сформировать из шаблона
+            </Button>
+          </div>
           <Card>
             <Table>
               <TableHeader>
@@ -272,6 +288,17 @@ const AdminDocuments = () => {
                         {new Date(t.updated_at).toLocaleDateString("ru-RU")}
                       </TableCell>
                       <TableCell className="text-right">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Сформировать"
+                          onClick={() => {
+                            setGenTplId(t.id);
+                            setGenOpen(true);
+                          }}
+                        >
+                          <FileText className="h-4 w-4" />
+                        </Button>
                         <Button size="icon" variant="ghost" onClick={() => deleteTemplate(t.id)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -294,6 +321,12 @@ const AdminDocuments = () => {
           defaultName={sendDoc.name}
         />
       )}
+      <GenerateDocumentDialog
+        open={genOpen}
+        onOpenChange={setGenOpen}
+        templates={templates}
+        defaultTemplateId={genTplId}
+      />
     </div>
   );
 };

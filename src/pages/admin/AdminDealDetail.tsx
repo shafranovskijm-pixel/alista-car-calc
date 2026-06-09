@@ -20,6 +20,7 @@ import DocumentsList from "@/components/admin/DocumentsList";
 import ActivityTimeline from "@/components/admin/ActivityTimeline";
 import MessageTemplates from "@/components/admin/MessageTemplates";
 import MarginCalculator from "@/components/admin/MarginCalculator";
+import StageChecklist from "@/components/admin/StageChecklist";
 import {
   DEAL_STAGES,
   DEAL_STAGE_COLOR,
@@ -291,19 +292,11 @@ const AdminDealDetail = () => {
           </Card>
 
           {STAGE_CHECKLIST[deal.stage] && (
-            <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm">Чек-лист этапа</CardTitle></CardHeader>
-              <CardContent>
-                <ul className="space-y-1.5">
-                  {STAGE_CHECKLIST[deal.stage]!.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs">
-                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary/60 shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            <StageChecklist
+              dealId={deal.id}
+              stage={deal.stage}
+              items={STAGE_CHECKLIST[deal.stage]!}
+            />
           )}
 
           <Card>

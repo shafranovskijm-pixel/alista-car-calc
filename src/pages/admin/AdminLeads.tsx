@@ -31,6 +31,9 @@ import {
   Inbox,
   LayoutGrid,
   MoreHorizontal,
+  MessageCircle,
+  Phone,
+  Upload,
   Search,
   Table as TableIcon,
   UserPlus,
@@ -42,6 +45,7 @@ import SavedViews from "@/components/admin/SavedViews";
 import { downloadCSV, toCSV } from "@/lib/csv";
 import { Download } from "lucide-react";
 import { KanbanBoard, KanbanColumn } from "@/components/admin/KanbanBoard";
+import ImportLeadsDialog from "@/components/admin/ImportLeadsDialog";
 
 type Lead = {
   id: string;
@@ -123,6 +127,7 @@ const AdminLeads = () => {
   const [view, setView] = useState<"table" | "board">(
     () => (localStorage.getItem("admin.leads.view") as "table" | "board") || "table",
   );
+  const [importOpen, setImportOpen] = useState(false);
   useEffect(() => {
     localStorage.setItem("admin.leads.view", view);
   }, [view]);
@@ -406,6 +411,9 @@ const AdminLeads = () => {
           >
             <Download className="h-3.5 w-3.5" /> CSV
           </Button>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setImportOpen(true)}>
+            <Upload className="h-3.5 w-3.5" /> Импорт
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5">
@@ -591,7 +599,27 @@ const AdminLeads = () => {
                       </TableCell>
                     )}
                     {showCol("phone") && (
-                      <TableCell className="tabular-nums text-sm">{l.phone}</TableCell>
+                      <TableCell className="tabular-nums text-sm">
+                        <div className="flex items-center gap-1.5 group/phone" onClick={(e) => e.stopPropagation()}>
+                          <span>{l.phone}</span>
+                          <a
+                            href={`tel:${l.phone.replace(/[^+\d]/g, "")}`}
+                            title="Позвонить"
+                            className="opacity-0 group-hover/phone:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
+                          >
+                            <Phone className="h-3.5 w-3.5" />
+                          </a>
+                          <a
+                            href={`https://wa.me/${l.phone.replace(/[^\d]/g, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="WhatsApp"
+                            className="opacity-0 group-hover/phone:opacity-100 transition-opacity text-muted-foreground hover:text-emerald-400"
+                          >
+                            <MessageCircle className="h-3.5 w-3.5" />
+                          </a>
+                        </div>
+                      </TableCell>
                     )}
                     {showCol("email") && (
                       <TableCell className="text-muted-foreground text-sm">{l.email ?? "—"}</TableCell>
@@ -671,6 +699,7 @@ const AdminLeads = () => {
         </Table>
       </Card>
       )}
+      <ImportLeadsDialog open={importOpen} onOpenChange={setImportOpen} onImported={load} />
     </div>
   );
 };
