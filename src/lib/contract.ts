@@ -134,3 +134,25 @@ export const generateContractDocx = async (data: ContractData, fileName?: string
   const safeName = (fileName ?? `Договор Алиста ${data.contract_no || ""}`).trim();
   saveAs(blob, `${safeName}.docx`);
 };
+
+/**
+ * Простой генератор номера договора в формате АЛ-YYYYMMDD-001.
+ * Хранится в localStorage — в следующем спринте можно завести таблицу.
+ */
+export const nextContractNo = (dateISO?: string): string => {
+  const d = dateISO ? new Date(dateISO) : new Date();
+  if (isNaN(d.getTime())) return "АЛ-XXXXXXXX-001";
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const key = `alista_contract_seq_${yyyy}${mm}${dd}`;
+  let n = 1;
+  try {
+    const prev = parseInt(localStorage.getItem(key) || "0", 10);
+    n = (isNaN(prev) ? 0 : prev) + 1;
+    localStorage.setItem(key, String(n));
+  } catch {
+    /* ignore */
+  }
+  return `АЛ-${yyyy}${mm}${dd}-${String(n).padStart(3, "0")}`;
+};
