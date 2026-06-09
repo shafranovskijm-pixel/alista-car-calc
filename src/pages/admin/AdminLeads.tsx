@@ -325,6 +325,12 @@ const AdminLeads = () => {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <Tabs value={view} onValueChange={(v) => setView(v as "table" | "board")}>
+            <TabsList>
+              <TabsTrigger value="table" className="gap-1.5"><TableIcon className="h-3.5 w-3.5" /> Таблица</TabsTrigger>
+              <TabsTrigger value="board" className="gap-1.5"><LayoutGrid className="h-3.5 w-3.5" /> Доска</TabsTrigger>
+            </TabsList>
+          </Tabs>
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
