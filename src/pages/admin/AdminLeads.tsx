@@ -117,6 +117,12 @@ const AdminLeads = () => {
   const searchRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
+  const [view, setView] = useState<"table" | "board">(
+    () => (localStorage.getItem("admin.leads.view") as "table" | "board") || "table",
+  );
+  useEffect(() => {
+    localStorage.setItem("admin.leads.view", view);
+  }, [view]);
 
   const [prefs, setPrefs] = useState<Prefs>(() => {
     try {
