@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import HintCard from "@/components/admin/HintCard";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Dialog,
@@ -122,6 +123,12 @@ const AdminDocuments = () => {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">Документы</h1>
+      <HintCard storageKey="documents" title="Договоры, файлы и шаблоны">
+        Здесь все документы по сделкам — загруженные файлы и сгенерированные договоры Алиста. На вкладке
+        <b> «Шаблоны»</b> хранятся заготовки текстовых документов (счета, доверенности, акты). Для
+        агентского договора используйте системный шаблон Алиста на той же вкладке — он сразу подтягивает
+        данные клиента и сделки.
+      </HintCard>
       <Tabs defaultValue="files">
         <TabsList>
           <TabsTrigger value="files">Файлы</TabsTrigger>

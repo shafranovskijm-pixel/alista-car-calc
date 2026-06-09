@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import HintCard from "@/components/admin/HintCard";
 import {
   Select,
   SelectContent,
@@ -166,6 +167,12 @@ const AdminTasks = () => {
           </Dialog>
         </div>
       </div>
+
+      <HintCard storageKey="tasks" title="Личный список дел менеджера">
+        Задачи — это напоминания: позвонить клиенту, подготовить договор, проверить доставку. Создаются
+        вручную или автоматически при смене статуса заявки/сделки. Просроченные подсвечены красным.
+        Вкладка <b>Мои</b> — только ваши задачи, <b>Все</b> — задачи всей команды (видны руководителю).
+      </HintCard>
 
       <Tabs value={filter} onValueChange={(v) => setFilter(v as Filter)}>
         <TabsList>

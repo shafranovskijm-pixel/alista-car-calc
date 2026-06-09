@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import HintCard from "@/components/admin/HintCard";
 import {
   ArrowUpDown,
   Columns3,
@@ -443,6 +444,12 @@ const AdminLeads = () => {
           </DropdownMenu>
         </div>
       </div>
+
+      <HintCard storageKey="leads" title="Заявки — входящие обращения">
+        Сюда падают все обращения с сайта, форм, мессенджеров и звонков. Менеджер связывается с клиентом,
+        квалифицирует и переводит в <b>Сделку</b>. В виде «Доска» статус меняется перетаскиванием карточки.
+        Просроченные и потерянные заявки подсвечены — отмечайте причину отказа, она попадёт в отчёты.
+      </HintCard>
 
       {selected.size > 0 && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-primary/40 bg-primary/5 animate-in fade-in slide-in-from-top-1">

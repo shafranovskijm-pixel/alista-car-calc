@@ -32,6 +32,7 @@ import {
 import { toast } from "sonner";
 import { Download, LayoutGrid, Plus, Table as TableIcon } from "lucide-react";
 import { downloadCSV, toCSV } from "@/lib/csv";
+import HintCard from "@/components/admin/HintCard";
 import {
   DEAL_STAGES,
   DEAL_STAGE_LABELS,
@@ -273,6 +274,12 @@ const AdminDeals = () => {
         </Dialog>
         </div>
       </div>
+
+      <HintCard storageKey="deals" title="Сделки — активные автомобили в работе">
+        Канбан-доска: <b>Подбор → Покупка → Доставка → Таможня → Выдача</b>. Перетаскивайте карточки между
+        колонками для смены этапа. Клик по карточке открывает детали: клиент, авто, документы и сгенерированные
+        договоры Алисты. Просроченные и зависшие сделки подсвечены.
+      </HintCard>
 
       {loading ? (
         view === "table" ? (

@@ -14,6 +14,7 @@ import {
 } from "@/lib/cars";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import HintCard from "@/components/admin/HintCard";
 
 const AdminCars = () => {
   const navigate = useNavigate();
@@ -94,6 +95,14 @@ const AdminCars = () => {
           <Plus className="mr-2 h-4 w-4" />
           Новый авто
         </Button>
+      </div>
+
+      <div className="mb-4">
+        <HintCard storageKey="cars" title="Публичный каталог автомобилей">
+          Карточки авто для продажи на сайте: фото, цена, характеристики, расход топлива. Опубликованные
+          карточки показываются в разделе «Каталог» на сайте Алисты. Используйте качественные фото
+          и подробное описание — это влияет на конверсию заявок.
+        </HintCard>
       </div>
 
       {loading ? (

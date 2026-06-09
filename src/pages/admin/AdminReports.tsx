@@ -10,6 +10,7 @@ import { downloadCSV, toCSV } from "@/lib/csv";
 import { LEAD_STATUS_LABELS, LeadStatus } from "@/lib/leads";
 import { DEAL_STAGE_LABELS, DealStage } from "@/lib/deals";
 import { Filter as FilterIcon } from "lucide-react";
+import HintCard from "@/components/admin/HintCard";
 
 type LeadRow = {
   id: string;
@@ -212,17 +213,25 @@ const AdminReports = () => {
     <div className="space-y-4">
       <div className="flex items-end justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-semibold">Отчёты</h1>
-        <div className="flex items-end gap-2">
-          <div>
+        <div className="flex items-end gap-2 flex-wrap">
+          <div className="flex-1 min-w-[140px]">
             <Label className="text-xs">С</Label>
-            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-44" />
+            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-full sm:w-44" />
           </div>
-          <div>
+          <div className="flex-1 min-w-[140px]">
             <Label className="text-xs">По</Label>
-            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-44" />
+            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-full sm:w-44" />
           </div>
         </div>
       </div>
+
+      <HintCard storageKey="reports" title="Что показывают отчёты">
+        Аналитика за выбранный период:
+        <span className="block mt-1">• <b>Воронка</b> — сколько заявок дошло до каждого этапа и где теряются клиенты.</span>
+        <span className="block">• <b>Средний цикл сделки</b> — сколько дней проходит от заявки до закрытия.</span>
+        <span className="block">• <b>Причины отказа</b> — почему клиенты уходят (нужно отмечать в карточке при потере).</span>
+        <span className="block">• <b>Источники заявок и Менеджеры</b> — таблицы с конверсией и выручкой, можно выгрузить в CSV.</span>
+      </HintCard>
 
       {/* Воронка + средний цикл */}
       <div className="grid md:grid-cols-3 gap-3">
@@ -316,7 +325,7 @@ const AdminReports = () => {
               <Download className="h-4 w-4 mr-1" /> CSV заявок
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -349,7 +358,7 @@ const AdminReports = () => {
               <Download className="h-4 w-4 mr-1" /> CSV сделок
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>

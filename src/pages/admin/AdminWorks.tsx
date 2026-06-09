@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchAllWorks, resolvePhotoUrl, slugify, ensureUniqueSlug, type WorkWithPhotos } from "@/lib/works";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import HintCard from "@/components/admin/HintCard";
 
 const AdminWorks = () => {
   const navigate = useNavigate();
@@ -71,6 +72,14 @@ const AdminWorks = () => {
           <p className="text-sm text-muted-foreground">{items.length} карточек в каталоге</p>
         </div>
         <Button onClick={createNew}><Plus className="mr-2 h-4 w-4" />Новая работа</Button>
+      </div>
+
+      <div className="mb-4">
+        <HintCard storageKey="works" title="Портфолио для сайта">
+          Раздел с фото выданных автомобилей. Опубликованные работы автоматически появляются на главной
+          странице сайта в блоке «Наши работы» и в галерее. Загружайте 3–6 хороших фото на каждую машину,
+          указывайте модель, год и комплектацию.
+        </HintCard>
       </div>
 
       {loading ? (
