@@ -253,12 +253,17 @@ export type Database = {
           created_at: string
           created_by: string | null
           currency: string
+          customs_cost: number | null
           deal_type: Database["public"]["Enums"]["deal_type"]
           id: string
           lead_id: string | null
+          logistics_cost: number | null
           lost_reason: string | null
           margin: number | null
           note: string | null
+          other_cost: number | null
+          purchase_cost: number | null
+          sale_price: number | null
           stage: Database["public"]["Enums"]["deal_stage"]
           title: string
           updated_at: string
@@ -270,12 +275,17 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency?: string
+          customs_cost?: number | null
           deal_type?: Database["public"]["Enums"]["deal_type"]
           id?: string
           lead_id?: string | null
+          logistics_cost?: number | null
           lost_reason?: string | null
           margin?: number | null
           note?: string | null
+          other_cost?: number | null
+          purchase_cost?: number | null
+          sale_price?: number | null
           stage?: Database["public"]["Enums"]["deal_stage"]
           title: string
           updated_at?: string
@@ -287,12 +297,17 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency?: string
+          customs_cost?: number | null
           deal_type?: Database["public"]["Enums"]["deal_type"]
           id?: string
           lead_id?: string | null
+          logistics_cost?: number | null
           lost_reason?: string | null
           margin?: number | null
           note?: string | null
+          other_cost?: number | null
+          purchase_cost?: number | null
+          sale_price?: number | null
           stage?: Database["public"]["Enums"]["deal_stage"]
           title?: string
           updated_at?: string
