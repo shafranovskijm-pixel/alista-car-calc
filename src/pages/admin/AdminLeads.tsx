@@ -23,18 +23,22 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowUpDown,
   Columns3,
   Filter,
   Inbox,
+  LayoutGrid,
   MoreHorizontal,
   Search,
+  Table as TableIcon,
   UserPlus,
   X,
 } from "lucide-react";
 import { LEAD_STATUSES, LEAD_STATUS_LABELS, LeadStatus } from "@/lib/leads";
 import EmptyState from "@/components/admin/EmptyState";
+import { KanbanBoard, KanbanColumn } from "@/components/admin/KanbanBoard";
 
 type Lead = {
   id: string;
@@ -113,6 +117,12 @@ const AdminLeads = () => {
   const searchRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
+  const [view, setView] = useState<"table" | "board">(
+    () => (localStorage.getItem("admin.leads.view") as "table" | "board") || "table",
+  );
+  useEffect(() => {
+    localStorage.setItem("admin.leads.view", view);
+  }, [view]);
 
   const [prefs, setPrefs] = useState<Prefs>(() => {
     try {
@@ -315,6 +325,12 @@ const AdminLeads = () => {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <Tabs value={view} onValueChange={(v) => setView(v as "table" | "board")}>
+            <TabsList>
+              <TabsTrigger value="table" className="gap-1.5"><TableIcon className="h-3.5 w-3.5" /> Таблица</TabsTrigger>
+              <TabsTrigger value="board" className="gap-1.5"><LayoutGrid className="h-3.5 w-3.5" /> Доска</TabsTrigger>
+            </TabsList>
+          </Tabs>
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -412,6 +428,39 @@ const AdminLeads = () => {
         </div>
       )}
 
+      {view === "board" ? (
+        <KanbanBoard<LeadStatus, Lead>
+          columns={LEAD_STATUSES.map((s) => ({
+            key: s,
+            label: LEAD_STATUS_LABELS[s],
+            accent: STATUS_DOT[s],
+          })) as KanbanColumn<LeadStatus>[]}
+          items={filtered}
+          groupKey={(l) => l.status}
+          onMove={(l, to) => updateStatus(l.id, to)}
+          renderCard={(l) => {
+            const sla = slaTone(l);
+            return (
+              <Card
+                onClick={() => navigate(`/admin/leads/${l.id}`)}
+                className="p-3 hover:border-primary/60 transition-colors"
+              >
+                <div className="font-medium text-sm leading-snug">{l.full_name}</div>
+                <div className="text-[11px] text-muted-foreground mt-1 tabular-nums">{l.phone}</div>
+                <div className="flex items-center justify-between mt-2 text-[11px]">
+                  <span className="text-muted-foreground truncate">
+                    {l.utm_source ?? l.source ?? "—"}
+                  </span>
+                  <span className="inline-flex items-center gap-1 shrink-0">
+                    <span className={`h-1.5 w-1.5 rounded-full ${sla.color}`} />
+                    <span className="text-muted-foreground">{sla.label}</span>
+                  </span>
+                </div>
+              </Card>
+            );
+          }}
+        />
+      ) : (
       <Card className="overflow-hidden">
         <Table>
           <TableHeader>
@@ -587,6 +636,7 @@ const AdminLeads = () => {
           </TableBody>
         </Table>
       </Card>
+      )}
     </div>
   );
 };
