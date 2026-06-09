@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import CRMMap from "@/components/admin/CRMMap";
+import OnboardingGuide from "@/components/admin/OnboardingGuide";
 import HotkeysSheet from "@/components/admin/HotkeysSheet";
 import CRMFaq from "@/components/admin/CRMFaq";
 
@@ -59,7 +59,7 @@ const AdminSettings = () => {
       >
         <TabsList>
           <TabsTrigger value="profile">Профиль</TabsTrigger>
-          <TabsTrigger value="map">Карта CRM</TabsTrigger>
+          <TabsTrigger value="onboarding">Обучение</TabsTrigger>
           <TabsTrigger value="hotkeys">Горячие клавиши</TabsTrigger>
           <TabsTrigger value="faq">Справка / FAQ</TabsTrigger>
         </TabsList>
@@ -105,8 +105,8 @@ const AdminSettings = () => {
       </Card>
         </TabsContent>
 
-        <TabsContent value="map">
-          <CRMMap />
+        <TabsContent value="onboarding">
+          <OnboardingGuide />
         </TabsContent>
         <TabsContent value="hotkeys">
           <HotkeysSheet />
