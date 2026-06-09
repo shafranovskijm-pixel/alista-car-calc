@@ -110,7 +110,7 @@ export const renderContractText = (templateText: string, data: ContractData) => 
 };
 
 export const renderContractBlob = async (data: ContractData): Promise<Blob> => {
-  const res = await fetch("/templates/alista-contract-v2.docx");
+  const res = await fetch("/templates/alista-contract-v3.docx");
   if (!res.ok) throw new Error("Не удалось загрузить шаблон договора");
   const buf = await res.arrayBuffer();
   const zip = new PizZip(buf);
