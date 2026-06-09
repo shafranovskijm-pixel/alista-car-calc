@@ -52,6 +52,27 @@ const AdminSettings = () => {
   return (
     <div className="space-y-4 max-w-6xl">
       <h1 className="text-2xl font-semibold">Настройки</h1>
+      <HintCard storageKey="settings" title="Настройки рабочего пространства">
+        Здесь настраиваются: профиль и пароль, корпоративная почта, шаблоны документов и готовых ответов,
+        пошаговое обучение, горячие клавиши и справка. Если скрыли подсказки в других разделах — верните их
+        кнопкой ниже.
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              Object.keys(localStorage)
+                .filter((k) => k.startsWith("hint_dismissed_") || k.startsWith("hint_open_"))
+                .forEach((k) => localStorage.removeItem(k));
+              location.reload();
+            } catch {
+              /* ignore */
+            }
+          }}
+          className="ml-2 underline text-primary hover:text-primary/80"
+        >
+          Показать все подсказки заново
+        </button>
+      </HintCard>
       <Tabs
         value={tab}
         onValueChange={(v) => {

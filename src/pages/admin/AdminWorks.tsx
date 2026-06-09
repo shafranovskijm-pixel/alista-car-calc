@@ -74,6 +74,14 @@ const AdminWorks = () => {
         <Button onClick={createNew}><Plus className="mr-2 h-4 w-4" />Новая работа</Button>
       </div>
 
+      <div className="mb-4">
+        <HintCard storageKey="works" title="Портфолио для сайта">
+          Раздел с фото выданных автомобилей. Опубликованные работы автоматически появляются на главной
+          странице сайта в блоке «Наши работы» и в галерее. Загружайте 3–6 хороших фото на каждую машину,
+          указывайте модель, год и комплектацию.
+        </HintCard>
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div>
       ) : (

@@ -97,6 +97,14 @@ const AdminCars = () => {
         </Button>
       </div>
 
+      <div className="mb-4">
+        <HintCard storageKey="cars" title="Публичный каталог автомобилей">
+          Карточки авто для продажи на сайте: фото, цена, характеристики, расход топлива. Опубликованные
+          карточки показываются в разделе «Каталог» на сайте Алисты. Используйте качественные фото
+          и подробное описание — это влияет на конверсию заявок.
+        </HintCard>
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-20">
           <Loader2 className="h-6 w-6 animate-spin" />
