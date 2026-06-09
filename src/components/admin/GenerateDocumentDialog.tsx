@@ -18,7 +18,9 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Printer, FileText } from "lucide-react";
+import { Printer, FileText, Download } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { generateContractDocx, type ContractClient, type ContractData } from "@/lib/contract";
 
 type Template = { id: string; name: string; kind: string; body: string };
 type DealOpt = {
@@ -27,7 +29,9 @@ type DealOpt = {
   budget: number | null;
   currency: string;
   sale_price: number | null;
-  clients: { full_name: string; phone: string | null; email: string | null } | null;
+  clients:
+    | (ContractClient & { id: string })
+    | null;
 };
 
 type Props = {
@@ -59,13 +63,21 @@ const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplate
   const [dealId, setDealId] = useState<string>("");
   const [deals, setDeals] = useState<DealOpt[]>([]);
   const [body, setBody] = useState("");
+  const [contractNo, setContractNo] = useState("");
+  const [contractDate, setContractDate] = useState(
+    new Date().toISOString().slice(0, 10),
+  );
+  const [principalType, setPrincipalType] = useState<"individual" | "company">("individual");
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     (async () => {
       const { data } = await supabase
         .from("deals")
-        .select("id, title, budget, currency, sale_price, clients(full_name, phone, email)")
+        .select(
+          "id, title, budget, currency, sale_price, clients(id, client_type, full_name, phone, email, address, passport, birth_date, passport_issued_by, passport_issued_date, company_name, inn, kpp, ogrn, director_name, director_position)",
+        )
         .order("created_at", { ascending: false })
         .limit(200);
       setDeals((data ?? []) as unknown as DealOpt[]);
@@ -83,6 +95,34 @@ const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplate
     if (!template) return;
     setBody(substitute(template.body, deal));
   }, [template, deal]);
+
+  useEffect(() => {
+    if (deal?.clients?.client_type) setPrincipalType(deal.clients.client_type);
+  }, [deal]);
+
+  const downloadDocx = async () => {
+    if (!deal?.clients) {
+      toast.error("Выберите сделку с клиентом");
+      return;
+    }
+    setGenerating(true);
+    try {
+      const data: ContractData = {
+        contract_no: contractNo || new Date().toISOString().slice(0, 10).replace(/-/g, ""),
+        contract_date: new Date(contractDate).toLocaleDateString("ru-RU"),
+        client: deal.clients,
+        deal,
+        principalType,
+      };
+      const fileName = `Договор Алиста №${data.contract_no} — ${deal.clients.full_name ?? ""}`;
+      await generateContractDocx(data, fileName);
+      toast.success("Договор скачан");
+    } catch (e) {
+      toast.error((e as Error).message || "Ошибка генерации");
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const printPdf = () => {
     if (!body.trim()) {
@@ -131,6 +171,7 @@ const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplate
               <Select value={templateId} onValueChange={setTemplateId}>
                 <SelectTrigger><SelectValue placeholder="Выберите" /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__alista_docx">Агентский договор Алиста (.docx)</SelectItem>
                   {templates.map((t) => (
                     <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                   ))}
@@ -151,6 +192,31 @@ const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplate
               </Select>
             </div>
           </div>
+
+          {templateId === "__alista_docx" && (
+            <div className="grid grid-cols-3 gap-3 p-3 rounded-md border border-border/60 bg-muted/30">
+              <div>
+                <Label className="mb-1.5 block">№ договора</Label>
+                <Input value={contractNo} onChange={(e) => setContractNo(e.target.value)} placeholder="напр. 042" />
+              </div>
+              <div>
+                <Label className="mb-1.5 block">Дата</Label>
+                <Input type="date" value={contractDate} onChange={(e) => setContractDate(e.target.value)} />
+              </div>
+              <div>
+                <Label className="mb-1.5 block">Принципал</Label>
+                <Select value={principalType} onValueChange={(v) => setPrincipalType(v as "individual" | "company")}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="individual">Физлицо</SelectItem>
+                    <SelectItem value="company">Юрлицо</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
+          {templateId !== "__alista_docx" && (
           <div>
             <Label className="mb-1.5 block">Текст документа</Label>
             <Textarea
@@ -166,12 +232,19 @@ const GenerateDocumentDialog = ({ open, onOpenChange, templates, defaultTemplate
               <code>{"{{currency}}"}</code>, <code>{"{{date}}"}</code>
             </p>
           </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Закрыть</Button>
-          <Button onClick={printPdf} className="gap-1.5">
-            <Printer className="h-4 w-4" /> Печать / PDF
-          </Button>
+          {templateId === "__alista_docx" ? (
+            <Button onClick={downloadDocx} disabled={generating} className="gap-1.5">
+              <Download className="h-4 w-4" /> Скачать .docx
+            </Button>
+          ) : (
+            <Button onClick={printPdf} className="gap-1.5">
+              <Printer className="h-4 w-4" /> Печать / PDF
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
