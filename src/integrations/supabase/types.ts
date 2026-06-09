@@ -86,6 +86,7 @@ export type Database = {
           country: Database["public"]["Enums"]["car_country"]
           created_at: string
           currency: string
+          deal_id: string | null
           description: string | null
           engine_volume: number | null
           fuel: Database["public"]["Enums"]["car_fuel"] | null
@@ -108,6 +109,7 @@ export type Database = {
           country: Database["public"]["Enums"]["car_country"]
           created_at?: string
           currency?: string
+          deal_id?: string | null
           description?: string | null
           engine_volume?: number | null
           fuel?: Database["public"]["Enums"]["car_fuel"] | null
@@ -130,6 +132,7 @@ export type Database = {
           country?: Database["public"]["Enums"]["car_country"]
           created_at?: string
           currency?: string
+          deal_id?: string | null
           description?: string | null
           engine_volume?: number | null
           fuel?: Database["public"]["Enums"]["car_fuel"] | null
@@ -146,7 +149,15 @@ export type Database = {
           updated_at?: string
           year?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cars_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       clients: {
         Row: {
