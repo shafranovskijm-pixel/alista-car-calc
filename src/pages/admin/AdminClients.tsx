@@ -24,8 +24,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
-import { Plus } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import { CLIENT_TYPE_LABELS } from "@/lib/deals";
+import DuplicatesBanner from "@/components/admin/DuplicatesBanner";
+import { EmptyState } from "@/components/admin/EmptyState";
 
 type Client = {
   id: string;
@@ -75,6 +77,18 @@ const AdminClients = () => {
     if (!form.full_name.trim()) {
       toast.error("Введите ФИО / название");
       return;
+    }
+    const normPhone = (form.phone ?? "").replace(/\D/g, "");
+    const normEmail = (form.email ?? "").trim().toLowerCase();
+    const dupCandidate = clients.find(
+      (c) =>
+        (normPhone.length >= 10 && (c.phone ?? "").replace(/\D/g, "") === normPhone) ||
+        (normEmail && (c.email ?? "").trim().toLowerCase() === normEmail),
+    );
+    if (dupCandidate) {
+      if (!confirm(`Похоже, такой клиент уже есть: ${dupCandidate.full_name}. Всё равно создать?`)) {
+        return;
+      }
     }
     setSaving(true);
     const { data: userRes } = await supabase.auth.getUser();
@@ -191,6 +205,8 @@ const AdminClients = () => {
         </div>
       </div>
 
+      <DuplicatesBanner />
+
       <Card>
         <Table>
           <TableHeader>
@@ -209,7 +225,13 @@ const AdminClients = () => {
               </TableRow>
             ) : filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">Клиентов нет</TableCell>
+                <TableCell colSpan={5}>
+                  <EmptyState
+                    icon={Users}
+                    title={search.trim() ? "Ничего не найдено" : "Клиентов пока нет"}
+                    description={search.trim() ? "Попробуйте изменить запрос." : "Добавьте первого клиента кнопкой выше."}
+                  />
+                </TableCell>
               </TableRow>
             ) : (
               filtered.map((c) => (

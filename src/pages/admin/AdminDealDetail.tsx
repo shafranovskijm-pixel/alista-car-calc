@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import DocumentsList from "@/components/admin/DocumentsList";
 import ActivityTimeline from "@/components/admin/ActivityTimeline";
+import MessageTemplates from "@/components/admin/MessageTemplates";
 import {
   DEAL_STAGES,
   DEAL_STAGE_COLOR,
@@ -295,7 +296,17 @@ const AdminDealDetail = () => {
             <CardHeader className="pb-2"><CardTitle className="text-sm">Закреп. заметка</CardTitle></CardHeader>
             <CardContent className="space-y-2">
               <Textarea rows={4} value={note} onChange={(e) => setNote(e.target.value)} className="text-sm" />
-              <Button size="sm" className="w-full" onClick={() => update({ note })} disabled={saving}>Сохранить</Button>
+              <div className="flex gap-2">
+                <MessageTemplates
+                  vars={{
+                    "client.name": deal.clients?.full_name ?? "",
+                    "deal.title": deal.title,
+                    "deal.budget": deal.budget ?? "",
+                  }}
+                  onInsert={(text) => setNote((prev) => (prev ? prev + "\n\n" + text : text))}
+                />
+                <Button size="sm" className="flex-1" onClick={() => update({ note })} disabled={saving}>Сохранить</Button>
+              </div>
             </CardContent>
           </Card>
         </div>

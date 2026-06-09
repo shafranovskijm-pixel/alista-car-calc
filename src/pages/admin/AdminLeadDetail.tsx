@@ -22,6 +22,7 @@ import {
   LeadStatus,
 } from "@/lib/leads";
 import ActivityTimeline from "@/components/admin/ActivityTimeline";
+import MessageTemplates from "@/components/admin/MessageTemplates";
 
 type Lead = {
   id: string;
@@ -341,9 +342,20 @@ const AdminLeadDetail = () => {
             <CardHeader className="pb-2"><CardTitle className="text-sm">Закреп. заметка</CardTitle></CardHeader>
             <CardContent className="space-y-2">
               <Textarea rows={4} value={note} onChange={(e) => setNote(e.target.value)} className="text-sm" />
-              <Button size="sm" onClick={saveNote} disabled={saving} className="w-full">
-                Сохранить
-              </Button>
+              <div className="flex gap-2">
+                <MessageTemplates
+                  vars={{
+                    "client.name": lead.full_name,
+                    "client.phone": lead.phone,
+                    "client.email": lead.email ?? "",
+                    "lead.name": lead.full_name,
+                  }}
+                  onInsert={(text) => setNote((prev) => (prev ? prev + "\n\n" + text : text))}
+                />
+                <Button size="sm" onClick={saveNote} disabled={saving} className="flex-1">
+                  Сохранить
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
