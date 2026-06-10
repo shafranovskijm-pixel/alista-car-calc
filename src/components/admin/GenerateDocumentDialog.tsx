@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/proxy-client";
 import { toast } from "sonner";
 import { Printer, FileText, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";

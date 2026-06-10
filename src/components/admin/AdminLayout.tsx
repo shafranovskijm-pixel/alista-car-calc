@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/proxy-client";
 import GlobalSearch from "./GlobalSearch";
 import NotificationsBell from "./NotificationsBell";
 import CurrencyTicker from "./CurrencyTicker";

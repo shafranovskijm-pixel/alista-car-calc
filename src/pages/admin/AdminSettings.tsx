@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/proxy-client";
 import OnboardingGuide from "@/components/admin/OnboardingGuide";
 import HotkeysSheet from "@/components/admin/HotkeysSheet";
 import CRMFaq from "@/components/admin/CRMFaq";
