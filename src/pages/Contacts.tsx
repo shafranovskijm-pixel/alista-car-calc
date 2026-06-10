@@ -6,8 +6,8 @@ import PageTransition from "@/components/PageTransition";
 import LeadForm from "@/components/LeadForm";
 
 const contacts = [
-  { role: "Директор", name: "", phone: "+7 984 198-27-33", phoneRaw: "79841982733" },
-  { role: "Бухгалтер", name: "", phone: "+7 914 703-06-91", phoneRaw: "79147030691" },
+  { role: "Директор", name: "", phone: "+7 914 073-01-96", phoneRaw: "79140730196" },
+  { role: "Бухгалтер", name: "", phone: "+7 914 073-01-96", phoneRaw: "79140730196" },
   { role: "Менеджер", name: "", phone: "+7 914 073-01-96", phoneRaw: "79140730196" },
 ];
 
