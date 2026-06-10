@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Phone, MessageCircle, Send, X, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const PHONE = "79841982733";
+const PHONE = "79140730196";
 
 const FloatingCTA = () => {
   const [open, setOpen] = useState(false);

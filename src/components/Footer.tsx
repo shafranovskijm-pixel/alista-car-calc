@@ -36,9 +36,9 @@ const Footer = () => {
           <div>
             <h4 className="font-heading text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">Контакты</h4>
             <div className="flex flex-col gap-3">
-              <a href="tel:+79841982733" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+              <a href="tel:+79140730196" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
                 <Phone className="h-4 w-4 shrink-0" />
-                +7 984 198-27-33
+                +7 914 073-01-96
               </a>
               <div className="flex items-start gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
@@ -47,7 +47,7 @@ const Footer = () => {
             </div>
             <div className="mt-4 flex gap-3">
               <a
-                href="https://wa.me/79841982733"
+                href="https://wa.me/79140730196"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-md bg-secondary px-3 py-2 text-xs font-medium text-foreground hover:bg-secondary/80 transition-colors"
@@ -55,7 +55,7 @@ const Footer = () => {
                 WhatsApp
               </a>
               <a
-                href="https://t.me/+79841982733"
+                href="https://t.me/+79140730196"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-md bg-secondary px-3 py-2 text-xs font-medium text-foreground hover:bg-secondary/80 transition-colors"

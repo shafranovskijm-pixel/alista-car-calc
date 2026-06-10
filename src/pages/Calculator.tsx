@@ -272,7 +272,7 @@ const CalculatorPage = () => {
                     </div>
 
                     <a
-                      href={`https://wa.me/79841982733?text=${encodeURIComponent(
+                      href={`https://wa.me/79140730196?text=${encodeURIComponent(
                         `Здравствуйте! Прошу рассчитать точную стоимость растаможки. Приблизительный итог: ${formatNum(result.total)} ₽`
                       )}`}
                       target="_blank"
