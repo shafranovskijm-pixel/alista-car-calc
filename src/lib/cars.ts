@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/proxy-client";
 import { slugify } from "@/lib/works";
 
 export const CAR_BUCKET = "cars";

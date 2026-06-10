@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bell, AlertOctagon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/proxy-client";
 import { useAuth } from "@/hooks/useAuth";
 import { LEAD_STATUS_LABELS, LeadStatus } from "@/lib/leads";
 import EmptyState from "./EmptyState";

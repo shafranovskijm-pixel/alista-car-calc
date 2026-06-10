@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, Upload, Trash2, Star, GripVertical, ExternalLink } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/proxy-client";
 import {
   fetchCar,
   uploadCarPhoto,
