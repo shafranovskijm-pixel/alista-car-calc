@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const orbs = [
   {
@@ -19,16 +20,27 @@ const orbs = [
 ];
 
 const BackgroundDecor = () => {
+  const isMobile = useIsMobile();
   return (
-    <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
+    <div
+      className="pointer-events-none fixed inset-0 overflow-hidden z-0"
+      style={{ transform: "translateZ(0)" }}
+    >
       {/* Grid pattern */}
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.03]" />
 
       {/* Floating orbs */}
-      {orbs.map((orb, i) => (
+      {orbs.map((orb, i) => isMobile ? (
+        <div
+          key={i}
+          className={`absolute rounded-full blur-[60px] ${orb.className}`}
+          style={{ transform: "translateZ(0)" }}
+        />
+      ) : (
         <motion.div
           key={i}
           className={`absolute rounded-full blur-[100px] ${orb.className}`}
+          style={{ willChange: "transform", transform: "translateZ(0)" }}
           animate={{
             y: [0, -40, 0, 30, 0],
             x: [0, 20, 0, -15, 0],
