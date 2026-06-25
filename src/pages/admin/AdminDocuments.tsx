@@ -31,6 +31,7 @@ import { DOCUMENT_KINDS, DOCUMENT_KIND_LABELS, DocumentKind, formatBytes } from 
 import SendDocumentDialog from "@/components/admin/SendDocumentDialog";
 import GenerateDocumentDialog from "@/components/admin/GenerateDocumentDialog";
 import AlistaContractSample from "@/components/admin/AlistaContractSample";
+import CreateContractDialog from "@/components/admin/CreateContractDialog";
 
 type Doc = {
   id: string;
@@ -61,6 +62,7 @@ const AdminDocuments = () => {
   const [genOpen, setGenOpen] = useState(false);
   const [genTplId, setGenTplId] = useState<string | undefined>(undefined);
   const [genPreset, setGenPreset] = useState<"alista" | undefined>(undefined);
+  const [createContractOpen, setCreateContractOpen] = useState(false);
 
   const load = async () => {
     const { data } = await supabase
@@ -144,6 +146,12 @@ const AdminDocuments = () => {
               className="w-80"
             />
             <Button
+              className="gap-1.5"
+              onClick={() => setCreateContractOpen(true)}
+            >
+              <Sparkles className="h-4 w-4" /> Создать договор
+            </Button>
+            <Button
               variant="outline"
               className="gap-1.5"
               onClick={() => {
@@ -153,16 +161,6 @@ const AdminDocuments = () => {
               }}
             >
               <Wand2 className="h-4 w-4" /> Сформировать документ
-            </Button>
-            <Button
-              className="gap-1.5"
-              onClick={() => {
-                setGenTplId(undefined);
-                setGenPreset("alista");
-                setGenOpen(true);
-              }}
-            >
-              <Sparkles className="h-4 w-4" /> Договор Алиста (.docx)
             </Button>
           </div>
           <Card>
@@ -388,6 +386,13 @@ const AdminDocuments = () => {
         templates={templates}
         defaultTemplateId={genTplId}
         defaultPreset={genPreset}
+      />
+      <CreateContractDialog
+        open={createContractOpen}
+        onOpenChange={(v) => {
+          setCreateContractOpen(v);
+          if (!v) load();
+        }}
       />
     </div>
   );
