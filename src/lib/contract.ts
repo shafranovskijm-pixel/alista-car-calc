@@ -12,12 +12,19 @@ export type AgentInfo = {
 };
 
 export const ALISTA_AGENT: AgentInfo = {
-  agent_director_name: "________________________",
-  agent_director_short: "________________",
-  agent_director_lastname: "________________",
-  agent_ogrn: "____________",
+  agent_director_name: "Седов Андрей Юрьевич",
+  agent_director_short: "А. Ю. Седов",
+  agent_director_lastname: "Седов А. Ю.",
+  agent_ogrn: "1252500018858",
   agent_inn: "2543194698",
-  agent_address: "г. Владивосток",
+  agent_address:
+    "690002, Приморский край, г. Владивосток, пр-кт Океанский, д. 136, кв. 84",
+};
+
+export const ALISTA_AGENT_EXTRA = {
+  agent_kpp: "254301001",
+  agent_short_name: "ООО «АЛИСТА»",
+  agent_full_name: "Общество с ограниченной ответственностью «АЛИСТА»",
 };
 
 export type ContractClient = {
@@ -92,15 +99,23 @@ export type ContractData = {
   deal?: ContractDeal | null;
   principalType: "individual" | "company";
   agent?: Partial<AgentInfo>;
+  templateVersion?: "v3" | "v4";
+  contract_sum?: number | null;
+  car_model?: string | null;
 };
 
 export const buildPlaceholders = (data: ContractData): Record<string, string> => {
   const agent = { ...ALISTA_AGENT, ...(data.agent ?? {}) };
+  const sum = Number(data.contract_sum ?? 0) || 0;
   return {
     contract_no: data.contract_no || "____",
     contract_date: data.contract_date,
     principal_block: buildPrincipalBlock(data.client, data.principalType),
+    contract_sum: sum ? sum.toLocaleString("ru-RU") : "____________",
+    contract_sum_words: sum ? numberToWordsRu(sum) : "______________________________",
+    car_model: (data.car_model ?? "").trim() || "________________________",
     ...agent,
+    ...ALISTA_AGENT_EXTRA,
   };
 };
 
@@ -110,7 +125,11 @@ export const renderContractText = (templateText: string, data: ContractData) => 
 };
 
 export const renderContractBlob = async (data: ContractData): Promise<Blob> => {
-  const res = await fetch("/templates/alista-contract-v3.docx");
+  const file =
+    data.templateVersion === "v4"
+      ? "/templates/alista-contract-v4.docx"
+      : "/templates/alista-contract-v3.docx";
+  const res = await fetch(file);
   if (!res.ok) throw new Error("Не удалось загрузить шаблон договора");
   const buf = await res.arrayBuffer();
   const zip = new PizZip(buf);
