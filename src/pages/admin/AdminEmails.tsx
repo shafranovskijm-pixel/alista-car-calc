@@ -8,6 +8,8 @@ import HintCard from "@/components/admin/HintCard";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { Mail } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import Inbox from "@/components/admin/emails/Inbox";
 
 type Row = {
   id: string;
@@ -61,9 +63,27 @@ const AdminEmails = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h1 className="text-2xl font-semibold">Письма</h1>
-        <div className="flex gap-2">
+      <div>
+        <h1 className="text-2xl font-semibold">Почта</h1>
+        <p className="text-sm text-muted-foreground">Входящие письма на info@alistaru.ru и журнал исходящих из CRM</p>
+      </div>
+
+      <Tabs defaultValue="inbox">
+        <TabsList>
+          <TabsTrigger value="inbox">Входящие</TabsTrigger>
+          <TabsTrigger value="log">Исходящие (журнал)</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="inbox" className="mt-4">
+          <HintCard storageKey="emails-inbox" title="Живая почта info@alistaru.ru">
+            Читайте письма от клиентов прямо здесь и отвечайте одной кнопкой — ответ уйдёт с корпоративного адреса.
+            Подключено через IMAP mail.timeweb.com, показываются последние 50 писем в ящике.
+          </HintCard>
+          <div className="mt-3"><Inbox /></div>
+        </TabsContent>
+
+        <TabsContent value="log" className="mt-4 space-y-3">
+          <div className="flex justify-end gap-2">
           <Input placeholder="Поиск" value={search} onChange={(e) => setSearch(e.target.value)} className="w-60" />
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
@@ -75,12 +95,10 @@ const AdminEmails = () => {
             </SelectContent>
           </Select>
         </div>
-      </div>
-
-      <HintCard storageKey="emails" title="История исходящих писем">
-        Журнал всех email, отправленных из CRM: уведомления клиентам, ответы на заявки, документы. Видны
-        статусы доставки (отправлено, ошибка, ожидает) — если письмо «не дошло», ищите причину здесь.
-      </HintCard>
+          <HintCard storageKey="emails" title="История исходящих писем">
+            Журнал всех email, отправленных из CRM: уведомления клиентам, ответы на заявки, документы. Видны
+            статусы доставки (отправлено, ошибка, ожидает) — если письмо «не дошло», ищите причину здесь.
+          </HintCard>
 
       <Card>
         <Table>
@@ -120,6 +138,8 @@ const AdminEmails = () => {
           </TableBody>
         </Table>
       </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
