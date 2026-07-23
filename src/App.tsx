@@ -23,6 +23,8 @@ import AdminClientDetail from "./pages/admin/AdminClientDetail.tsx";
 import AdminDeals from "./pages/admin/AdminDeals.tsx";
 import AdminDealDetail from "./pages/admin/AdminDealDetail.tsx";
 import AdminDocuments from "./pages/admin/AdminDocuments.tsx";
+import AdminOffers from "./pages/admin/AdminOffers.tsx";
+import AdminOfferEdit from "./pages/admin/AdminOfferEdit.tsx";
 import AdminReports from "./pages/admin/AdminReports.tsx";
 import AdminWorks from "./pages/admin/AdminWorks.tsx";
 import AdminWorkEdit from "./pages/admin/AdminWorkEdit.tsx";
@@ -65,6 +67,9 @@ const AnimatedRoutes = () => {
           <Route path="deals" element={<AdminDeals />} />
           <Route path="deals/:id" element={<AdminDealDetail />} />
           <Route path="documents" element={<AdminDocuments />} />
+          <Route path="offers" element={<AdminOffers />} />
+          <Route path="offers/new" element={<AdminOfferEdit />} />
+          <Route path="offers/:id" element={<AdminOfferEdit />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="works" element={<AdminWorks />} />
           <Route path="works/:id" element={<AdminWorkEdit />} />
