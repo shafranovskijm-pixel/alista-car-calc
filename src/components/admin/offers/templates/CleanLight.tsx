@@ -1,13 +1,15 @@
 import { Offer, OfferItem, money } from "@/lib/offers";
+import type { OfferClient } from "../OfferPreview";
 
 type Props = {
   offer: Offer;
   items: OfferItem[];
   clientName: string;
   agent: { name: string; inn: string; address: string; phone: string; email: string };
+  client?: OfferClient;
 };
 
-const CleanLight = ({ offer, items, clientName, agent }: Props) => (
+const CleanLight = ({ offer, items, clientName, agent, client }: Props) => (
   <div
     style={{ fontFamily: "'Inter','Segoe UI',sans-serif" }}
     className="offer-a4 bg-white text-[#0f172a] w-[794px] min-h-[1123px] p-14"
@@ -33,6 +35,20 @@ const CleanLight = ({ offer, items, clientName, agent }: Props) => (
       <div>
         <div className="text-[10px] uppercase tracking-widest text-[#64748b] mb-1">Клиент</div>
         <div className="text-[16px] font-semibold">{clientName || "—"}</div>
+        {client && (
+          <div className="mt-2 space-y-0.5 text-[11px] text-[#64748b]">
+            {client.contact && <div>{client.contact}</div>}
+            {client.email && <div>{client.email}</div>}
+            {client.phone && <div>{client.phone}</div>}
+            {client.inn && (
+              <div>
+                ИНН {client.inn}
+                {client.kpp ? ` · КПП ${client.kpp}` : ""}
+              </div>
+            )}
+            {client.address && <div>{client.address}</div>}
+          </div>
+        )}
       </div>
       <div className="text-right">
         <div className="text-[10px] uppercase tracking-widest text-[#64748b] mb-1">Срок действия</div>
