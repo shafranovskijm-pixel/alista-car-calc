@@ -36,7 +36,17 @@ import { blobToBase64, downloadBlob, renderOfferPdf } from "@/lib/offerPdf";
 
 type DraftItem = Pick<OfferItem, "name" | "description" | "unit" | "qty" | "price">;
 
-type ClientOpt = { id: string; full_name: string; company_name: string | null; email: string | null };
+type ClientOpt = {
+  id: string;
+  full_name: string;
+  company_name: string | null;
+  email: string | null;
+  phone: string | null;
+  inn: string | null;
+  kpp: string | null;
+  address: string | null;
+  client_type: string | null;
+};
 
 const AdminOfferEdit = () => {
   const { id } = useParams();
@@ -70,7 +80,10 @@ const AdminOfferEdit = () => {
     (async () => {
       const [svc, cl] = await Promise.all([
         fetchServices(),
-        supabase.from("clients").select("id, full_name, company_name, email").order("full_name"),
+        supabase
+          .from("clients")
+          .select("id, full_name, company_name, email, phone, inn, kpp, address, client_type")
+          .order("full_name"),
       ]);
       setServices(svc);
       setClients((cl.data ?? []) as ClientOpt[]);
@@ -104,6 +117,35 @@ const AdminOfferEdit = () => {
   const clientName = selectedClient
     ? selectedClient.company_name || selectedClient.full_name
     : "Клиент";
+  const clientInfo = selectedClient
+    ? {
+        name: selectedClient.company_name || selectedClient.full_name,
+        contact: selectedClient.company_name ? selectedClient.full_name : null,
+        email: selectedClient.email,
+        phone: selectedClient.phone,
+        inn: selectedClient.inn,
+        kpp: selectedClient.kpp,
+        address: selectedClient.address,
+        type: selectedClient.client_type,
+      }
+    : null;
+
+  const handleClientChange = (v: string) => {
+    const nextId = v === "none" ? null : v;
+    setClientId(nextId);
+    if (nextId) {
+      const c = clients.find((x) => x.id === nextId);
+      if (c) {
+        const filled = [c.email, c.phone, c.inn, c.address].filter(Boolean).length;
+        toast({
+          title: "Клиент подставлен в КП",
+          description: filled > 0
+            ? `Автоматически добавлены контакты и реквизиты (${filled} поля).`
+            : "У клиента не заполнены контакты и реквизиты — добавьте их в карточке клиента.",
+        });
+      }
+    }
+  };
 
   const addFromCatalog = (s: Service) => {
     setItems((prev) => [
@@ -270,15 +312,41 @@ const AdminOfferEdit = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label>Клиент</Label>
-                <Select value={clientId ?? "none"} onValueChange={(v) => setClientId(v === "none" ? null : v)}>
+                <Select value={clientId ?? "none"} onValueChange={handleClientChange}>
                   <SelectTrigger><SelectValue placeholder="Выберите клиента" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">— Без клиента —</SelectItem>
                     {clients.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>{c.company_name || c.full_name}</SelectItem>
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.company_name || c.full_name}
+                        {c.company_name && c.full_name ? ` · ${c.full_name}` : ""}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {clientInfo && (
+                  <div className="mt-2 rounded-md border border-border bg-secondary/40 p-2 text-[11px] leading-relaxed text-muted-foreground space-y-0.5">
+                    <div className="text-foreground font-medium">Подставлено в КП:</div>
+                    {clientInfo.contact && <div>👤 {clientInfo.contact}</div>}
+                    {clientInfo.email && <div>✉ {clientInfo.email}</div>}
+                    {clientInfo.phone && <div>☎ {clientInfo.phone}</div>}
+                    {clientInfo.inn && (
+                      <div>
+                        ИНН {clientInfo.inn}
+                        {clientInfo.kpp ? ` · КПП ${clientInfo.kpp}` : ""}
+                      </div>
+                    )}
+                    {clientInfo.address && <div>📍 {clientInfo.address}</div>}
+                    {!clientInfo.email &&
+                      !clientInfo.phone &&
+                      !clientInfo.inn &&
+                      !clientInfo.address && (
+                        <div className="text-amber-500">
+                          У клиента нет контактов/реквизитов. Заполните карточку клиента.
+                        </div>
+                      )}
+                  </div>
+                )}
               </div>
               <div>
                 <Label>Шаблон</Label>
@@ -360,7 +428,12 @@ const AdminOfferEdit = () => {
             <div className="rounded-md overflow-hidden border border-border bg-white">
               <div className="overflow-auto max-h-[80vh]">
                 <div ref={previewRef} className="origin-top-left" style={{ transform: "scale(0.7)", transformOrigin: "top left", width: "794px" }}>
-                  <OfferPreview offer={displayOfferMerged} items={previewItems} clientName={clientName} />
+                  <OfferPreview
+                    offer={displayOfferMerged}
+                    items={previewItems}
+                    clientName={clientName}
+                    client={clientInfo}
+                  />
                 </div>
               </div>
             </div>
