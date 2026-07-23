@@ -22,6 +22,8 @@ type Payload = {
 const SMTP_USER = Deno.env.get('SMTP_USER');
 const SMTP_PASSWORD = Deno.env.get('SMTP_PASSWORD');
 const SMTP_FROM = Deno.env.get('SMTP_FROM') ?? SMTP_USER ?? '';
+const SMTP_HOST = Deno.env.get('SMTP_HOST') ?? 'mail.timeweb.com';
+const SMTP_PORT = Number(Deno.env.get('SMTP_PORT') ?? '465');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -156,8 +158,8 @@ Deno.serve(async (req) => {
 
   const client = new SMTPClient({
     connection: {
-      hostname: 'smtp.timeweb.ru',
-      port: 465,
+      hostname: SMTP_HOST,
+      port: SMTP_PORT,
       tls: true,
       auth: {
         username: SMTP_USER,
