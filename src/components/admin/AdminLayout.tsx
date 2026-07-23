@@ -56,6 +56,7 @@ const groups: { label: string; items: Item[] }[] = [
       { title: "Клиенты", url: "/admin/clients", icon: Users },
       { title: "Сделки", url: "/admin/deals", icon: Briefcase, badgeKey: "deals_active" },
       { title: "Предложения", url: "/admin/offers", icon: FileSpreadsheet },
+      { title: "Почта", url: "/admin/emails", icon: Mail },
     ],
   },
   {
@@ -71,7 +72,6 @@ const groups: { label: string; items: Item[] }[] = [
       { title: "Документы", url: "/admin/documents", icon: FileText },
       { title: "Отчёты", url: "/admin/reports", icon: BarChart3 },
       { title: "Журнал", url: "/admin/audit", icon: History },
-      { title: "Письма", url: "/admin/emails", icon: Mail },
     ],
   },
   {
