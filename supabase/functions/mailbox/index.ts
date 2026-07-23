@@ -3,8 +3,10 @@ import { createClient } from 'npm:@supabase/supabase-js@2.45.0';
 import { ImapFlow } from 'npm:imapflow@1.0.164';
 import { simpleParser } from 'npm:mailparser@3.7.1';
 
-const IMAP_HOST = Deno.env.get('IMAP_HOST') ?? 'mail.timeweb.com';
-const IMAP_PORT = Number(Deno.env.get('IMAP_PORT') ?? '993');
+// Timeweb Cloud IMAP: imap.timeweb.ru:993 (SSL)
+// See https://timeweb.cloud/docs/mail/email-clients-configuration
+const IMAP_HOST = 'imap.timeweb.ru';
+const IMAP_PORT = 993;
 const IMAP_USER = Deno.env.get('SMTP_USER')!;
 const IMAP_PASS = Deno.env.get('SMTP_PASSWORD')!;
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
