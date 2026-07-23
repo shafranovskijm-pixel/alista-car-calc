@@ -28,6 +28,7 @@ import {
   ListTodo,
   History,
   Mail,
+  FileSpreadsheet,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ const groups: { label: string; items: Item[] }[] = [
       { title: "Задачи", url: "/admin/tasks", icon: ListTodo, badgeKey: "tasks_overdue" },
       { title: "Клиенты", url: "/admin/clients", icon: Users },
       { title: "Сделки", url: "/admin/deals", icon: Briefcase, badgeKey: "deals_active" },
+      { title: "Предложения", url: "/admin/offers", icon: FileSpreadsheet },
     ],
   },
   {
