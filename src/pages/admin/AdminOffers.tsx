@@ -103,7 +103,7 @@ const AdminOffers = () => {
             icon={FileSpreadsheet}
             title="Пока нет предложений"
             description="Создайте первое коммерческое предложение для клиента"
-            action={{ label: "Создать КП", onClick: () => navigate("/admin/offers/new") }}
+            action={<Button onClick={() => navigate("/admin/offers/new")}><Plus className="h-4 w-4 mr-2" /> Создать КП</Button>}
           />
         ) : (
           <div className="overflow-x-auto">
