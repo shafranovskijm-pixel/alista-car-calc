@@ -728,6 +728,143 @@ export type Database = {
         }
         Relationships: []
       }
+      offer_items: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          offer_id: string
+          price: number
+          qty: number
+          sort_order: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          offer_id: string
+          price?: number
+          qty?: number
+          sort_order?: number
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          offer_id?: string
+          price?: number
+          qty?: number
+          sort_order?: number
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_items_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offers: {
+        Row: {
+          accepted_at: string | null
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          deal_id: string | null
+          id: string
+          intro: string | null
+          number: number
+          sent_at: string | null
+          status: string
+          subtotal: number
+          template: string
+          title: string
+          total: number
+          updated_at: string
+          valid_days: number
+          vat_amount: number
+          vat_included: boolean
+          vat_rate: number
+          viewed_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deal_id?: string | null
+          id?: string
+          intro?: string | null
+          number?: number
+          sent_at?: string | null
+          status?: string
+          subtotal?: number
+          template?: string
+          title?: string
+          total?: number
+          updated_at?: string
+          valid_days?: number
+          vat_amount?: number
+          vat_included?: boolean
+          vat_rate?: number
+          viewed_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deal_id?: string | null
+          id?: string
+          intro?: string | null
+          number?: number
+          sent_at?: string | null
+          status?: string
+          subtotal?: number
+          template?: string
+          title?: string
+          total?: number
+          updated_at?: string
+          valid_days?: number
+          vat_amount?: number
+          vat_included?: boolean
+          vat_rate?: number
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_categories: {
         Row: {
           created_at: string
@@ -875,6 +1012,45 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      services_catalog: {
+        Row: {
+          active: boolean
+          base_price: number
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          sort_order: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          base_price?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          sort_order?: number
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          base_price?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          sort_order?: number
+          unit?: string
           updated_at?: string
         }
         Relationships: []
