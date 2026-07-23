@@ -39,6 +39,8 @@ const openClient = () =>
     logger: false,
   });
 
+console.log(`[mailbox] IMAP target ${IMAP_HOST}:${IMAP_PORT} user=${IMAP_USER}`);
+
 const listMessages = async (mailbox: string, limit: number) => {
   const client = openClient();
   await client.connect();
