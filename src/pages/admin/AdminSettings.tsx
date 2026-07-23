@@ -15,6 +15,7 @@ import TemplatesManager from "@/components/admin/TemplatesManager";
 import EmailSettings from "@/components/admin/EmailSettings";
 import AlistaContractSample from "@/components/admin/AlistaContractSample";
 import HintCard from "@/components/admin/HintCard";
+import TeamManager from "@/components/admin/TeamManager";
 
 const AdminSettings = () => {
   const { user } = useAuth();
@@ -84,6 +85,7 @@ const AdminSettings = () => {
       >
         <TabsList>
           <TabsTrigger value="profile">Профиль</TabsTrigger>
+          <TabsTrigger value="team">Команда</TabsTrigger>
           <TabsTrigger value="email">Почта</TabsTrigger>
           <TabsTrigger value="templates">Шаблоны</TabsTrigger>
           <TabsTrigger value="onboarding">Обучение</TabsTrigger>
@@ -134,6 +136,9 @@ const AdminSettings = () => {
 
         <TabsContent value="onboarding">
           <OnboardingGuide />
+        </TabsContent>
+        <TabsContent value="team">
+          <TeamManager />
         </TabsContent>
         <TabsContent value="templates">
           <div className="space-y-4">
