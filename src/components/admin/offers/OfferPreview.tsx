@@ -1,5 +1,5 @@
 import { Offer, OfferItem } from "@/lib/offers";
-import { ALISTA_AGENT, ALISTA_AGENT_EXTRA } from "@/lib/contract";
+import { ALISTA_AGENT } from "@/lib/contract";
 import PremiumDark from "./templates/PremiumDark";
 import CleanLight from "./templates/CleanLight";
 import Executive from "./templates/Executive";
@@ -14,8 +14,8 @@ const AGENT = {
   name: "ООО «АЛИСТА»",
   inn: ALISTA_AGENT.agent_inn,
   address: ALISTA_AGENT.agent_address,
-  phone: ALISTA_AGENT_EXTRA?.agent_phone ?? "+7 914 073-01-96",
-  email: ALISTA_AGENT_EXTRA?.agent_email ?? "info@alistaru.ru",
+  phone: "+7 914 073-01-96",
+  email: "info@alistaru.ru",
 };
 
 const OfferPreview = ({ offer, items, clientName }: Props) => {
