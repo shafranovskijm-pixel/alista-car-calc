@@ -4,10 +4,22 @@ import PremiumDark from "./templates/PremiumDark";
 import CleanLight from "./templates/CleanLight";
 import Executive from "./templates/Executive";
 
+export type OfferClient = {
+  name: string;
+  contact?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  inn?: string | null;
+  kpp?: string | null;
+  address?: string | null;
+  type?: string | null;
+} | null;
+
 type Props = {
   offer: Offer;
   items: OfferItem[];
   clientName: string;
+  client?: OfferClient;
 };
 
 const AGENT = {
@@ -18,10 +30,11 @@ const AGENT = {
   email: "info@alistaru.ru",
 };
 
-const OfferPreview = ({ offer, items, clientName }: Props) => {
-  if (offer.template === "clean_light") return <CleanLight offer={offer} items={items} clientName={clientName} agent={AGENT} />;
-  if (offer.template === "executive") return <Executive offer={offer} items={items} clientName={clientName} agent={AGENT} />;
-  return <PremiumDark offer={offer} items={items} clientName={clientName} agent={AGENT} />;
+const OfferPreview = ({ offer, items, clientName, client }: Props) => {
+  const shared = { offer, items, clientName, client: client ?? null, agent: AGENT };
+  if (offer.template === "clean_light") return <CleanLight {...shared} />;
+  if (offer.template === "executive") return <Executive {...shared} />;
+  return <PremiumDark {...shared} />;
 };
 
 export default OfferPreview;
