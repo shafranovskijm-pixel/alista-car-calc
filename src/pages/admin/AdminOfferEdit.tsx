@@ -34,7 +34,10 @@ import { supabase } from "@/integrations/supabase/proxy-client";
 import { toast } from "@/hooks/use-toast";
 import { blobToBase64, downloadBlob, renderOfferPdf } from "@/lib/offerPdf";
 
-type DraftItem = Pick<OfferItem, "name" | "description" | "unit" | "qty" | "price">;
+type DraftItem = Pick<OfferItem, "name" | "description" | "unit" | "qty" | "price"> & {
+  service_id?: string | null;
+  catalog_price?: number | null;
+};
 
 type ClientOpt = {
   id: string;
@@ -150,8 +153,29 @@ const AdminOfferEdit = () => {
   const addFromCatalog = (s: Service) => {
     setItems((prev) => [
       ...prev,
-      { name: s.name, description: s.description, unit: s.unit, qty: 1, price: Number(s.base_price) },
+      {
+        name: s.name,
+        description: s.description,
+        unit: s.unit,
+        qty: 1,
+        price: Number(s.base_price),
+        service_id: s.id,
+        catalog_price: Number(s.base_price),
+      },
     ]);
+  };
+
+  const rememberPrice = async (serviceId: string, price: number) => {
+    try {
+      await updateServicePrice(serviceId, price);
+      setServices((prev) => prev.map((s) => (s.id === serviceId ? { ...s, base_price: price } : s)));
+      setItems((prev) =>
+        prev.map((it) => (it.service_id === serviceId ? { ...it, catalog_price: price } : it)),
+      );
+      toast({ title: "Цена сохранена в каталоге" });
+    } catch (e) {
+      toast({ title: "Не удалось сохранить цену", description: (e as Error).message, variant: "destructive" });
+    }
   };
   const addCustom = () => {
     setItems((prev) => [...prev, { name: "Своя услуга", description: null, unit: "шт", qty: 1, price: 0 }]);
