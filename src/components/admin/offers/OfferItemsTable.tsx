@@ -1,17 +1,23 @@
 import { OfferItem, money } from "@/lib/offers";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Trash2, GripVertical } from "lucide-react";
+import { Trash2, GripVertical, Save } from "lucide-react";
 
-type DraftItem = Pick<OfferItem, "name" | "description" | "unit" | "qty" | "price"> & { id?: string };
+type DraftItem = Pick<OfferItem, "name" | "description" | "unit" | "qty" | "price"> & {
+  id?: string;
+  service_id?: string | null;
+  catalog_price?: number | null;
+};
 
 type Props = {
   items: DraftItem[];
   currency: string;
   onChange: (items: DraftItem[]) => void;
+  /** Запомнить цену позиции в каталоге услуг */
+  onRememberPrice?: (serviceId: string, price: number) => void;
 };
 
-const OfferItemsTable = ({ items, currency, onChange }: Props) => {
+const OfferItemsTable = ({ items, currency, onChange, onRememberPrice }: Props) => {
   const update = (i: number, patch: Partial<DraftItem>) => {
     const next = items.slice();
     next[i] = { ...next[i], ...patch };
@@ -70,6 +76,21 @@ const OfferItemsTable = ({ items, currency, onChange }: Props) => {
                   {money(Number(it.qty) * Number(it.price), currency)}
                 </div>
               </div>
+              {it.service_id && onRememberPrice && Number(it.price) !== Number(it.catalog_price ?? NaN) && (
+                <div className="flex items-center justify-between gap-2 rounded-md bg-primary/5 border border-primary/20 px-2.5 py-1.5">
+                  <span className="text-[11px] text-muted-foreground">
+                    Цена отличается от каталога{it.catalog_price != null ? ` (${money(Number(it.catalog_price), currency)})` : ""}
+                  </span>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="h-7 text-[11px] gap-1"
+                    onClick={() => onRememberPrice(it.service_id!, Number(it.price))}
+                  >
+                    <Save className="h-3 w-3" /> Запомнить цену
+                  </Button>
+                </div>
+              )}
             </div>
             <Button variant="ghost" size="icon" onClick={() => remove(i)} title="Удалить">
               <Trash2 className="h-4 w-4 text-destructive" />
