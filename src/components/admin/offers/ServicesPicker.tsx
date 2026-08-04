@@ -57,10 +57,14 @@ const ServicesPicker = ({ services, onAdd, onAddCustom }: Props) => {
                         <div className="text-xs text-muted-foreground line-clamp-1">{s.description}</div>
                       )}
                     </div>
-                    <div className="text-right shrink-0">
-                      <div className="text-sm font-semibold">{s.base_price.toLocaleString("ru-RU")} ₽</div>
-                      <div className="text-[10px] text-muted-foreground">/ {s.unit}</div>
-                    </div>
+                     <div className="text-right shrink-0">
+                       <div className="text-sm font-semibold">
+                         {Number(s.base_price) > 0 ? `${s.base_price.toLocaleString("ru-RU")} ₽` : (
+                           <span className="text-xs font-normal text-muted-foreground">цена не задана</span>
+                         )}
+                       </div>
+                       <div className="text-[10px] text-muted-foreground">/ {s.unit}</div>
+                     </div>
                     <Plus className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 mt-1" />
                   </div>
                 </button>

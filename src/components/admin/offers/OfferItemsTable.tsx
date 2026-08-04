@@ -68,7 +68,7 @@ const OfferItemsTable = ({ items, currency, onChange, onRememberPrice }: Props) 
                 <Input
                   type="number"
                   step="0.01"
-                  value={it.price}
+                  value={Number(it.price) === 0 ? "" : it.price}
                   onChange={(e) => update(i, { price: parseFloat(e.target.value) || 0 })}
                   placeholder="Цена"
                 />
@@ -76,10 +76,12 @@ const OfferItemsTable = ({ items, currency, onChange, onRememberPrice }: Props) 
                   {money(Number(it.qty) * Number(it.price), currency)}
                 </div>
               </div>
-              {it.service_id && onRememberPrice && Number(it.price) !== Number(it.catalog_price ?? NaN) && (
+              {it.service_id && onRememberPrice && Number(it.price) > 0 && Number(it.price) !== Number(it.catalog_price ?? NaN) && (
                 <div className="flex items-center justify-between gap-2 rounded-md bg-primary/5 border border-primary/20 px-2.5 py-1.5">
                   <span className="text-[11px] text-muted-foreground">
-                    Цена отличается от каталога{it.catalog_price != null ? ` (${money(Number(it.catalog_price), currency)})` : ""}
+                    {Number(it.catalog_price ?? 0) > 0
+                      ? `Цена отличается от каталога (${money(Number(it.catalog_price), currency)})`
+                      : "Цена в каталоге не задана"}
                   </span>
                   <Button
                     variant="secondary"
