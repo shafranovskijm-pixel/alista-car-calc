@@ -161,6 +161,8 @@ export const deleteOffer = async (id: string) => {
 export const replaceOfferItems = async (offerId: string, items: Partial<OfferItem>[]) => {
   await supabase.from("offer_items").delete().eq("offer_id", offerId);
   if (!items.length) return;
+  await supabase.from("offer_items").delete().eq("offer_id", offerId);
+  if (!items.length) return;
   const payload = items.map((it, i) => ({
     offer_id: offerId,
     name: it.name ?? "",
