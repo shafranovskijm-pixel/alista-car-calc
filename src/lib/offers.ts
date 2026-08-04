@@ -158,6 +158,15 @@ export const deleteOffer = async (id: string) => {
   if (error) throw error;
 };
 
+/** Запомнить новую цену услуги в каталоге, чтобы не менять её каждый раз */
+export const updateServicePrice = async (serviceId: string, price: number) => {
+  const { error } = await supabase
+    .from("services_catalog")
+    .update({ base_price: price } as never)
+    .eq("id", serviceId);
+  if (error) throw error;
+};
+
 export const replaceOfferItems = async (offerId: string, items: Partial<OfferItem>[]) => {
   await supabase.from("offer_items").delete().eq("offer_id", offerId);
   if (!items.length) return;
