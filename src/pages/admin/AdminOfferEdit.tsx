@@ -30,6 +30,7 @@ import {
   replaceOfferItems,
   updateOffer,
 } from "@/lib/offers";
+import { updateServicePrice } from "@/lib/offers";
 import { supabase } from "@/integrations/supabase/proxy-client";
 import { toast } from "@/hooks/use-toast";
 import { blobToBase64, downloadBlob, renderOfferPdf } from "@/lib/offerPdf";
