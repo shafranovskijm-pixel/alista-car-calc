@@ -429,7 +429,12 @@ const AdminOfferEdit = () => {
                 <TabsTrigger value="catalog">Каталог услуг</TabsTrigger>
               </TabsList>
               <TabsContent value="items">
-                <OfferItemsTable items={items} currency={currency} onChange={setItems} />
+                <OfferItemsTable
+                  items={items}
+                  currency={currency}
+                  onChange={setItems}
+                  onRememberPrice={rememberPrice}
+                />
                 <div className="mt-4 flex justify-end">
                   <div className="w-full sm:w-[300px] space-y-1 text-sm">
                     <div className="flex justify-between text-muted-foreground"><span>Подытог</span><span>{money(totals.subtotal, currency)}</span></div>
