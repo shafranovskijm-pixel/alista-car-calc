@@ -430,7 +430,12 @@ const AdminOfferEdit = () => {
               </TabsList>
               <TabsContent value="items">
                 <OfferItemsTable
-                  items={items}
+                  items={items.map((it) => {
+                    const svc = services.find((s) => s.id === it.service_id) ?? services.find((s) => s.name === it.name);
+                    return svc
+                      ? { ...it, service_id: svc.id, catalog_price: Number(svc.base_price) }
+                      : it;
+                  })}
                   currency={currency}
                   onChange={setItems}
                   onRememberPrice={rememberPrice}
