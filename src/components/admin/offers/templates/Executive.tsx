@@ -31,12 +31,14 @@ const Executive = ({ offer, items, clientName, agent, client }: Props) => {
 
           <div className="mt-auto mb-auto" style={{ minWidth: 0 }}>
             <div className="text-[13px] uppercase tracking-[0.2em] text-[#9DB6D8]">Коммерческое предложение</div>
-            <div style={{ fontFamily: HEAD_FONT, ...num, lineHeight: 1 }} className="text-[96px] font-bold mt-4">
-              №{offer.number}
+            <div style={{ fontFamily: HEAD_FONT, ...num, lineHeight: 1.05 }} className="text-[88px] font-bold mt-5">
+              {offer.number}
             </div>
-            <div style={wrap} className="mt-6 text-[22px] font-semibold text-[#E2E8F0] max-w-[560px]">
-              {offer.title}
-            </div>
+            {offer.title && offer.title !== "Коммерческое предложение" && (
+              <div style={wrap} className="mt-8 text-[22px] font-semibold text-[#E2E8F0] max-w-[560px]">
+                {offer.title}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-8 border-t border-white/15 pt-6 text-[12px]">
@@ -68,7 +70,7 @@ const Executive = ({ offer, items, clientName, agent, client }: Props) => {
         <div data-pdf-flow className="flex-1 px-14 pt-12 pb-4">
           <div data-pdf-block className="flex justify-between items-center gap-6 border-b border-[#E2E8F0] pb-4">
             <div className="text-[11px] tracking-[0.32em] text-[#2563EB] uppercase font-semibold">
-              Смета · КП №{offer.number}
+              Смета · {offer.number}
             </div>
             <div className="text-[12px] text-[#64748B]" style={wrap}>{agent.name}</div>
           </div>
@@ -170,7 +172,7 @@ const Executive = ({ offer, items, clientName, agent, client }: Props) => {
         </div>
 
         <div className="px-14 pb-6 pt-2 flex justify-between text-[10px] text-[#94A3B8]">
-          <span>КП № {offer.number} · alistaru.ru</span>
+          <span>{offer.number} · alistaru.ru</span>
           <span data-pdf-pageno style={{ ...num, display: "none" }} />
         </div>
       </div>

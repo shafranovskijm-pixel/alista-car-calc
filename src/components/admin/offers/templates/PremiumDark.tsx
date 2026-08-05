@@ -46,7 +46,7 @@ const PremiumDark = ({ offer, items, clientName, agent, client }: Props) => {
               </div>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-[11px] uppercase tracking-[0.2em] text-[#9DB6D8]">КП №</div>
+              <div className="text-[11px] uppercase tracking-[0.2em] text-[#9DB6D8]">Номер</div>
               <div style={{ ...num, fontFamily: HEAD_FONT }} className="text-[30px] font-bold text-white">
                 {offer.number}
               </div>
@@ -68,7 +68,7 @@ const PremiumDark = ({ offer, items, clientName, agent, client }: Props) => {
         >
           <div className="text-[12px] font-semibold tracking-[0.3em] uppercase text-[#7FB0FF]">Alista</div>
           <div style={num} className="text-[12px] text-[#C7D6EA]">
-            Коммерческое предложение № {offer.number}
+            КП {offer.number}
           </div>
         </div>
 
@@ -211,7 +211,7 @@ const PremiumDark = ({ offer, items, clientName, agent, client }: Props) => {
         </div>
 
         <div className="px-14 pb-6 pt-2 flex justify-between text-[10px] text-[#94A3B8]">
-          <span>КП № {offer.number} · alistaru.ru</span>
+          <span>{offer.number} · alistaru.ru</span>
           <span data-pdf-pageno style={{ ...num, display: "none" }} />
         </div>
       </div>

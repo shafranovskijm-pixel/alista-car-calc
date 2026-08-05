@@ -157,7 +157,7 @@ const CleanLight = ({ offer, items, clientName, agent, client }: Props) => {
         </div>
 
         <div className="px-14 pb-6 pt-2 flex justify-between text-[10px] text-[#94A3B8]">
-          <span>КП № {offer.number} · alistaru.ru</span>
+          <span>{offer.number} · alistaru.ru</span>
           <span data-pdf-pageno style={{ ...num, display: "none" }} />
         </div>
       </div>
