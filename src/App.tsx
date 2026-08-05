@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import PdfTest from "./pages/PdfTest";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -45,6 +46,7 @@ const AnimatedRoutes = () => {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Index />} />
+        <Route path="/pdf-test" element={<PdfTest />} />
         <Route path="/calculator" element={<Calculator />} />
         <Route path="/services" element={<Services />} />
         <Route path="/works" element={<Works />} />
