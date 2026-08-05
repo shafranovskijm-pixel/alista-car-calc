@@ -31,7 +31,7 @@ const CleanLight = ({ offer, items, clientName, agent, client }: Props) => (
       </div>
     </div>
 
-    <div className="mt-8 grid grid-cols-2 gap-6 text-[13px]">
+    <div data-pdf-block className="mt-8 grid grid-cols-2 gap-6 text-[13px]">
       <div>
         <div className="text-[10px] uppercase tracking-widest text-[#64748b] mb-1">Клиент</div>
         <div className="text-[16px] font-semibold">{clientName || "—"}</div>
@@ -61,7 +61,7 @@ const CleanLight = ({ offer, items, clientName, agent, client }: Props) => (
     )}
     {offer.intro && <div className="mt-2 text-[13px] leading-relaxed text-[#475569] whitespace-pre-line">{offer.intro}</div>}
 
-    <table className="w-full mt-8 text-[13px] border-collapse">
+    <table data-pdf-block className="w-full mt-8 text-[13px] border-collapse">
       <thead>
         <tr className="bg-[#eff6ff] text-[11px] uppercase tracking-wider text-[#2563eb]">
           <th className="text-left px-4 py-3 rounded-l-md">Услуга</th>
@@ -72,7 +72,7 @@ const CleanLight = ({ offer, items, clientName, agent, client }: Props) => (
       </thead>
       <tbody>
         {items.map((it) => (
-          <tr key={it.id} className="border-b border-[#e2e8f0] align-top">
+          <tr key={it.id} data-pdf-block className="border-b border-[#e2e8f0] align-top">
             <td className="px-4 py-3">
               <div className="font-medium">{it.name}</div>
               {it.description && <div className="text-[11px] text-[#64748b] mt-1">{it.description}</div>}
@@ -85,7 +85,7 @@ const CleanLight = ({ offer, items, clientName, agent, client }: Props) => (
       </tbody>
     </table>
 
-    <div className="mt-6 flex justify-end">
+    <div data-pdf-block className="mt-6 flex justify-end">
       <div className="w-[320px] space-y-2 text-[13px]">
         <div className="flex justify-between text-[#64748b]"><span>Подытог</span><span>{money(offer.subtotal, offer.currency)}</span></div>
         <div className="flex justify-between text-[#64748b]"><span>НДС {offer.vat_rate}%</span><span>{money(offer.vat_amount, offer.currency)}</span></div>
@@ -97,7 +97,7 @@ const CleanLight = ({ offer, items, clientName, agent, client }: Props) => (
       </div>
     </div>
 
-    <div className="mt-16 pt-6 border-t border-[#e2e8f0] text-[10px] text-[#64748b] grid grid-cols-2 gap-4">
+    <div data-pdf-block className="mt-16 pt-6 border-t border-[#e2e8f0] text-[10px] text-[#64748b] grid grid-cols-2 gap-4">
       <div>
         <div className="font-semibold text-[#0f172a] mb-1">{agent.name}</div>
         <div>ИНН {agent.inn}</div>
