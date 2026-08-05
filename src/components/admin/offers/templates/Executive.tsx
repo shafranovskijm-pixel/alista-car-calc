@@ -12,7 +12,7 @@ type Props = {
 const Executive = ({ offer, items, clientName, agent, client }: Props) => (
   <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif" }} className="offer-a4">
     {/* Cover page */}
-    <div className="w-[794px] h-[1123px] bg-[#0f172a] text-white p-16 relative overflow-hidden">
+    <div data-pdf-page className="w-[794px] h-[1123px] bg-[#0f172a] text-white p-16 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0369a1]/40" />
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-[#3b82f6]/20 blur-3xl" />
 
@@ -62,7 +62,7 @@ const Executive = ({ offer, items, clientName, agent, client }: Props) => (
     </div>
 
     {/* Details page */}
-    <div className="w-[794px] min-h-[1123px] bg-white text-[#0f172a] p-14">
+    <div data-pdf-page className="w-[794px] min-h-[1123px] bg-white text-[#0f172a] p-14">
       <div className="flex justify-between items-center border-b border-[#e2e8f0] pb-4">
         <div className="text-[11px] tracking-[0.4em] text-[#2563eb] uppercase">Смета · КП №{offer.number}</div>
         <div className="text-[11px] text-[#64748b]">{agent.name}</div>
@@ -72,7 +72,7 @@ const Executive = ({ offer, items, clientName, agent, client }: Props) => (
         <div className="mt-6 text-[13px] leading-relaxed text-[#334155] whitespace-pre-line">{offer.intro}</div>
       )}
 
-      <table className="w-full mt-6 text-[13px] border-collapse">
+      <table data-pdf-block className="w-full mt-6 text-[13px] border-collapse">
         <thead>
           <tr className="border-b-2 border-[#0f172a] text-[11px] uppercase tracking-wider text-[#0f172a]">
             <th className="text-left py-3">Услуга</th>
@@ -83,7 +83,7 @@ const Executive = ({ offer, items, clientName, agent, client }: Props) => (
         </thead>
         <tbody>
           {items.map((it) => (
-            <tr key={it.id} className="border-b border-[#e2e8f0] align-top">
+            <tr key={it.id} data-pdf-block className="border-b border-[#e2e8f0] align-top">
               <td className="py-4">
                 <div className="font-semibold">{it.name}</div>
                 {it.description && <div className="text-[11px] text-[#64748b] mt-1 leading-relaxed">{it.description}</div>}
@@ -96,7 +96,7 @@ const Executive = ({ offer, items, clientName, agent, client }: Props) => (
         </tbody>
       </table>
 
-      <div className="mt-8 flex justify-end">
+      <div data-pdf-block className="mt-8 flex justify-end">
         <div className="w-[360px]">
           <div className="flex justify-between text-[13px] text-[#64748b] py-2"><span>Подытог</span><span>{money(offer.subtotal, offer.currency)}</span></div>
           <div className="flex justify-between text-[13px] text-[#64748b] py-2 border-b border-[#e2e8f0]"><span>НДС {offer.vat_rate}%</span><span>{money(offer.vat_amount, offer.currency)}</span></div>
