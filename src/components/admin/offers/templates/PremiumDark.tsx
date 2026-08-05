@@ -1,5 +1,6 @@
 import { Offer, OfferItem, money } from "@/lib/offers";
 import type { OfferClient } from "../OfferPreview";
+import { HEAD_FONT, PDF_FONT, ROW_GRID, clientLines, num, wrap } from "./parts";
 
 type Props = {
   offer: Offer;
@@ -9,127 +10,213 @@ type Props = {
   client?: OfferClient;
 };
 
-const PremiumDark = ({ offer, items, clientName, agent, client }: Props) => (
-  <div
-    style={{ fontFamily: "'Inter','Segoe UI',sans-serif" }}
-    className="offer-a4 bg-[#0b1220] text-[#e8ecf5] w-[794px] min-h-[1123px] p-14 relative overflow-hidden"
-  >
-    {/* decorative glow */}
-    <div className="absolute -top-32 -right-32 w-[420px] h-[420px] rounded-full bg-[#3b82f6] opacity-20 blur-3xl" />
-    <div className="absolute bottom-0 -left-24 w-[320px] h-[320px] rounded-full bg-[#22d3ee] opacity-10 blur-3xl" />
-
-    <div className="relative z-10 flex items-start justify-between">
-      <div>
-        <div className="text-[10px] tracking-[0.4em] text-[#7fb0ff] uppercase mb-3">Alista · Владивосток</div>
-        <div
-          style={{ fontFamily: "'Space Grotesk','Inter',sans-serif" }}
-          className="text-[42px] leading-[1.05] font-bold"
-        >
-          Коммерческое<br/>предложение
-        </div>
-      </div>
-      <div className="text-right">
-        <div className="text-[11px] uppercase tracking-widest text-[#94a3b8]">№ КП</div>
-        <div className="text-[32px] font-bold text-[#60a5fa]">{offer.number}</div>
-        <div className="mt-3 text-[11px] text-[#94a3b8]">
-          {new Date(offer.created_at).toLocaleDateString("ru-RU")}
-        </div>
-        <div className="text-[11px] text-[#94a3b8]">Действует {offer.valid_days} дн.</div>
-      </div>
-    </div>
-
-    <div className="mt-8 h-[2px] bg-gradient-to-r from-transparent via-[#3b82f6] to-transparent" />
-
-    <div data-pdf-block className="mt-8 grid grid-cols-2 gap-6">
-      <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-        <div className="text-[10px] uppercase tracking-widest text-[#94a3b8] mb-2">Для кого</div>
-        <div className="text-[16px] font-semibold">{clientName || "—"}</div>
-        {client && (
-          <div className="mt-2 space-y-0.5 text-[11px] text-[#94a3b8]">
-            {client.contact && <div>{client.contact}</div>}
-            {client.email && <div>{client.email}</div>}
-            {client.phone && <div>{client.phone}</div>}
-            {client.inn && (
-              <div>
-                ИНН {client.inn}
-                {client.kpp ? ` · КПП ${client.kpp}` : ""}
-              </div>
-            )}
-            {client.address && <div>{client.address}</div>}
-          </div>
-        )}
-      </div>
-      <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-        <div className="text-[10px] uppercase tracking-widest text-[#94a3b8] mb-2">От кого</div>
-        <div className="text-[16px] font-semibold">{agent.name}</div>
-        <div className="text-[11px] text-[#94a3b8] mt-1">ИНН {agent.inn}</div>
-      </div>
-    </div>
-
-    {offer.title && offer.title !== "Коммерческое предложение" && (
-      <div
-        style={{ fontFamily: "'Space Grotesk','Inter',sans-serif" }}
-        className="mt-8 text-[22px] font-semibold text-white"
-      >
-        {offer.title}
-      </div>
-    )}
-    {offer.intro && <div className="mt-3 text-[13px] leading-relaxed text-[#cbd5e1] whitespace-pre-line">{offer.intro}</div>}
-
-    <div data-pdf-block className="mt-8 rounded-xl border border-white/10 overflow-hidden">
-      <div className="grid grid-cols-[1fr_60px_120px_140px] px-5 py-3 text-[11px] uppercase tracking-widest text-[#94a3b8] bg-white/[0.03]">
-        <div>Услуга</div>
-        <div className="text-center">Кол-во</div>
-        <div className="text-right">Цена</div>
-        <div className="text-right">Сумма</div>
-      </div>
-      {items.map((it) => (
-        <div key={it.id} data-pdf-block className="grid grid-cols-[1fr_60px_120px_140px] px-5 py-4 border-t border-white/5 items-start">
-          <div>
-            <div className="text-[14px] font-medium">{it.name}</div>
-            {it.description && <div className="text-[11px] text-[#94a3b8] mt-1">{it.description}</div>}
-          </div>
-          <div className="text-center text-[13px] text-[#cbd5e1]">{it.qty} {it.unit}</div>
-          <div className="text-right text-[13px] text-[#cbd5e1]">{money(it.price, offer.currency)}</div>
-          <div className="text-right text-[14px] font-semibold text-white">{money(Number(it.qty) * Number(it.price), offer.currency)}</div>
-        </div>
-      ))}
-    </div>
-
-    <div data-pdf-block className="mt-6 flex justify-end">
-      <div className="w-[320px] rounded-xl bg-gradient-to-br from-[#1e40af]/50 to-[#0ea5e9]/20 border border-[#3b82f6]/40 p-5 space-y-2">
-        <div className="flex justify-between text-[12px] text-[#cbd5e1]">
-          <span>Подытог</span><span>{money(offer.subtotal, offer.currency)}</span>
-        </div>
-        <div className="flex justify-between text-[12px] text-[#cbd5e1]">
-          <span>НДС {offer.vat_rate}%</span><span>{money(offer.vat_amount, offer.currency)}</span>
-        </div>
-        <div className="h-px bg-white/10" />
-        <div className="flex justify-between items-baseline">
-          <span className="text-[12px] uppercase tracking-widest text-[#94a3b8]">Итого</span>
-          <span
-            style={{ fontFamily: "'Space Grotesk','Inter',sans-serif" }}
-            className="text-[26px] font-bold text-white"
-          >
-            {money(offer.total, offer.currency)}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <div data-pdf-block className="mt-12 pt-6 border-t border-white/10 text-[10px] text-[#94a3b8] flex justify-between">
-      <div>
-        <div className="font-semibold text-[#cbd5e1] mb-1">{agent.name}</div>
-        <div>ИНН {agent.inn}</div>
-        <div className="max-w-[380px]">{agent.address}</div>
-      </div>
-      <div className="text-right">
-        <div>{agent.phone}</div>
-        <div>{agent.email}</div>
-        <div className="mt-2 text-[#60a5fa]">alistaru.ru</div>
-      </div>
-    </div>
+const Card = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <div className="rounded-lg border border-[#E2E8F0] bg-white p-5" style={{ minWidth: 0 }}>
+    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#2563EB] mb-2">{title}</div>
+    {children}
   </div>
 );
+
+const PremiumDark = ({ offer, items, clientName, agent, client }: Props) => {
+  const lines = clientLines(client);
+  return (
+    <div className="offer-a4" style={{ fontFamily: PDF_FONT }}>
+      <div
+        data-pdf-page
+        className="bg-[#F8FAFC] text-[#0F172A] flex flex-col"
+        style={{ width: 794, minHeight: 1123 }}
+      >
+        {/* Brand band — page 1 */}
+        <div
+          data-pdf-page-header
+          className="px-14 py-10 text-white"
+          style={{ background: "linear-gradient(135deg, #081426 0%, #123B70 100%)" }}
+        >
+          <div className="flex items-start justify-between gap-8">
+            <div style={{ minWidth: 0 }}>
+              <div className="text-[13px] font-semibold tracking-[0.32em] uppercase text-[#7FB0FF]">Alista</div>
+              <div className="text-[11px] tracking-[0.24em] uppercase text-[#9DB6D8] mt-1">Владивосток</div>
+              <div
+                style={{ fontFamily: HEAD_FONT, lineHeight: 1.12 }}
+                className="mt-6 text-[36px] font-bold"
+              >
+                Коммерческое
+                <br />
+                предложение
+              </div>
+            </div>
+            <div className="text-right shrink-0">
+              <div className="text-[11px] uppercase tracking-[0.2em] text-[#9DB6D8]">КП №</div>
+              <div style={{ ...num, fontFamily: HEAD_FONT }} className="text-[30px] font-bold text-white">
+                {offer.number}
+              </div>
+              <div style={num} className="mt-4 text-[12px] text-[#C7D6EA]">
+                {new Date(offer.created_at).toLocaleDateString("ru-RU")}
+              </div>
+              <div style={num} className="text-[12px] text-[#C7D6EA]">
+                Действует {offer.valid_days} дн.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Compact band — continuation pages */}
+        <div
+          data-pdf-compact-header
+          style={{ display: "none", background: "linear-gradient(135deg, #081426 0%, #123B70 100%)" }}
+          className="px-14 py-5 text-white flex items-center justify-between"
+        >
+          <div className="text-[12px] font-semibold tracking-[0.3em] uppercase text-[#7FB0FF]">Alista</div>
+          <div style={num} className="text-[12px] text-[#C7D6EA]">
+            Коммерческое предложение № {offer.number}
+          </div>
+        </div>
+
+        {/* Flow */}
+        <div data-pdf-flow className="flex-1 px-14 pt-8 pb-4">
+          <div data-pdf-block className="grid grid-cols-2 gap-5" style={{ alignItems: "stretch" }}>
+            <Card title="Клиент">
+              <div className="text-[15px] font-semibold" style={wrap}>
+                {clientName || "—"}
+              </div>
+              {lines.length > 0 && (
+                <div className="mt-2 space-y-1 text-[12px] text-[#64748B]">
+                  {lines.map((l) => (
+                    <div key={l} style={wrap}>
+                      {l}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+            <Card title="Исполнитель">
+              <div className="text-[15px] font-semibold" style={wrap}>
+                {agent.name}
+              </div>
+              <div className="mt-2 space-y-1 text-[12px] text-[#64748B]">
+                <div style={wrap}>ИНН {agent.inn}</div>
+                <div style={wrap}>{agent.address}</div>
+                <div style={wrap}>{agent.phone}</div>
+                <div style={wrap}>{agent.email}</div>
+              </div>
+            </Card>
+          </div>
+
+          {offer.title && offer.title !== "Коммерческое предложение" && (
+            <div
+              data-pdf-block
+              style={{ ...wrap, fontFamily: HEAD_FONT }}
+              className="mt-7 text-[20px] font-bold text-[#0F172A]"
+            >
+              {offer.title}
+            </div>
+          )}
+          {offer.intro && (
+            <div
+              data-pdf-block
+              style={{ ...wrap, whiteSpace: "pre-line", lineHeight: 1.45 }}
+              className="mt-3 text-[13px] text-[#334155]"
+            >
+              {offer.intro}
+            </div>
+          )}
+
+          {/* Table header (repeated on continuation pages) */}
+          <div
+            data-pdf-block
+            data-pdf-repeat
+            className="mt-7 grid rounded-t-md bg-[#EFF6FF] border border-[#E2E8F0] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#2563EB]"
+            style={{ gridTemplateColumns: ROW_GRID }}
+          >
+            <div style={wrap}>Услуга</div>
+            <div className="text-center" style={num}>
+              Кол-во
+            </div>
+            <div className="text-right" style={num}>
+              Цена
+            </div>
+            <div className="text-right" style={num}>
+              Сумма
+            </div>
+          </div>
+
+          {items.map((it) => (
+            <div
+              key={it.id}
+              data-pdf-block
+              className="grid border-x border-b border-[#E2E8F0] bg-white px-5 py-4"
+              style={{ gridTemplateColumns: ROW_GRID, alignItems: "flex-start" }}
+            >
+              <div style={{ minWidth: 0, paddingRight: 16 }}>
+                <div className="text-[13px] font-semibold text-[#0F172A]" style={wrap}>
+                  {it.name}
+                </div>
+                {it.description && (
+                  <div className="mt-1.5 text-[12px] text-[#64748B]" style={{ ...wrap, lineHeight: 1.45 }}>
+                    {it.description}
+                  </div>
+                )}
+              </div>
+              <div className="text-center text-[12px] text-[#475569]" style={num}>
+                {it.qty} {it.unit}
+              </div>
+              <div className="text-right text-[12px] text-[#475569]" style={num}>
+                {money(it.price, offer.currency)}
+              </div>
+              <div className="text-right text-[13px] font-semibold text-[#0F172A]" style={num}>
+                {money(Number(it.qty) * Number(it.price), offer.currency)}
+              </div>
+            </div>
+          ))}
+
+          <div data-pdf-block className="mt-6 flex justify-end">
+            <div className="w-[320px] rounded-lg border border-[#E2E8F0] bg-white overflow-hidden">
+              <div className="px-5 py-3 flex justify-between text-[12px] text-[#64748B]">
+                <span>Подытог</span>
+                <span style={num}>{money(offer.subtotal, offer.currency)}</span>
+              </div>
+              <div className="px-5 pb-3 flex justify-between text-[12px] text-[#64748B]">
+                <span>НДС {offer.vat_rate}%</span>
+                <span style={num}>{money(offer.vat_amount, offer.currency)}</span>
+              </div>
+              <div
+                className="px-5 py-4 flex items-baseline justify-between text-white"
+                style={{ background: "linear-gradient(135deg, #123B70 0%, #2563EB 100%)" }}
+              >
+                <span className="text-[11px] uppercase tracking-[0.18em]">Итого</span>
+                <span style={{ ...num, fontFamily: HEAD_FONT }} className="text-[22px] font-bold">
+                  {money(offer.total, offer.currency)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            data-pdf-block
+            className="mt-8 rounded-lg border border-[#E2E8F0] bg-white px-5 py-4 grid grid-cols-2 gap-6 text-[11px] text-[#64748B]"
+          >
+            <div style={{ minWidth: 0 }}>
+              <div className="text-[12px] font-semibold text-[#0F172A] mb-1" style={wrap}>
+                {agent.name}
+              </div>
+              <div style={wrap}>ИНН {agent.inn}</div>
+              <div style={wrap}>{agent.address}</div>
+            </div>
+            <div className="text-right" style={{ minWidth: 0 }}>
+              <div style={{ ...wrap, textAlign: "right" }}>{agent.phone}</div>
+              <div style={{ ...wrap, textAlign: "right" }}>{agent.email}</div>
+              <div className="mt-1 font-semibold text-[#2563EB]">alistaru.ru</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-14 pb-6 pt-2 flex justify-between text-[10px] text-[#94A3B8]">
+          <span>КП № {offer.number} · alistaru.ru</span>
+          <span data-pdf-pageno style={{ ...num, display: "none" }} />
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default PremiumDark;
