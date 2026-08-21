@@ -1,14 +1,25 @@
+import { useEffect } from "react";
 import Header from "./Header";
 import Footer from "./Footer";
-import BackgroundDecor from "./BackgroundDecor";
 import FloatingCTA from "./FloatingCTA";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
+  useEffect(() => {
+    const root = document.documentElement;
+    const previousColorScheme = root.style.colorScheme;
+    root.classList.add("public-site-active");
+    root.style.colorScheme = "light";
+
+    return () => {
+      root.classList.remove("public-site-active");
+      root.style.colorScheme = previousColorScheme;
+    };
+  }, []);
+
   return (
-    <div className="relative flex min-h-screen flex-col">
-      <BackgroundDecor />
+    <div className="public-site relative flex min-h-screen flex-col overflow-clip bg-background">
       <Header />
-      <main className="relative z-10 flex-1 pt-16 md:pt-20">{children}</main>
+      <main className="relative flex-1 pt-16 md:pt-20">{children}</main>
       <Footer />
       <FloatingCTA />
     </div>

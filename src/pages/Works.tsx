@@ -37,7 +37,7 @@ const Works = () => {
   const [slide, setSlide] = useState(0);
 
   useEffect(() => {
-    document.title = "Наши работы — 700+ оформленных авто | ALISTA";
+    document.title = "Наши работы — опубликованные автомобили | ALISTA";
     (async () => {
       try {
         const rows = await fetchPublishedWorks();
@@ -101,7 +101,7 @@ const Works = () => {
             Наши <span className="text-primary text-glow">работы</span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            700+ оформленных авто. Реальные лоты, которые мы привозили клиентам — фото, цены, комплектации.
+            Опубликованные карточки автомобилей с фотографиями, ценами и комплектациями.
           </p>
         </motion.div>
 

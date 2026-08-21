@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Layout from "@/components/Layout";
-import CalculatorDocs from "@/components/CalculatorDocs";
 import LeadForm from "@/components/LeadForm";
 import {
   calculate,
@@ -45,9 +44,10 @@ const CalculatorPage = () => {
   });
 
   const [result, setResult] = useState<CalcResult | null>(null);
+  const ratesUnavailable = ratesError && form.currency !== "RUB";
 
   const handleCalc = () => {
-    if (form.price <= 0) return;
+    if (form.price <= 0 || ratesLoading || ratesUnavailable) return;
     setResult(calculate(form, rates));
   };
 
@@ -65,7 +65,7 @@ const CalculatorPage = () => {
               Таможенный калькулятор
             </h1>
             <p className="mt-3 text-center text-muted-foreground">
-              Рассчитайте стоимость таможенных платежей для любого транспортного средства
+              Рассчитайте предварительную стоимость платежей для выбранного типа транспортного средства
             </p>
 
             {/* Live rates banner */}
@@ -73,20 +73,20 @@ const CalculatorPage = () => {
               {ratesLoading ? (
                 <span className="flex items-center gap-2 text-muted-foreground">
                   <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                  Загрузка курсов ЦБ РФ…
+                  Загрузка курсов валют…
+                </span>
+              ) : ratesError ? (
+                <span className="text-center text-destructive">
+                  Курсы валют сейчас недоступны. Расчёт в иностранной валюте временно отключён.
                 </span>
               ) : (
                 <>
                   <span className="text-muted-foreground">
-                    Курсы ЦБ РФ на {ratesDate}
-                    {ratesError && " (резервные)"}:
+                    Курсы валют на {ratesDate}:
                   </span>
                   <span className="font-medium text-foreground">$ {rates.USD}</span>
                   <span className="font-medium text-foreground">€ {rates.EUR}</span>
                   <span className="font-medium text-foreground">¥ {rates.JPY}</span>
-                  {ratesError && (
-                    <span className="text-xs text-destructive">(не удалось загрузить)</span>
-                  )}
                 </>
               )}
             </div>
@@ -228,10 +228,10 @@ const CalculatorPage = () => {
                   onClick={handleCalc}
                   size="lg"
                   className="w-full gradient-accent text-base font-semibold text-primary-foreground hover:opacity-90"
-                  disabled={form.price <= 0}
+                  disabled={form.price <= 0 || ratesLoading || ratesUnavailable}
                 >
                   <CalcIcon className="mr-2 h-5 w-5" />
-                  Рассчитать
+                  {ratesUnavailable ? "Курсы недоступны" : "Рассчитать"}
                 </Button>
               </div>
             </div>
@@ -261,19 +261,16 @@ const CalculatorPage = () => {
 
                     <div className="mt-4 space-y-1">
                       <p className="text-xs text-muted-foreground">
-                        * Расчёт является приблизительным. Для точного расчёта свяжитесь с нами.
+                        * Расчёт является предварительным. Для уточнения суммы отправьте параметры менеджеру.
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        ** Курсы валют ЦБ РФ на {ratesDate}.{ratesError ? ' Используются резервные курсы.' : ''}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Расчёт по: ЕТТ ЕАЭС, ФЗ № 425-ФЗ (акцизы, НДС 22%), Постановление 1291 ред. 1713 (утиль. сбор).
+                        ** Дата загруженных курсов: {ratesDate || "не требуется для RUB"}.
                       </p>
                     </div>
 
                     <a
                       href={`https://wa.me/79140730196?text=${encodeURIComponent(
-                        `Здравствуйте! Прошу рассчитать точную стоимость растаможки. Приблизительный итог: ${formatNum(result.total)} ₽`
+                        `Здравствуйте! Прошу проверить исходные данные и уточнить сумму таможенных платежей. Предварительный итог: ${formatNum(result.total)} ₽`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -286,13 +283,13 @@ const CalculatorPage = () => {
 
                     <div className="mt-5 rounded-lg border border-primary/20 bg-primary/5 p-4">
                       <p className="text-sm font-semibold text-foreground mb-3">
-                        Хотите точный расчёт от менеджера?
+                        Нужна проверка менеджером?
                       </p>
                       <LeadForm
                         source="calculator"
                         compact
                         buttonLabel="Уточнить у менеджера"
-                        defaultMessage={`Расчёт калькулятора: ${formatNum(result.total)} ₽. Прошу уточнить точную стоимость.`}
+                        defaultMessage={`Расчёт калькулятора: ${formatNum(result.total)} ₽. Прошу проверить исходные данные и уточнить сумму.`}
                       />
                     </div>
                   </motion.div>
@@ -301,26 +298,31 @@ const CalculatorPage = () => {
                     <p className="text-sm text-muted-foreground">
                       Заполните параметры и нажмите «Рассчитать», чтобы увидеть результат.
                     </p>
-                    <div className="rounded-lg border border-dashed border-border/50 bg-secondary/30 p-4 space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-primary">Пример расчёта</p>
-                      <p className="text-sm text-foreground">Toyota Camry 2.5л, бензин</p>
-                      <p className="text-xs text-muted-foreground">Возраст 3–5 лет · Физлицо · ~$15 000</p>
-                      <div className="border-t border-border/30 pt-2 mt-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Ориентировочный итог</span>
-                          <span className="font-bold text-primary">~850 000 ₽</span>
-                        </div>
-                      </div>
+                    <div className="space-y-3 rounded-lg border border-dashed border-border/50 bg-secondary/30 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                        Что появится в результате
+                      </p>
+                      <ul className="space-y-2 text-sm text-foreground">
+                        <li>Таможенная пошлина и сбор</li>
+                        <li>Акциз и НДС — когда применимы</li>
+                        <li>Утилизационный сбор</li>
+                        <li>Общая предварительная сумма</li>
+                      </ul>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      💡 Совет: для авто 3–5 лет с объёмом до 3.0л таможенные платежи для физлиц обычно ниже, чем для юрлиц.
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                      Итог калькулятора носит предварительный характер. Уточнённую сумму подтвердит специалист после проверки исходных данных.
                     </p>
                   </div>
                 )}
               </div>
             </div>
           </div>
-          <CalculatorDocs />
+          <section className="mt-10 rounded-xl border border-border/60 bg-card p-5 text-sm leading-relaxed text-muted-foreground">
+            <h2 className="font-heading text-base font-bold text-foreground">Перед оформлением</h2>
+            <p className="mt-2">
+              Ставки, коэффициенты и требования могут меняться. Используйте онлайн-результат как предварительную оценку; перед оформлением специалист проверит исходные данные и правила, действующие на дату расчёта.
+            </p>
+          </section>
         </div>
       </section>
     </Layout>

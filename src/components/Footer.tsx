@@ -1,82 +1,65 @@
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, Heart } from "lucide-react";
+import { ArrowRight, MapPin, Phone } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-const Footer = () => {
-  return (
-    <footer className="border-t border-border/50 bg-card/50">
-      <div className="container py-12">
-        <div className="grid gap-8 md:grid-cols-3">
-          <div>
-            <h3 className="font-heading text-xl font-bold text-foreground mb-4">ALISTA</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              ООО «Алиста» — профессиональное таможенное оформление автомобилей и спецтехники во Владивостоке.
-            </p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              ИНН 2543194698 · КПП 254301001
-            </p>
-          </div>
-
-          <div>
-            <h4 className="font-heading text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">Навигация</h4>
-            <nav className="flex flex-col gap-2">
-              {[
-                { to: "/", label: "Главная" },
-                { to: "/calculator", label: "Калькулятор" },
-                { to: "/services", label: "Услуги" },
-                { to: "/about", label: "О компании" },
-                { to: "/contacts", label: "Контакты" },
-              ].map((link) => (
-                <Link key={link.to} to={link.to} className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-
-          <div>
-            <h4 className="font-heading text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">Контакты</h4>
-            <div className="flex flex-col gap-3">
-              <a href="tel:+79140730196" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
-                <Phone className="h-4 w-4 shrink-0" />
-                +7 914 073-01-96
-              </a>
-              <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>690911, г. Владивосток, Океанский проспект, д. 136, кв. 84</span>
-              </div>
-            </div>
-            <div className="mt-4 flex gap-3">
-              <a
-                href="https://wa.me/79140730196"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-md bg-secondary px-3 py-2 text-xs font-medium text-foreground hover:bg-secondary/80 transition-colors"
-              >
-                WhatsApp
-              </a>
-              <a
-                href="https://t.me/+79140730196"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-md bg-secondary px-3 py-2 text-xs font-medium text-foreground hover:bg-secondary/80 transition-colors"
-              >
-                Telegram
-              </a>
-            </div>
-          </div>
+const Footer = () => (
+  <footer className="border-t border-border bg-[#102820] text-white">
+    <div className="container py-12 md:py-16">
+      <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr_0.8fr] lg:gap-14">
+        <div>
+          <Link to="/" className="inline-flex items-center gap-3">
+            <span aria-hidden="true" className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#08764d] text-xl font-black text-white">A</span>
+            <span>
+              <span className="block font-heading text-xl font-extrabold tracking-[0.08em]">ALISTA</span>
+              <span className="mt-1 block text-[10px] font-semibold uppercase tracking-[0.13em] text-white/50">таможенное оформление</span>
+            </span>
+          </Link>
+          <p className="mt-6 max-w-md text-sm leading-relaxed text-white/60">
+            ООО «Алиста» — таможенное оформление автомобилей и других транспортных средств во Владивостоке.
+          </p>
+          <Button asChild variant="outline" className="mt-6 rounded-full border-white/20 bg-white/5 text-white hover:bg-white hover:text-[#102820]">
+            <Link to="/calculator">Рассчитать платежи <ArrowRight className="h-4 w-4" /></Link>
+          </Button>
         </div>
 
-        <div className="mt-8 border-t border-border/50 pt-6 text-center text-xs text-muted-foreground space-y-2">
-          <div>© {new Date().getFullYear()} ООО «Алиста». Все права защищены.</div>
-          <div className="flex items-center justify-center gap-1">
-            <span>Сделано</span>
-            <Heart className="h-3.5 w-3.5 text-red-500 fill-red-500 animate-pulse" />
-            <a href="https://24zxc.ru" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">24zxc.ru</a>
+        <div>
+          <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-[#6be2aa]">Разделы</h2>
+          <nav className="mt-5 grid gap-3 text-sm" aria-label="Навигация в подвале">
+            <Link to="/cars" className="text-white/65 hover:text-white">Автомобили</Link>
+            <Link to="/calculator" className="text-white/65 hover:text-white">Калькулятор</Link>
+            <Link to="/services" className="text-white/65 hover:text-white">Услуги</Link>
+            <Link to="/works" className="text-white/65 hover:text-white">Опубликованные работы</Link>
+            <Link to="/about" className="text-white/65 hover:text-white">О компании</Link>
+            <Link to="/contacts" className="text-white/65 hover:text-white">Контакты</Link>
+          </nav>
+        </div>
+
+        <div>
+          <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-[#6be2aa]">Контакты</h2>
+          <div className="mt-5 space-y-4 text-sm text-white/65">
+            <a href="tel:+79140730196" className="flex items-center gap-3 font-semibold text-white hover:text-[#6be2aa]"><Phone className="h-4 w-4 text-[#6be2aa]" />+7 914 073-01-96</a>
+            <p className="flex items-start gap-3 leading-relaxed"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#6be2aa]" /><span>690911, г. Владивосток,<br />Океанский проспект, д. 136, кв. 84</span></p>
+            <p>Пн–Пт, 9:00–18:00</p>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <a href="https://wa.me/79140730196" target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-white/80 hover:border-white/30 hover:text-white">WhatsApp</a>
+            <a href="https://t.me/+79140730196" target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-white/80 hover:border-white/30 hover:text-white">Telegram</a>
           </div>
         </div>
       </div>
-    </footer>
-  );
-};
+
+      <div className="mt-12 grid gap-4 border-t border-white/10 pt-6 text-xs leading-relaxed text-white/45 md:grid-cols-[1fr_auto] md:items-end">
+        <div>
+          <p>ООО «Алиста» · ИНН 2543194698 · КПП 254301001</p>
+          <p className="mt-2 max-w-3xl">Информация и результаты онлайн-калькулятора носят справочный характер и не являются публичной офертой. Уточнённая сумма подтверждается после проверки исходных данных.</p>
+        </div>
+        <div className="md:text-right">
+          <p>© {new Date().getFullYear()} ООО «Алиста»</p>
+          <p className="mt-1">Разработка: <a href="https://24zxc.ru" target="_blank" rel="noopener noreferrer" className="text-white/65 hover:text-white">24zxc.ru</a></p>
+        </div>
+      </div>
+    </div>
+  </footer>
+);
 
 export default Footer;

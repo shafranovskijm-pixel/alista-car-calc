@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Phone, MessageCircle, Send, X, Plus } from "lucide-react";
+import { Calculator, Phone, MessageCircle, Send, X, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const PHONE = "79140730196";
 
@@ -32,7 +33,7 @@ const FloatingCTA = () => {
   ];
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3 sm:bottom-5 sm:right-5">
       <AnimatePresence>
         {open &&
           items.map((it, i) => (
@@ -45,7 +46,7 @@ const FloatingCTA = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.8 }}
               transition={{ delay: i * 0.04 }}
-              className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-white shadow-lg ${it.bg}`}
+              className={`flex min-h-11 items-center gap-2 rounded-full px-4 py-2.5 text-white shadow-lg ${it.bg}`}
               aria-label={it.label}
             >
               <it.icon className="h-5 w-5" />
@@ -53,14 +54,23 @@ const FloatingCTA = () => {
             </motion.a>
           ))}
       </AnimatePresence>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Закрыть меню связи" : "Открыть меню связи"}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/30 hover:scale-105 transition-transform pulse-glow"
-      >
-        {open ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
-      </button>
+      <div className="flex items-center gap-2">
+        <Link
+          to="/calculator"
+          className="hidden h-12 items-center gap-2 rounded-full bg-[#102820] px-5 text-sm font-bold text-white shadow-xl transition hover:-translate-y-0.5 sm:flex"
+        >
+          <Calculator className="h-4 w-4 text-[#6be2aa]" />
+          Рассчитать
+        </Link>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? "Закрыть меню связи" : "Открыть меню связи"}
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/25 transition-transform hover:scale-105 sm:h-[3.25rem] sm:w-[3.25rem]"
+        >
+          {open ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+        </button>
+      </div>
     </div>
   );
 };

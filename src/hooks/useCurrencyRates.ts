@@ -8,18 +8,16 @@ export interface CurrencyRates {
   isError: boolean;
 }
 
-const FALLBACK_RATES: Record<Currency, number> = {
+const UNAVAILABLE_RATES: Record<Currency, number> = {
   RUB: 1,
-  EUR: 95,
-  USD: 87,
-  JPY: 0.58,
+  EUR: 0,
+  USD: 0,
+  JPY: 0,
 };
 
-const FALLBACK_DATE = "24.03.2026";
-
 export function useCurrencyRates(): CurrencyRates {
-  const [rates, setRates] = useState<Record<Currency, number>>(FALLBACK_RATES);
-  const [date, setDate] = useState(FALLBACK_DATE);
+  const [rates, setRates] = useState<Record<Currency, number>>(UNAVAILABLE_RATES);
+  const [date, setDate] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
@@ -55,8 +53,8 @@ export function useCurrencyRates(): CurrencyRates {
         setIsError(false);
       } catch {
         setIsError(true);
-        setRates(FALLBACK_RATES);
-        setDate(FALLBACK_DATE);
+        setRates(UNAVAILABLE_RATES);
+        setDate("");
       } finally {
         setIsLoading(false);
       }

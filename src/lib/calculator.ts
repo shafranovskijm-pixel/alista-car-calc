@@ -29,15 +29,6 @@ export interface CalcResult {
 }
 
 // Default fallback exchange rates to RUB
-export const DEFAULT_RATES: Record<Currency, number> = {
-  RUB: 1,
-  EUR: 95,
-  USD: 87,
-  JPY: 0.58,
-};
-
-export const RATES_DATE = '24.03.2026';
-
 function toRub(amount: number, currency: Currency, rates: Record<Currency, number>): number {
   return amount * rates[currency];
 }
@@ -199,8 +190,7 @@ function calcCustomsFee(valueRub: number): number {
   return 41540;
 }
 
-export function calculate(input: CalcInput, customRates?: Record<Currency, number>): CalcResult {
-  const rates = customRates || DEFAULT_RATES;
+export function calculate(input: CalcInput, rates: Record<Currency, number>): CalcResult {
   const priceRub = toRub(input.price, input.currency, rates);
   const priceEur = priceRub / rates.EUR;
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Loader2, Car as CarIcon, Filter } from "lucide-react";
 import Layout from "@/components/Layout";
@@ -29,11 +29,16 @@ const countryFromSlug = (slug: string | undefined): CarCountry | undefined => {
   return undefined;
 };
 
-const titleFor = (country?: CarCountry) =>
-  country ? `Авто из ${CAR_COUNTRY_LABELS[country]}` : "Каталог авто";
+const CAR_COUNTRY_GENITIVE_LABELS: Record<CarCountry, string> = {
+  japan: "Японии",
+  korea: "Кореи",
+  china: "Китая",
+};
 
-const CarsPage = () => {
-  const { country: countrySlug } = useParams<{ country: string }>();
+const titleFor = (country?: CarCountry) =>
+  country ? `Авто из ${CAR_COUNTRY_GENITIVE_LABELS[country]}` : "Каталог авто";
+
+const CarsPage = ({ countrySlug }: { countrySlug?: string }) => {
   const country = countryFromSlug(countrySlug);
   const [cars, setCars] = useState<CarWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,7 +98,7 @@ const CarsPage = () => {
                 {titleFor(country)}
               </h1>
               <p className="mt-3 text-center text-muted-foreground">
-                В наличии, в пути и под заказ — поможем подобрать и привезти под ключ во Владивостоке.
+                Автомобили из опубликованного каталога. Используйте фильтры, чтобы подобрать подходящие параметры.
               </p>
             </motion.div>
 

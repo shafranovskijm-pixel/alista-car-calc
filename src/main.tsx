@@ -7,10 +7,18 @@ import "./index.css";
 try {
   const saved = localStorage.getItem("alista-theme");
   const t = saved === "light" ? "light" : "dark";
+  if (!window.location.pathname.startsWith("/admin")) {
+    document.documentElement.classList.add("public-site-active");
+  }
   document.documentElement.classList.add(t);
-  document.documentElement.style.colorScheme = t;
+  document.documentElement.style.colorScheme = document.documentElement.classList.contains("public-site-active") ? "light" : t;
 } catch {
-  document.documentElement.classList.add("dark");
+  if (!window.location.pathname.startsWith("/admin")) {
+    document.documentElement.classList.add("public-site-active");
+    document.documentElement.style.colorScheme = "light";
+  } else {
+    document.documentElement.classList.add("dark");
+  }
 }
 
 createRoot(document.getElementById("root")!).render(

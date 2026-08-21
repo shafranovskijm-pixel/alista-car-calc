@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { z } from "zod";
 import { Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/proxy-client";
+import type { Json } from "@/integrations/supabase/types";
 import { captureUtm } from "@/lib/utm";
 
 const schema = z.object({
@@ -16,7 +17,7 @@ const schema = z.object({
     .trim()
     .min(5, "Введите телефон")
     .max(30)
-    .regex(/^[+0-9\s()\-]+$/, "Только цифры и + - ( )"),
+    .regex(/^[+0-9\s()-]+$/, "Только цифры и + - ( )"),
   email: z.string().trim().email("Некорректный email").max(255).optional().or(z.literal("")),
   message: z.string().trim().max(1000).optional(),
 });
@@ -29,7 +30,7 @@ export type LeadFormProps = {
   showEmail?: boolean;
   onSubmitted?: () => void;
   objectInterest?: string;
-  calcSnapshot?: Record<string, unknown> | null;
+  calcSnapshot?: Json | null;
 };
 
 const LeadForm = ({
@@ -50,6 +51,11 @@ const LeadForm = ({
     message: defaultMessage,
   });
   const [loading, setLoading] = useState(false);
+  const idPrefix = useId();
+  const nameId = `${idPrefix}-full-name`;
+  const phoneId = `${idPrefix}-phone`;
+  const emailId = `${idPrefix}-email`;
+  const messageId = `${idPrefix}-message`;
 
   const update = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((p) => ({ ...p, [key]: value }));
@@ -77,7 +83,7 @@ const LeadForm = ({
         page_url: typeof window !== "undefined" ? window.location.href.slice(0, 500) : null,
         status: "new",
         object_interest: objectInterest ?? null,
-        calc_snapshot: (calcSnapshot ?? null) as any,
+        calc_snapshot: calcSnapshot ?? null,
         ...utm,
       }).select("id").maybeSingle();
       if (error) throw error;
@@ -88,15 +94,15 @@ const LeadForm = ({
           .catch(() => {});
       }
       toast({
-        title: "Заявка отправлена",
-        description: "Менеджер свяжется с вами в ближайшее время",
+        title: "Заявка зарегистрирована",
+        description: "Свяжемся по указанным контактам",
       });
       setForm({ full_name: "", phone: "", email: "", message: defaultMessage });
       onSubmitted?.();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: "Не удалось отправить",
-        description: err?.message ?? "Попробуйте позже или напишите в WhatsApp",
+        description: err instanceof Error ? err.message : "Попробуйте позже или напишите в WhatsApp",
         variant: "destructive",
       });
     } finally {
@@ -107,8 +113,11 @@ const LeadForm = ({
   return (
     <form onSubmit={handleSubmit} className={compact ? "space-y-3" : "space-y-4"}>
       <div>
-        <Label className="text-foreground font-medium mb-2 block">Ваше имя *</Label>
+        <Label htmlFor={nameId} className="text-foreground font-medium mb-2 block">Ваше имя *</Label>
         <Input
+          id={nameId}
+          name="full_name"
+          autoComplete="name"
           required
           maxLength={100}
           value={form.full_name}
@@ -118,8 +127,11 @@ const LeadForm = ({
         />
       </div>
       <div>
-        <Label className="text-foreground font-medium mb-2 block">Телефон *</Label>
+        <Label htmlFor={phoneId} className="text-foreground font-medium mb-2 block">Телефон *</Label>
         <Input
+          id={phoneId}
+          name="phone"
+          autoComplete="tel"
           required
           maxLength={30}
           type="tel"
@@ -131,8 +143,11 @@ const LeadForm = ({
       </div>
       {showEmail && (
         <div>
-          <Label className="text-foreground font-medium mb-2 block">Email</Label>
+          <Label htmlFor={emailId} className="text-foreground font-medium mb-2 block">Email</Label>
           <Input
+            id={emailId}
+            name="email"
+            autoComplete="email"
             maxLength={255}
             type="email"
             value={form.email}
@@ -144,8 +159,11 @@ const LeadForm = ({
       )}
       {!compact && (
         <div>
-          <Label className="text-foreground font-medium mb-2 block">Сообщение</Label>
+          <Label htmlFor={messageId} className="text-foreground font-medium mb-2 block">Сообщение</Label>
           <Textarea
+            id={messageId}
+            name="message"
+            autoComplete="off"
             maxLength={1000}
             value={form.message}
             onChange={(e) => update("message", e.target.value)}

@@ -15,6 +15,10 @@ const getInitial = (): Theme => {
 
 const apply = (t: Theme) => {
   const root = document.documentElement;
+  if (root.classList.contains("public-site-active")) {
+    root.style.colorScheme = "light";
+    return;
+  }
   root.classList.toggle("light", t === "light");
   root.classList.toggle("dark", t === "dark");
   root.style.colorScheme = t;

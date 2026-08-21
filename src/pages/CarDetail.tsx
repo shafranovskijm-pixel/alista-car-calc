@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, ExternalLink, Calendar, Gauge, Fuel, Settings2 } from "lucide-react";
+import { ArrowLeft, Loader2, ExternalLink, Calendar, Gauge, Fuel, Settings2, type LucideIcon } from "lucide-react";
 import Layout from "@/components/Layout";
 import PageTransition from "@/components/PageTransition";
 import LeadForm from "@/components/LeadForm";
@@ -21,7 +21,6 @@ const CarDetailPage = () => {
   const [car, setCar] = useState<CarWithPhotos | null>(null);
   const [loading, setLoading] = useState(true);
   const [activePhoto, setActivePhoto] = useState(0);
-  const [calcSnapshot, setCalcSnapshot] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -55,7 +54,8 @@ const CarDetailPage = () => {
   }
 
   const cover = car.photos[activePhoto] ?? car.photos[0];
-  const specs: { icon: any; label: string; value: string }[] = [
+  type CarSpec = { icon: LucideIcon; label: string; value: string };
+  const specs: Array<CarSpec | null> = [
     car.year ? { icon: Calendar, label: "Год", value: String(car.year) } : null,
     car.engine_volume
       ? { icon: Gauge, label: "Объём", value: `${car.engine_volume} л` }
@@ -72,7 +72,8 @@ const CarDetailPage = () => {
           value: `${new Intl.NumberFormat("ru-RU").format(car.mileage_km)} км`,
         }
       : null,
-  ].filter(Boolean) as any;
+  ];
+  const availableSpecs = specs.filter((spec): spec is CarSpec => spec !== null);
 
   return (
     <PageTransition>
@@ -135,9 +136,9 @@ const CarDetailPage = () => {
                   </div>
                 </div>
 
-                {specs.length > 0 && (
+                {availableSpecs.length > 0 && (
                   <div className="rounded-xl border border-border/50 bg-card p-4 grid grid-cols-2 gap-3">
-                    {specs.map((s, i) => (
+                    {availableSpecs.map((s, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <s.icon className="h-4 w-4 text-primary shrink-0" />
                         <div className="text-sm">
@@ -162,24 +163,23 @@ const CarDetailPage = () => {
 
                 <div className="rounded-xl border border-primary/30 bg-primary/5 p-5">
                   <h3 className="font-heading text-base font-bold text-foreground mb-3">
-                    Заказать просчёт «под ключ во Владивостоке»
+                    Получить уточнённый расчёт
                   </h3>
                   <LeadForm
                     source={`car_card:${car.slug}`}
                     compact
                     buttonLabel="Получить расчёт"
                     objectInterest={`${car.brand} ${car.model}${car.year ? " " + car.year : ""}`}
-                    calcSnapshot={calcSnapshot}
                     defaultMessage={`Интересует: ${car.brand} ${car.model}${
                       car.year ? " " + car.year : ""
-                    }. Прошу рассчитать стоимость под ключ во Владивостоке.`}
+                    }. Прошу уточнить состав платежей и итоговую стоимость во Владивостоке.`}
                   />
                 </div>
               </div>
             </div>
 
             <div className="mt-6 max-w-xl">
-              <CarPriceEstimate car={car} onSnapshotChange={setCalcSnapshot} />
+              <CarPriceEstimate car={car} />
             </div>
 
             {car.description && (
