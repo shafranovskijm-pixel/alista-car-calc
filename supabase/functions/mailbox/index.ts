@@ -1,7 +1,7 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
-import { createClient } from 'npm:@supabase/supabase-js@2.45.0';
-import { ImapFlow } from 'npm:imapflow@1.0.164';
-import { simpleParser } from 'npm:mailparser@3.7.1';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+import { ImapFlow } from 'https://esm.sh/imapflow@1.0.164?target=deno';
+import { simpleParser } from 'https://esm.sh/mailparser@3.7.1?target=deno';
 
 // Timeweb Cloud IMAP: imap.timeweb.ru:993 (SSL)
 // See https://timeweb.cloud/docs/mail/email-clients-configuration
