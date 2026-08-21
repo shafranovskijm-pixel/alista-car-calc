@@ -39,8 +39,10 @@ export const resolvePhotoUrl = async (raw: string): Promise<string> => {
   if (!raw) return raw;
   if (/^https?:\/\//i.test(raw)) return raw;
   if (raw.startsWith("/")) return raw;
-  const { data } = await supabase.storage.from(BUCKET).createSignedUrl(raw, SIGNED_TTL);
-  return data?.signedUrl ?? "";
+  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(raw, SIGNED_TTL);
+  if (error) throw error;
+  if (!data?.signedUrl) throw new Error("Не удалось подготовить изображение");
+  return data.signedUrl;
 };
 
 export const resolvePhotos = async (photos: WorkPhoto[]): Promise<WorkPhoto[]> => {

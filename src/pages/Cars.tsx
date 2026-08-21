@@ -23,6 +23,8 @@ import {
   type CarCountry,
   type CarWithPhotos,
 } from "@/lib/cars";
+import { withRetry } from "@/lib/retry";
+import { retryImageOnce } from "@/lib/image";
 
 const countryFromSlug = (slug: string | undefined): CarCountry | undefined => {
   if (slug === "japan" || slug === "korea" || slug === "china") return slug;
@@ -42,6 +44,8 @@ const CarsPage = ({ countrySlug }: { countrySlug?: string }) => {
   const country = countryFromSlug(countrySlug);
   const [cars, setCars] = useState<CarWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   // filters
   const [brand, setBrand] = useState<string>("all");
@@ -53,16 +57,22 @@ const CarsPage = ({ countrySlug }: { countrySlug?: string }) => {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetchPublicCars(country)
+    setFailed(false);
+    withRetry(() => fetchPublicCars(country))
       .then((rows) => {
         if (!cancelled) setCars(rows);
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!cancelled) {
+          setCars([]);
+          setFailed(true);
+        }
+      })
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
-  }, [country]);
+  }, [country, reloadKey]);
 
   const brands = useMemo(
     () => Array.from(new Set(cars.map((c) => c.brand))).sort(),
@@ -199,6 +209,14 @@ const CarsPage = ({ countrySlug }: { countrySlug?: string }) => {
                 <div className="flex justify-center py-20">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
+              ) : failed ? (
+                <div className="rounded-xl border border-dashed border-border/50 p-12 text-center text-muted-foreground">
+                  <CarIcon className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
+                  <p>Не удалось загрузить каталог. Проверьте соединение и повторите попытку.</p>
+                  <Button className="mt-5" onClick={() => setReloadKey((value) => value + 1)}>
+                    Повторить загрузку
+                  </Button>
+                </div>
               ) : filtered.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-border/50 p-12 text-center text-muted-foreground">
                   <CarIcon className="mx-auto h-10 w-10 text-muted-foreground/50 mb-3" />
@@ -215,10 +233,11 @@ const CarsPage = ({ countrySlug }: { countrySlug?: string }) => {
                         className="group rounded-xl border border-border/50 bg-card overflow-hidden hover-lift"
                       >
                         <div className="relative aspect-[4/3] bg-secondary overflow-hidden">
-                          {cover ? (
+                          {cover?.url ? (
                             <img
                               src={cover.url}
                               alt={c.title}
+                              onError={retryImageOnce}
                               className="h-full w-full object-cover transition-transform group-hover:scale-105"
                               loading="lazy"
                             />

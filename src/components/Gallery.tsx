@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { fetchPublishedWorks } from "@/lib/works";
+import { withRetry } from "@/lib/retry";
+import { retryImageOnce } from "@/lib/image";
 
 type Item = { src: string; title: string; desc: string };
 
@@ -10,12 +12,16 @@ const Gallery = () => {
   const [galleryItems, setGalleryItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [lightbox, setLightbox] = useState<number | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
+      setLoading(true);
+      setFailed(false);
       try {
-        const rows = await fetchPublishedWorks();
+        const rows = await withRetry(fetchPublishedWorks);
         const items: Item[] = rows
           .map((w) => {
             const cover = w.photos.find((p) => p.is_cover) ?? w.photos[0];
@@ -29,14 +35,20 @@ const Gallery = () => {
             };
           })
           .filter(Boolean) as Item[];
-        setGalleryItems(items.slice(0, 6));
+        if (!cancelled) setGalleryItems(items.slice(0, 6));
       } catch {
-        setFailed(true);
+        if (!cancelled) {
+          setGalleryItems([]);
+          setFailed(true);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   useEffect(() => {
     if (lightbox === null) return;
@@ -76,6 +88,15 @@ const Gallery = () => {
         <Link to="/works" className="mt-5 inline-flex rounded-full border border-primary/30 px-5 py-2 text-sm font-semibold text-primary hover:bg-secondary">
           Открыть каталог работ
         </Link>
+        {failed && (
+          <button
+            type="button"
+            onClick={() => setReloadKey((value) => value + 1)}
+            className="ml-3 mt-5 inline-flex rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+          >
+            Повторить загрузку
+          </button>
+        )}
       </div>
     );
   }
@@ -101,6 +122,7 @@ const Gallery = () => {
               loading="lazy"
               width={800}
               height={600}
+              onError={retryImageOnce}
               className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-100 transition-opacity duration-300 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100" />
@@ -159,6 +181,7 @@ const Gallery = () => {
               exit={{ opacity: 0, scale: 0.9 }}
               src={galleryItems[lightbox].src}
               alt={galleryItems[lightbox].title}
+              onError={retryImageOnce}
               className="max-h-[80vh] max-w-[90vw] rounded-xl object-contain"
               onClick={(e) => e.stopPropagation()}
             />

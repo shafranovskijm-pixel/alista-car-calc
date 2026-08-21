@@ -5,6 +5,8 @@ import Layout from "@/components/Layout";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { fetchPublishedWorks, type WorkWithPhotos } from "@/lib/works";
+import { withRetry } from "@/lib/retry";
+import { retryImageOnce } from "@/lib/image";
 
 type Work = {
   id: string;
@@ -30,6 +32,8 @@ const PAGE = 12;
 const Works = () => {
   const [works, setWorks] = useState<Work[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [query, setQuery] = useState("");
   const [country, setCountry] = useState<string | null>(null);
   const [shown, setShown] = useState(PAGE);
@@ -38,9 +42,12 @@ const Works = () => {
 
   useEffect(() => {
     document.title = "Наши работы — опубликованные автомобили | ALISTA";
+    let cancelled = false;
     (async () => {
+      setLoading(true);
+      setFailed(false);
       try {
-        const rows = await fetchPublishedWorks();
+        const rows = await withRetry(fetchPublishedWorks);
         const mapped: Work[] = rows.map((w: WorkWithPhotos) => ({
           id: w.id,
           date: formatDate(w.source_date),
@@ -50,12 +57,20 @@ const Works = () => {
           description: w.description,
           photos: w.photos.map((p) => p.url).filter(Boolean),
         }));
-        setWorks(mapped);
+        if (!cancelled) setWorks(mapped);
+      } catch {
+        if (!cancelled) {
+          setWorks([]);
+          setFailed(true);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -140,6 +155,17 @@ const Works = () => {
 
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+        ) : failed ? (
+          <div className="py-20 text-center text-muted-foreground">
+            <p>Не удалось загрузить опубликованные работы.</p>
+            <button
+              type="button"
+              onClick={() => setReloadKey((value) => value + 1)}
+              className="mt-5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+            >
+              Повторить загрузку
+            </button>
+          </div>
         ) : filtered.length === 0 ? (
           <p className="py-20 text-center text-muted-foreground">Ничего не найдено</p>
         ) : (
@@ -156,9 +182,10 @@ const Works = () => {
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
                   <img
-                    src={w.photos[0]}
+                    src={w.photos[0] || "/placeholder.svg"}
                     alt={w.title}
                     loading="lazy"
+                    onError={retryImageOnce}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background via-background/60 to-transparent" />
@@ -243,7 +270,8 @@ const Works = () => {
                   key={active.id + slide}
                   initial={{ opacity: 0, scale: 0.97 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  src={active.photos[slide]}
+                  src={active.photos[slide] || "/placeholder.svg"}
+                  onError={retryImageOnce}
                   alt={active.title}
                   className="max-h-[80vh] w-full rounded-xl object-contain"
                 />
@@ -283,7 +311,7 @@ const Works = () => {
                         idx === slide ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"
                       }`}
                     >
-                      <img src={p} alt="" className="h-full w-full object-cover" loading="lazy" />
+                      <img src={p} alt="" className="h-full w-full object-cover" loading="lazy" onError={retryImageOnce} />
                     </button>
                   ))}
                 </div>

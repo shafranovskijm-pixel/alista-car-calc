@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Calculator, Menu, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const navLinks = [
   { to: "/cars", label: "Автомобили" },
@@ -70,6 +70,7 @@ const Header = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[min(88vw,360px)] border-border bg-background p-6">
               <SheetTitle className="text-left font-heading text-xl font-bold text-foreground">Меню</SheetTitle>
+              <SheetDescription className="sr-only">Навигация по сайту ALISTA</SheetDescription>
               <nav className="mt-8 flex flex-col gap-1" aria-label="Мобильная навигация">
                 <Link to="/" onClick={() => setOpen(false)} className="rounded-xl px-4 py-3 text-base font-semibold text-foreground hover:bg-secondary">Главная</Link>
                 {navLinks.map((link) => (

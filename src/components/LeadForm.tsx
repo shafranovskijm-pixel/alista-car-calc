@@ -74,7 +74,9 @@ const LeadForm = ({
     setLoading(true);
     try {
       const utm = captureUtm();
-      const { data: inserted, error } = await supabase.from("leads").insert({
+      const leadId = crypto.randomUUID();
+      const { error } = await supabase.from("leads").insert({
+        id: leadId,
         full_name: parsed.data.full_name,
         phone: parsed.data.phone,
         email: parsed.data.email || null,
@@ -85,14 +87,12 @@ const LeadForm = ({
         object_interest: objectInterest ?? null,
         calc_snapshot: calcSnapshot ?? null,
         ...utm,
-      }).select("id").maybeSingle();
+      });
       if (error) throw error;
       // Уведомление по email — не блокируем UX при ошибке.
-      if (inserted?.id) {
-        supabase.functions
-          .invoke("notify-new-lead", { body: { leadId: inserted.id } })
-          .catch(() => {});
-      }
+      supabase.functions
+        .invoke("notify-new-lead", { body: { leadId } })
+        .catch(() => {});
       toast({
         title: "Заявка зарегистрирована",
         description: "Свяжемся по указанным контактам",
