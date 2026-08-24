@@ -93,6 +93,7 @@ describe("published works cleanup", () => {
       "7f54b146-a271-48d2-b9c7-384a816369fc",
       "493c964b-f958-428d-a8f0-8d2d59043673",
       "8353ed47-6488-4c1b-9f06-74b1c99865df",
+      "b57108d6-777c-4f53-8ff4-f2c314c82138",
     ];
     const mismatched = mismatchedIds.map((id, index) =>
       work(id, `2026-05-01T00:00:${String(index).padStart(2, "0")}Z`, [photo(`wrong-${index}`, id, 0)]),
