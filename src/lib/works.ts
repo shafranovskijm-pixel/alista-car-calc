@@ -62,9 +62,10 @@ const sourceTime = (work: WorkWithPhotos): number | null => {
   return Number.isFinite(value) ? value : null;
 };
 
-// These imported rows contain galleries for other makes/models than their
-// captions, descriptions and prices. Keep them available in the admin area,
-// but do not publish internally contradictory cards until source data is fixed.
+// These imported rows either contain galleries for other makes/models than
+// their captions, descriptions and prices, or are a generic market post rather
+// than a vehicle listing. Keep them available in the admin area, but do not
+// publish contradictory/non-vehicle cards until source data is fixed.
 const PUBLIC_CATALOG_EXCLUSIONS = new Set([
   "b2335ab5-a471-4c20-bfca-95e39b4d2aa1",
   "8c984f57-2f01-49b3-b04a-60c64b0a7526",
@@ -75,6 +76,7 @@ const PUBLIC_CATALOG_EXCLUSIONS = new Set([
   "7f54b146-a271-48d2-b9c7-384a816369fc",
   "493c964b-f958-428d-a8f0-8d2d59043673",
   "8353ed47-6488-4c1b-9f06-74b1c99865df",
+  "b57108d6-777c-4f53-8ff4-f2c314c82138",
 ]);
 
 const DETAILS_MARKER =
