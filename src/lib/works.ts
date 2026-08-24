@@ -62,6 +62,55 @@ const sourceTime = (work: WorkWithPhotos): number | null => {
   return Number.isFinite(value) ? value : null;
 };
 
+// These imported rows contain galleries for other makes/models than their
+// captions, descriptions and prices. Keep them available in the admin area,
+// but do not publish internally contradictory cards until source data is fixed.
+const PUBLIC_CATALOG_EXCLUSIONS = new Set([
+  "b2335ab5-a471-4c20-bfca-95e39b4d2aa1",
+  "8c984f57-2f01-49b3-b04a-60c64b0a7526",
+  "aaed8932-6838-4d12-bc36-6f1fda80fd43",
+  "89128f35-813e-4806-b9f7-144441587ecf",
+  "f76a1e70-367e-469e-b5af-ee61d14ed9b0",
+  "1aec1e54-794b-4f4b-ad56-23290c2469e0",
+  "7f54b146-a271-48d2-b9c7-384a816369fc",
+  "493c964b-f958-428d-a8f0-8d2d59043673",
+  "8353ed47-6488-4c1b-9f06-74b1c99865df",
+]);
+
+const DETAILS_MARKER =
+  /(комплектац(?:ия|ии)|дата выпуска|модельный год|производство|год выпуска|пробег|двигатель|мотор|объ[её]м|привод|трансмиссия)\s*:/i;
+
+const trimDecorations = (value: string) =>
+  value
+    .replace(/^[^\p{L}\p{N}]+/gu, "")
+    .replace(/[^\p{L}\p{N})]+$/gu, "")
+    .trim()
+    .replace(/\s+/g, " ");
+
+const titleFromDescription = (description: string | null): string | null => {
+  if (!description) return null;
+
+  // A delivery post phrases the model inside the first sentence rather than
+  // at its beginning (for example, "автомобиля - Toyota Vios.").
+  const deliveredModel = description.match(/автомобиля\s*-\s*([^.]+)\./i)?.[1];
+  if (deliveredModel) return trimDecorations(deliveredModel);
+
+  const markerIndex = description.search(DETAILS_MARKER);
+  const prefix = markerIndex === -1 ? description : description.slice(0, markerIndex);
+  const title = trimDecorations(prefix);
+  return title.length >= 4 && title.length <= 120 ? title : null;
+};
+
+export const getPublicWorkTitle = (work: WorkWithPhotos): string => {
+  const title = work.title.trim();
+  const looksBroken =
+    title.length < 10 ||
+    /^авто под заказ$/i.test(title) ||
+    DETAILS_MARKER.test(title);
+
+  return looksBroken ? titleFromDescription(work.description) ?? title : title;
+};
+
 /**
  * Some source posts arrive as two adjacent work rows: one row contains a few
  * detail shots and the next contains the main exterior gallery. Keep genuinely
@@ -120,6 +169,13 @@ export const mergeSplitWorks = (works: WorkWithPhotos[]): WorkWithPhotos[] => {
   return merged;
 };
 
+export const preparePublishedWorks = (works: WorkWithPhotos[]): WorkWithPhotos[] =>
+  mergeSplitWorks(
+    works
+      .filter((work) => !PUBLIC_CATALOG_EXCLUSIONS.has(work.id))
+      .map((work) => ({ ...work, title: getPublicWorkTitle(work), photos: [...work.photos] })),
+  );
+
 export const fetchPublishedWorks = async (): Promise<WorkWithPhotos[]> => {
   const { data: works, error } = await supabase
     .from("works")
@@ -138,7 +194,7 @@ export const fetchPublishedWorks = async (): Promise<WorkWithPhotos[]> => {
     }),
   }));
 
-  const mergedList = mergeSplitWorks(list);
+  const mergedList = preparePublishedWorks(list);
 
   // Resolve bucket keys to signed urls in parallel
   await Promise.all(
