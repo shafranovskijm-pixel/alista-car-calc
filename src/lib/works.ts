@@ -52,6 +52,74 @@ export const resolvePhotos = async (photos: WorkPhoto[]): Promise<WorkPhoto[]> =
   return out;
 };
 
+const SPLIT_POST_WINDOW_MS = 2_500;
+
+const normalizedTitle = (title: string) => title.trim().replace(/\s+/g, " ").toLocaleLowerCase("ru-RU");
+
+const sourceTime = (work: WorkWithPhotos): number | null => {
+  if (!work.source_date) return null;
+  const value = Date.parse(work.source_date);
+  return Number.isFinite(value) ? value : null;
+};
+
+/**
+ * Some source posts arrive as two adjacent work rows: one row contains a few
+ * detail shots and the next contains the main exterior gallery. Keep genuinely
+ * separate publications, but coalesce rows with the same title/price that were
+ * created within a couple of seconds of each other.
+ */
+export const mergeSplitWorks = (works: WorkWithPhotos[]): WorkWithPhotos[] => {
+  const merged: WorkWithPhotos[] = [];
+
+  for (const work of works) {
+    const time = sourceTime(work);
+    const index = merged.findIndex((candidate) => {
+      const candidateTime = sourceTime(candidate);
+      return (
+        time !== null &&
+        candidateTime !== null &&
+        Math.abs(time - candidateTime) <= SPLIT_POST_WINDOW_MS &&
+        normalizedTitle(candidate.title) === normalizedTitle(work.title) &&
+        candidate.price === work.price
+      );
+    });
+
+    if (index === -1) {
+      merged.push({ ...work, photos: [...work.photos] });
+      continue;
+    }
+
+    const existing = merged[index];
+    const primary = work.photos.length > existing.photos.length ? work : existing;
+    const secondary = primary === work ? existing : work;
+    const seen = new Set<string>();
+    const photos = [...primary.photos, ...secondary.photos]
+      .filter((photo) => {
+        const key = photo.id || photo.url;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map((photo, photoIndex) => ({
+        ...photo,
+        work_id: primary.id,
+        is_cover: photoIndex === 0,
+        sort_order: photoIndex,
+      }));
+
+    const existingTime = sourceTime(existing) ?? 0;
+    const workTime = sourceTime(work) ?? 0;
+    merged[index] = {
+      ...primary,
+      sort_order: Math.max(existing.sort_order, work.sort_order),
+      source_date: existingTime >= workTime ? existing.source_date : work.source_date,
+      photos,
+    };
+  }
+
+  return merged;
+};
+
 export const fetchPublishedWorks = async (): Promise<WorkWithPhotos[]> => {
   const { data: works, error } = await supabase
     .from("works")
@@ -70,14 +138,16 @@ export const fetchPublishedWorks = async (): Promise<WorkWithPhotos[]> => {
     }),
   }));
 
+  const mergedList = mergeSplitWorks(list);
+
   // Resolve bucket keys to signed urls in parallel
   await Promise.all(
-    list.map(async (w) => {
+    mergedList.map(async (w) => {
       w.photos = await resolvePhotos(w.photos);
     })
   );
 
-  return list;
+  return mergedList;
 };
 
 export const fetchAllWorks = async (): Promise<WorkWithPhotos[]> => {
@@ -151,3 +221,4 @@ export const deleteWorkPhotoFromStorage = async (url: string) => {
   if (/^https?:\/\//i.test(url) || url.startsWith("/")) return; // external, can't delete
   await supabase.storage.from(BUCKET).remove([url]);
 };
+
