@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
-  Calculator,
   Car,
   Check,
   ChevronRight,
@@ -35,30 +34,30 @@ import heroCar from "@/assets/alista-hero-suv-v2.webp";
 
 const confidencePoints = [
   "Для физических и юридических лиц",
-  "Курсы валют с датой расчёта",
-  "Каждый платёж показан отдельно",
+  "Проверяем правила на дату оформления",
+  "Каждый платёж объясняем отдельно",
 ];
 
 const paymentBreakdown = [
   {
     icon: Landmark,
     title: "Таможенная пошлина",
-    text: "Зависит от стоимости, возраста и характеристик транспортного средства.",
+    text: "Проверяем ставку по стоимости, возрасту и характеристикам транспортного средства.",
   },
   {
     icon: Gauge,
     title: "Акциз и НДС",
-    text: "Калькулятор учитывает их там, где они применимы к выбранному типу ввоза.",
+    text: "Определяем, применяются ли они к выбранному транспорту и формату ввоза.",
   },
   {
     icon: ReceiptText,
     title: "Утилизационный сбор",
-    text: "Выводится отдельной строкой, чтобы структура суммы оставалась понятной.",
+    text: "Сверяем категорию, возраст, объём и мощность двигателя с действующими коэффициентами.",
   },
   {
     icon: FileCheck2,
     title: "Таможенный сбор",
-    text: "Входит в предварительную смету и не прячется внутри общей цифры.",
+    text: "Показываем отдельной строкой, чтобы структура предварительной сметы была понятной.",
   },
 ];
 
@@ -93,13 +92,13 @@ const steps = [
   },
   {
     number: "02",
-    title: "Получаете предварительный расчёт",
-    text: "Сразу видите общую оценку и разбивку платежей по отдельным статьям.",
+    title: "Проверяем ставки",
+    text: "Сверяем категорию транспорта, формат ввоза и действующие правила на дату оформления.",
   },
   {
     number: "03",
-    title: "Уточняем документы",
-    text: "Проверяем данные автомобиля и исходные документы перед уточнением суммы.",
+    title: "Получаете расчёт",
+    text: "Объясняем предварительную сумму и показываем платежи по отдельным статьям.",
   },
   {
     number: "04",
@@ -110,8 +109,8 @@ const steps = [
 
 const faqItems = [
   {
-    q: "Что именно считает калькулятор?",
-    a: "Он даёт предварительную оценку таможенных платежей и показывает отдельными строками пошлину, акциз и НДС — если они применимы, — утилизационный и таможенный сборы. Итог не заменяет проверку документов специалистом.",
+    q: "Почему расчёт делает специалист?",
+    a: "Сумма зависит не только от стоимости автомобиля. Нужно проверить его категорию, возраст, объём и мощность двигателя, формат ввоза и правила на дату оформления. После этой проверки специалист готовит предварительную смету по статьям.",
   },
   {
     q: "Какие данные понадобятся для расчёта?",
@@ -119,11 +118,11 @@ const faqItems = [
   },
   {
     q: "Почему предварительная сумма может измениться после проверки?",
-    a: "На итог влияют подтверждённая таможенная стоимость, характеристики конкретного автомобиля, курс валют на дату оформления и действующие правила. Поэтому после онлайн-оценки мы отдельно проверяем исходные данные.",
+    a: "На итог влияют подтверждённая таможенная стоимость, характеристики конкретного автомобиля, курс валют на дату оформления и действующие правила. Окончательная сумма определяется при оформлении по подтверждённым данным.",
   },
   {
     q: "Можно рассчитать оформление для юридического лица?",
-    a: "Да. В калькуляторе есть отдельный выбор для физического и юридического лица, поскольку состав и порядок начисления платежей различаются.",
+    a: "Да. Укажите в заявке, что транспорт ввозит юридическое лицо. Специалист учтёт отличия в составе и порядке начисления платежей.",
   },
   {
     q: "С какой техникой работает ALISTA?",
@@ -131,7 +130,7 @@ const faqItems = [
   },
   {
     q: "Как получить уточнённый расчёт?",
-    a: "Заполните калькулятор или оставьте заявку с параметрами транспорта. Менеджер уточнит недостающие сведения и подтвердит расчёт после проверки.",
+    a: "Оставьте заявку с параметрами транспорта. Менеджер уточнит недостающие сведения и подготовит расчёт после проверки.",
   },
 ];
 
@@ -157,14 +156,14 @@ const Index = () => (
                 Владивосток · таможенное оформление
               </div>
               <h1 className="max-w-3xl text-balance font-heading text-4xl font-bold leading-[1.03] tracking-[-0.045em] text-[#10231d] sm:text-5xl md:text-6xl xl:text-[4.4rem]">
-                Авто из Японии, Кореи и Китая — с понятным расчётом платежей
+                Авто из Японии, Кореи и Китая — с расчётом после проверки
               </h1>
               <p className="mt-6 max-w-2xl text-pretty text-base leading-relaxed text-[#50635c] sm:text-lg md:text-xl">
-                Покажем предварительную сумму и её состав. Уточнённую сумму подтвердим после проверки параметров автомобиля и документов.
+                Передайте параметры автомобиля. Специалист проверит действующие правила и покажет предварительную сумму по отдельным статьям.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button asChild size="lg" className="h-[3.25rem] rounded-full px-7 text-base font-bold shadow-[0_14px_34px_rgba(11,174,108,0.24)]">
-                  <Link to="/calculator"><Calculator className="h-5 w-5" />Рассчитать платежи</Link>
+                  <Link to="/contacts"><ClipboardCheck className="h-5 w-5" />Получить расчёт</Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="h-[3.25rem] rounded-full border-[#b8cdc4] bg-white/70 px-7 text-base font-bold text-[#16352a] hover:bg-white">
                   <Link to="/cars">Посмотреть автомобили<ArrowRight className="h-4 w-4" /></Link>
@@ -214,15 +213,15 @@ const Index = () => (
         <div className="container">
           <motion.div {...reveal} className="grid items-start gap-10 lg:grid-cols-[0.88fr_1.12fr] lg:gap-16">
             <div className="lg:sticky lg:top-28">
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-primary">Прозрачный расчёт</p>
-              <h2 className="mt-4 max-w-xl text-balance font-heading text-3xl font-bold tracking-[-0.035em] text-foreground sm:text-4xl md:text-5xl">Не одна итоговая цифра, а понятная смета</h2>
-              <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">Калькулятор показывает, из чего складываются таможенные платежи. Дата курса и предупреждение о предварительном характере расчёта остаются рядом с результатом.</p>
-              <Button asChild size="lg" className="mt-8 rounded-full px-7 font-bold"><Link to="/calculator">Открыть калькулятор<ArrowRight className="h-4 w-4" /></Link></Button>
-              <p className="mt-4 max-w-md text-xs leading-relaxed text-muted-foreground">Онлайн-расчёт носит справочный характер. Итог подтверждается после проверки параметров и документов.</p>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-primary">Расчёт специалистом</p>
+              <h2 className="mt-4 max-w-xl text-balance font-heading text-3xl font-bold tracking-[-0.035em] text-foreground sm:text-4xl md:text-5xl">Сначала проверяем данные — затем называем сумму</h2>
+              <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">Для расчёта важны категория транспорта, возраст, объём и мощность двигателя, формат ввоза и правила на дату оформления. Специалист проверит параметры и подготовит понятную смету.</p>
+              <Button asChild size="lg" className="mt-8 rounded-full px-7 font-bold"><Link to="/contacts">Запросить расчёт<ArrowRight className="h-4 w-4" /></Link></Button>
+              <p className="mt-4 max-w-md text-xs leading-relaxed text-muted-foreground">Предварительная сумма подтверждается после проверки исходных данных и документов.</p>
             </div>
             <div className="rounded-[2rem] bg-[#102820] p-4 text-white shadow-[0_24px_70px_rgba(17,45,36,0.18)] sm:p-6 md:p-8">
               <div className="flex items-start justify-between gap-5 border-b border-white/10 pb-6">
-                <div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#6be2aa]">Предварительная смета</p><h3 className="mt-2 font-heading text-2xl font-bold">Таможенные платежи</h3></div>
+                <div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#6be2aa]">Что проверяем</p><h3 className="mt-2 font-heading text-2xl font-bold">Таможенные платежи</h3></div>
                 <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70">по статьям</div>
               </div>
               <div className="mt-3 divide-y divide-white/10">
@@ -235,8 +234,8 @@ const Index = () => (
                 ))}
               </div>
               <div className="mt-3 flex flex-col gap-3 rounded-2xl bg-[#d9f8e8] p-5 text-[#102820] sm:flex-row sm:items-center sm:justify-between">
-                <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-[#08764d]">Итог</p><p className="mt-1 font-heading text-xl font-bold">Видите сумму до заявки</p></div>
-                <Link to="/calculator" className="inline-flex items-center gap-1 text-sm font-bold text-[#08764d] hover:underline">Рассчитать <ChevronRight className="h-4 w-4" /></Link>
+                <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-[#08764d]">Результат</p><p className="mt-1 font-heading text-xl font-bold">Получаете понятную смету</p></div>
+                <Link to="/contacts" className="inline-flex items-center gap-1 text-sm font-bold text-[#08764d] hover:underline">Запросить расчёт <ChevronRight className="h-4 w-4" /></Link>
               </div>
             </div>
           </motion.div>
@@ -312,7 +311,7 @@ const Index = () => (
           <motion.div {...reveal} className="relative overflow-hidden rounded-[2rem] bg-[#d9f8e8] p-6 sm:p-10 md:p-14">
             <div className="pointer-events-none absolute -right-16 -top-16 h-72 w-72 rounded-full bg-white/60 blur-3xl" />
             <div className="relative grid gap-10 lg:grid-cols-[1fr_0.82fr] lg:items-center lg:gap-16">
-              <div><p className="text-sm font-bold uppercase tracking-[0.18em] text-[#08764d]">Уточнённый расчёт после проверки</p><h2 className="mt-4 max-w-2xl text-balance font-heading text-3xl font-bold tracking-[-0.035em] text-[#102820] sm:text-4xl md:text-5xl">Оставьте параметры автомобиля — уточним расчёт</h2><p className="mt-5 max-w-xl leading-relaxed text-[#476158] md:text-lg">Укажите контакт и кратко опишите транспорт. Менеджер свяжется, чтобы запросить недостающие данные.</p><div className="mt-8 grid gap-3 text-sm text-[#304c42] sm:grid-cols-2"><div className="flex items-center gap-2"><Check className="h-4 w-4 text-[#078858]" /> Параметры можно уточнить с менеджером</div><div className="flex items-center gap-2"><Check className="h-4 w-4 text-[#078858]" /> Можно начать с онлайн-калькулятора</div></div></div>
+              <div><p className="text-sm font-bold uppercase tracking-[0.18em] text-[#08764d]">Уточнённый расчёт после проверки</p><h2 className="mt-4 max-w-2xl text-balance font-heading text-3xl font-bold tracking-[-0.035em] text-[#102820] sm:text-4xl md:text-5xl">Оставьте параметры автомобиля — уточним расчёт</h2><p className="mt-5 max-w-xl leading-relaxed text-[#476158] md:text-lg">Укажите контакт и кратко опишите транспорт. Менеджер свяжется, чтобы запросить недостающие данные.</p><div className="mt-8 grid gap-3 text-sm text-[#304c42] sm:grid-cols-2"><div className="flex items-center gap-2"><Check className="h-4 w-4 text-[#078858]" /> Параметры можно уточнить с менеджером</div><div className="flex items-center gap-2"><Check className="h-4 w-4 text-[#078858]" /> Проверяем ставки на дату оформления</div></div></div>
               <div className="rounded-[1.5rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_50px_rgba(24,68,50,0.12)] backdrop-blur sm:p-7"><LeadForm source="home_redesign_cta" buttonLabel="Запросить уточнённый расчёт" /></div>
             </div>
           </motion.div>

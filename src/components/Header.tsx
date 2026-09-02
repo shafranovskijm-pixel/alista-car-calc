@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Calculator, Menu, Phone } from "lucide-react";
+import { ClipboardCheck, Menu, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const navLinks = [
   { to: "/cars", label: "Автомобили" },
-  { to: "/calculator", label: "Калькулятор" },
   { to: "/services", label: "Услуги" },
   { to: "/works", label: "Работы" },
   { to: "/about", label: "О компании" },
@@ -53,7 +52,7 @@ const Header = () => {
             +7 914 073-01-96
           </a>
           <Button asChild className="rounded-full px-5 font-bold">
-            <Link to="/calculator"><Calculator className="h-4 w-4" />Рассчитать</Link>
+            <Link to="/contacts"><ClipboardCheck className="h-4 w-4" />Получить расчёт</Link>
           </Button>
         </div>
 
@@ -62,7 +61,7 @@ const Header = () => {
             <a href="tel:+79140730196" aria-label="Позвонить"><Phone className="h-5 w-5" /></a>
           </Button>
           <Button asChild size="sm" className="hidden rounded-full px-4 font-bold sm:inline-flex">
-            <Link to="/calculator"><Calculator className="h-4 w-4" />Рассчитать</Link>
+            <Link to="/contacts"><ClipboardCheck className="h-4 w-4" />Получить расчёт</Link>
           </Button>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -89,7 +88,7 @@ const Header = () => {
                   <Phone className="h-5 w-5 text-primary" />+7 914 073-01-96
                 </a>
                 <Button asChild size="lg" className="mt-3 w-full rounded-xl font-bold">
-                  <Link to="/calculator" onClick={() => setOpen(false)}>Рассчитать платежи</Link>
+                  <Link to="/contacts" onClick={() => setOpen(false)}>Получить расчёт</Link>
                 </Button>
               </div>
             </SheetContent>

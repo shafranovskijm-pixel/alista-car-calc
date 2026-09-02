@@ -18,7 +18,7 @@ const Footer = () => (
             ООО «Алиста» — таможенное оформление автомобилей и других транспортных средств во Владивостоке.
           </p>
           <Button asChild variant="outline" className="mt-6 rounded-full border-white/20 bg-white/5 text-white hover:bg-white hover:text-[#102820]">
-            <Link to="/calculator">Рассчитать платежи <ArrowRight className="h-4 w-4" /></Link>
+            <Link to="/contacts">Запросить расчёт <ArrowRight className="h-4 w-4" /></Link>
           </Button>
         </div>
 
@@ -26,7 +26,6 @@ const Footer = () => (
           <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-[#6be2aa]">Разделы</h2>
           <nav className="mt-5 grid gap-3 text-sm" aria-label="Навигация в подвале">
             <Link to="/cars" className="text-white/65 hover:text-white">Автомобили</Link>
-            <Link to="/calculator" className="text-white/65 hover:text-white">Калькулятор</Link>
             <Link to="/services" className="text-white/65 hover:text-white">Услуги</Link>
             <Link to="/works" className="text-white/65 hover:text-white">Опубликованные работы</Link>
             <Link to="/about" className="text-white/65 hover:text-white">О компании</Link>
@@ -51,7 +50,7 @@ const Footer = () => (
       <div className="mt-12 grid gap-4 border-t border-white/10 pt-6 text-xs leading-relaxed text-white/45 md:grid-cols-[1fr_auto] md:items-end">
         <div>
           <p>ООО «Алиста» · ИНН 2543194698 · КПП 254301001</p>
-          <p className="mt-2 max-w-3xl">Информация и результаты онлайн-калькулятора носят справочный характер и не являются публичной офертой. Уточнённая сумма подтверждается после проверки исходных данных.</p>
+          <p className="mt-2 max-w-3xl">Предварительный расчёт не является публичной офертой. Итоговая сумма подтверждается специалистом после проверки параметров транспорта и документов.</p>
         </div>
         <div className="md:text-right">
           <p>© {new Date().getFullYear()} ООО «Алиста»</p>

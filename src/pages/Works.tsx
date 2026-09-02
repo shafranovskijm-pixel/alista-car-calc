@@ -290,10 +290,10 @@ const Works = () => {
                 )}
                 <div className="mt-auto flex flex-col gap-2">
                   <a
-                    href="/calculator"
+                    href="/contacts"
                     className="rounded-md gradient-accent px-4 py-2 text-center text-sm font-semibold text-primary-foreground hover:opacity-90"
                   >
-                    Рассчитать похожий
+                    Запросить расчёт похожего
                   </a>
                   <a
                     href="/contacts"

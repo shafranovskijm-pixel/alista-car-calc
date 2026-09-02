@@ -5,7 +5,6 @@ import { ArrowLeft, Loader2, ExternalLink, Calendar, Gauge, Fuel, Settings2, typ
 import Layout from "@/components/Layout";
 import PageTransition from "@/components/PageTransition";
 import LeadForm from "@/components/LeadForm";
-import CarPriceEstimate from "@/components/cars/CarPriceEstimate";
 import {
   fetchCarPublic,
   CAR_COUNTRY_LABELS,
@@ -176,10 +175,6 @@ const CarDetailPage = () => {
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="mt-6 max-w-xl">
-              <CarPriceEstimate car={car} />
             </div>
 
             {car.description && (

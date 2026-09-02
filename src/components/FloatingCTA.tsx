@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calculator, Phone, MessageCircle, Send, X, Plus } from "lucide-react";
+import { ClipboardCheck, Phone, MessageCircle, Send, X, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 
@@ -56,11 +56,11 @@ const FloatingCTA = () => {
       </AnimatePresence>
       <div className="flex items-center gap-2">
         <Link
-          to="/calculator"
+          to="/contacts"
           className="hidden h-12 items-center gap-2 rounded-full bg-[#102820] px-5 text-sm font-bold text-white shadow-xl transition hover:-translate-y-0.5 sm:flex"
         >
-          <Calculator className="h-4 w-4 text-[#6be2aa]" />
-          Рассчитать
+          <ClipboardCheck className="h-4 w-4 text-[#6be2aa]" />
+          Получить расчёт
         </Link>
         <button
           type="button"

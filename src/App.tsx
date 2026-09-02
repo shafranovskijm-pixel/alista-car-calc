@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -9,7 +9,6 @@ import AdminLayout from "./components/admin/AdminLayout.tsx";
 import { AuthProvider } from "./hooks/useAuth.tsx";
 
 const Index = lazy(() => import("./pages/Index.tsx"));
-const Calculator = lazy(() => import("./pages/Calculator.tsx"));
 const Services = lazy(() => import("./pages/Services.tsx"));
 const Works = lazy(() => import("./pages/Works.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
@@ -59,7 +58,7 @@ const AnimatedRoutes = () => {
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Index />} />
-          <Route path="/calculator" element={<Calculator />} />
+          <Route path="/calculator" element={<Navigate replace to="/contacts" />} />
           <Route path="/services" element={<Services />} />
           <Route path="/works" element={<Works />} />
           <Route path="/cars" element={<Cars />} />
