@@ -54,6 +54,9 @@ const Footer = () => (
         </div>
         <div className="md:text-right">
           <p>© {new Date().getFullYear()} ООО «Алиста»</p>
+          <Link to="/privacy" className="text-white/60 transition hover:text-white">
+            Обработка персональных данных
+          </Link>
           <p className="mt-1">Разработка: <a href="https://24zxc.ru" target="_blank" rel="noopener noreferrer" className="text-white/65 hover:text-white">24zxc.ru</a></p>
         </div>
       </div>

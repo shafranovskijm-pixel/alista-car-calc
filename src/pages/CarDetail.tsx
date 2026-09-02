@@ -5,6 +5,8 @@ import { ArrowLeft, Loader2, ExternalLink, Calendar, Gauge, Fuel, Settings2, typ
 import Layout from "@/components/Layout";
 import PageTransition from "@/components/PageTransition";
 import LeadForm from "@/components/LeadForm";
+import Seo from "@/components/Seo";
+import { trackMetrikaPageView } from "@/lib/metrika";
 import {
   fetchCarPublic,
   CAR_COUNTRY_LABELS,
@@ -14,6 +16,12 @@ import {
   formatPrice,
   type CarWithPhotos,
 } from "@/lib/cars";
+
+const CAR_COUNTRY_GENITIVE_LABELS = {
+  japan: "Японии",
+  korea: "Кореи",
+  china: "Китая",
+} as const;
 
 const CarDetailPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -29,9 +37,26 @@ const CarDetailPage = () => {
       .finally(() => setLoading(false));
   }, [slug]);
 
+  useEffect(() => {
+    if (loading) return;
+    const title = car
+      ? `${car.brand} ${car.model}${car.year ? ` ${car.year}` : ""} — автомобиль из ${CAR_COUNTRY_GENITIVE_LABELS[car.country]} | ALISTA`
+      : "Автомобиль не найден | ALISTA";
+    const frame = window.requestAnimationFrame(() =>
+      trackMetrikaPageView(window.location.href, title),
+    );
+    return () => window.cancelAnimationFrame(frame);
+  }, [car, loading]);
+
   if (loading) {
     return (
       <Layout>
+        <Seo
+          title="Автомобиль | ALISTA"
+          description="Карточка автомобиля ALISTA загружается."
+          canonicalPath={null}
+          robots="noindex, nofollow"
+        />
         <div className="flex justify-center py-20">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
@@ -42,6 +67,12 @@ const CarDetailPage = () => {
   if (!car) {
     return (
       <Layout>
+        <Seo
+          title="Автомобиль не найден | ALISTA"
+          description="Запрошенная карточка автомобиля не найдена."
+          canonicalPath={null}
+          robots="noindex, nofollow"
+        />
         <div className="container py-20 text-center">
           <p className="text-muted-foreground">Авто не найдено</p>
           <Link to="/cars" className="text-primary hover:underline mt-4 inline-block">
@@ -73,10 +104,17 @@ const CarDetailPage = () => {
       : null,
   ];
   const availableSpecs = specs.filter((spec): spec is CarSpec => spec !== null);
+  const carName = `${car.brand} ${car.model}${car.year ? ` ${car.year}` : ""}`;
+  const countryName = CAR_COUNTRY_GENITIVE_LABELS[car.country];
 
   return (
     <PageTransition>
       <Layout>
+        <Seo
+          title={`${carName} — автомобиль из ${countryName} | ALISTA`}
+          description={`${carName}: фотографии, характеристики, статус и цена. Запрос уточнённого расчёта таможенного оформления в ALISTA.`}
+          canonicalPath={`/cars/${car.slug}`}
+        />
         <section className="py-10 md:py-14">
           <div className="container">
             <Link
@@ -84,7 +122,7 @@ const CarDetailPage = () => {
               className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
             >
               <ArrowLeft className="h-4 w-4 mr-1" />
-              К каталогу авто из {CAR_COUNTRY_LABELS[car.country]}
+              К каталогу авто из {CAR_COUNTRY_GENITIVE_LABELS[car.country]}
             </Link>
 
             <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">

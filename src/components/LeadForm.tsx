@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import { Link } from "react-router-dom";
 import { z } from "zod";
 import { Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/proxy-client";
 import type { Json } from "@/integrations/supabase/types";
 import { captureUtm } from "@/lib/utm";
+import { reachMetrikaGoal } from "@/lib/metrika";
 
 const schema = z.object({
   full_name: z.string().trim().min(2, "Минимум 2 символа").max(100),
@@ -89,6 +91,7 @@ const LeadForm = ({
         ...utm,
       });
       if (error) throw error;
+      reachMetrikaGoal("lead_form_success");
       // Уведомление по email — не блокируем UX при ошибке.
       supabase.functions
         .invoke("notify-new-lead", { body: { leadId } })
@@ -185,7 +188,10 @@ const LeadForm = ({
         {buttonLabel}
       </Button>
       <p className="text-xs text-muted-foreground text-center">
-        Нажимая кнопку, вы соглашаетесь с обработкой персональных данных
+        Нажимая кнопку, вы соглашаетесь с{" "}
+        <Link to="/privacy" className="text-primary underline underline-offset-2">
+          политикой обработки персональных данных
+        </Link>
       </p>
     </form>
   );

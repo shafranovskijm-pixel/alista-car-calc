@@ -41,7 +41,6 @@ const Works = () => {
   const [slide, setSlide] = useState(0);
 
   useEffect(() => {
-    document.title = "Наши работы — опубликованные автомобили | ALISTA";
     let cancelled = false;
     (async () => {
       setLoading(true);

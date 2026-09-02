@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Loader2, Car as CarIcon, Filter } from "lucide-react";
 import Layout from "@/components/Layout";
 import PageTransition from "@/components/PageTransition";
+import Seo from "@/components/Seo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -23,6 +24,7 @@ import {
   type CarCountry,
   type CarWithPhotos,
 } from "@/lib/cars";
+import { SEO_BY_PATH } from "@/lib/seo";
 import { withRetry } from "@/lib/retry";
 import { retryImageOnce } from "@/lib/image";
 
@@ -42,6 +44,8 @@ const titleFor = (country?: CarCountry) =>
 
 const CarsPage = ({ countrySlug }: { countrySlug?: string }) => {
   const country = countryFromSlug(countrySlug);
+  const seoPath = country ? `/cars/${country}` : "/cars";
+  const seo = SEO_BY_PATH[seoPath];
   const [cars, setCars] = useState<CarWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
@@ -101,6 +105,10 @@ const CarsPage = ({ countrySlug }: { countrySlug?: string }) => {
   return (
     <PageTransition>
       <Layout>
+        <Seo
+          {...seo}
+          robots={!loading && !failed && cars.length > 0 ? "index, follow" : "noindex, follow"}
+        />
         <section className="py-12 md:py-16">
           <div className="container">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

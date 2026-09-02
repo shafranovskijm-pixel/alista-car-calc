@@ -5,6 +5,8 @@ import { AnimatePresence } from "framer-motion";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import MetrikaManager from "@/components/MetrikaManager";
+import RouteSeo from "@/components/RouteSeo";
 import AdminLayout from "./components/admin/AdminLayout.tsx";
 import { AuthProvider } from "./hooks/useAuth.tsx";
 
@@ -13,6 +15,7 @@ const Services = lazy(() => import("./pages/Services.tsx"));
 const Works = lazy(() => import("./pages/Works.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
 const Contacts = lazy(() => import("./pages/Contacts.tsx"));
+const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Cars = lazy(() => import("./pages/Cars.tsx"));
 const CarDetail = lazy(() => import("./pages/CarDetail.tsx"));
@@ -68,6 +71,7 @@ const AnimatedRoutes = () => {
           <Route path="/cars/:slug" element={<CarDetail />} />
           <Route path="/about" element={<About />} />
           <Route path="/contacts" element={<Contacts />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/reset-password" element={<ResetPassword />} />
           <Route path="/admin" element={<AdminLayout />}>
@@ -105,6 +109,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <RouteSeo />
+        <MetrikaManager />
         <AuthProvider>
           <AnimatedRoutes />
         </AuthProvider>
