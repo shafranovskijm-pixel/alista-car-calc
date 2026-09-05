@@ -49,7 +49,12 @@ const ServicesPage = () => {
             </p>
           </motion.div>
 
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <h2 className="mt-12 text-center font-heading text-2xl font-semibold text-foreground md:text-3xl">
+            Перечень услуг
+          </h2>
+
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+
             {services.map((s, i) => (
               <motion.div
                 key={s.title}
