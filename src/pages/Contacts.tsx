@@ -52,7 +52,7 @@ const ContactsPage = () => {
                       rel="noopener noreferrer"
                       className="flex-1"
                     >
-                      <Button variant="outline" size="sm" className="w-full border-green-700/30 text-green-400 hover:bg-green-900/20 hover:text-green-300">
+                      <Button variant="outline" size="sm" className="w-full border-primary/30 text-primary hover:bg-primary/10 hover:text-primary">
                         <MessageCircle className="mr-2 h-4 w-4" />
                         WhatsApp
                       </Button>

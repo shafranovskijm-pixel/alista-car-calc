@@ -8,7 +8,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     const root = document.documentElement;
     const previousColorScheme = root.style.colorScheme;
     root.classList.add("public-site-active");
-    root.style.colorScheme = "light";
+    root.style.colorScheme = "dark";
 
     return () => {
       root.classList.remove("public-site-active");
