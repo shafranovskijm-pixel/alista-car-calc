@@ -93,35 +93,36 @@
   }
 }
 
-/* Public site: light marketplace-style system. Admin routes keep the original dark palette. */
+/* Public site: dark neon-blue system. Admin routes keep their independent theme. */
 :root.public-site-active {
-  --background: 150 35% 98%;
-  --foreground: 157 30% 11%;
+  --background: 218 44% 4%;
+  --foreground: 210 40% 96%;
 
-  --card: 0 0% 100%;
-  --card-foreground: 157 30% 11%;
+  --card: 219 66% 11%;
+  --card-foreground: 210 40% 96%;
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 157 30% 11%;
+  --popover: 219 66% 11%;
+  --popover-foreground: 210 40% 96%;
 
-  --primary: 158 87% 25%;
-  --primary-foreground: 0 0% 100%;
+  --primary: 191 100% 50%;
+  --primary-foreground: 218 44% 4%;
 
-  --secondary: 151 38% 94%;
-  --secondary-foreground: 157 30% 16%;
+  --secondary: 219 66% 11%;
+  --secondary-foreground: 210 40% 96%;
 
-  --muted: 150 22% 94%;
-  --muted-foreground: 155 12% 40%;
+  --muted: 220 32% 14%;
+  --muted-foreground: 215 18% 65%;
 
-  --accent: 151 38% 92%;
-  --accent-foreground: 157 30% 14%;
+  --accent: 221 83% 53%;
+  --accent-foreground: 210 40% 98%;
 
-  --border: 153 20% 85%;
-  --input: 153 20% 82%;
-  --ring: 158 87% 25%;
-  --surface: 151 35% 96%;
-  --neon-glow: 153 78% 38%;
-  color-scheme: light;
+  --border: 221 42% 24%;
+  --input: 221 42% 24%;
+  --ring: 191 100% 50%;
+  --surface: 219 66% 11%;
+  --neon-glow: 191 100% 50%;
+  --neon-secondary: 221 83% 53%;
+  color-scheme: dark;
 }
 
 :root.public-site-active body {
@@ -129,29 +130,35 @@
 }
 
 :root.public-site-active .public-site,
+:root.public-site-active .public-site p,
+:root.public-site-active .public-site a,
+:root.public-site-active .public-site button {
+  font-family: 'Inter', sans-serif;
+}
+
 :root.public-site-active .public-site h1,
 :root.public-site-active .public-site h2,
 :root.public-site-active .public-site h3,
 :root.public-site-active .public-site h4,
 :root.public-site-active .public-site h5,
 :root.public-site-active .public-site h6 {
-  font-family: 'Segoe UI Variable', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 :root.public-site-active .public-site .gradient-accent {
-  background: linear-gradient(135deg, hsl(158 87% 25%) 0%, hsl(151 82% 29%) 100%);
+  background: linear-gradient(135deg, hsl(191 100% 50%) 0%, hsl(221 83% 53%) 100%);
 }
 
 :root.public-site-active .public-site .text-glow {
-  text-shadow: none;
+  text-shadow: 0 0 28px hsl(191 100% 50% / 0.24);
 }
 
 :root.public-site-active .public-site .box-glow {
-  box-shadow: 0 18px 48px hsl(155 28% 22% / 0.1);
+  box-shadow: 0 0 30px hsl(191 100% 50% / 0.14), 0 24px 64px hsl(218 44% 2% / 0.55);
 }
 
 :root.public-site-active ::selection {
-  background: hsl(158 87% 25% / 0.22);
+  background: hsl(191 100% 50% / 0.3);
 }
 
 @layer base {

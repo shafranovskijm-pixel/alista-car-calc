@@ -57,9 +57,9 @@ const FloatingCTA = () => {
       <div className="flex items-center gap-2">
         <Link
           to="/contacts"
-          className="hidden h-12 items-center gap-2 rounded-full bg-[#102820] px-5 text-sm font-bold text-white shadow-xl transition hover:-translate-y-0.5 sm:flex"
+          className="hidden h-12 items-center gap-2 rounded-full border border-primary/25 bg-card px-5 text-sm font-bold text-foreground shadow-xl shadow-primary/10 transition hover:-translate-y-0.5 hover:border-primary/50 sm:flex"
         >
-          <ClipboardCheck className="h-4 w-4 text-[#6be2aa]" />
+          <ClipboardCheck className="h-4 w-4 text-primary" />
           Получить расчёт
         </Link>
         <button
