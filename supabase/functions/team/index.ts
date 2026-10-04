@@ -23,7 +23,8 @@ const requireAdmin = async (req: Request) => {
   return { ok: true as const, userId: u.user.id };
 };
 
-const isValidRole = (r: unknown): r is 'admin' | 'manager' => r === 'admin' || r === 'manager';
+const isValidRole = (r: unknown): r is 'admin' | 'manager' | 'catalog_editor' =>
+  r === 'admin' || r === 'manager' || r === 'catalog_editor';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -70,7 +71,7 @@ Deno.serve(async (req) => {
       }
       if (!isValidRole(role)) return json({ error: 'Некорректная роль' }, 400);
 
-      const redirectTo = `${url.origin.replace(/^https?:\/\/[^/]+/, req.headers.get('origin') ?? url.origin)}/admin/login`;
+      const redirectTo = 'https://alistaru.ru/admin/reset-password';
       const { data: invited, error: iErr } = await sb.auth.admin.inviteUserByEmail(email, {
         data: { full_name: fullName || email },
         redirectTo,
@@ -82,10 +83,12 @@ Deno.serve(async (req) => {
       const uid = invited.user.id;
       // Ensure profile row exists (handle_new_user trigger usually handles this)
       await sb.from('profiles').upsert({ id: uid, email, full_name: fullName || email });
-      // Remove any default role assigned by trigger, then set requested role
-      await sb.from('user_roles').delete().eq('user_id', uid);
-      const { error: roleErr } = await sb.from('user_roles').insert({ user_id: uid, role });
-      if (roleErr) return json({ error: roleErr.message }, 500);
+      // Invitations always receive the role explicitly chosen by an admin.
+      const { error: roleErr } = await sb.rpc('replace_user_role', { _user_id: uid, _role: role });
+      if (roleErr) {
+        await sb.auth.admin.deleteUser(uid);
+        return json({ error: roleErr.message }, 500);
+      }
 
       return json({ ok: true, user_id: uid });
     }
@@ -98,8 +101,7 @@ Deno.serve(async (req) => {
       if (userId === auth.userId && role !== 'admin') {
         return json({ error: 'Нельзя понизить самого себя' }, 400);
       }
-      await sb.from('user_roles').delete().eq('user_id', userId);
-      const { error: e } = await sb.from('user_roles').insert({ user_id: userId, role });
+      const { error: e } = await sb.rpc('replace_user_role', { _user_id: userId, _role: role });
       if (e) return json({ error: e.message }, 500);
       return json({ ok: true });
     }
@@ -108,6 +110,14 @@ Deno.serve(async (req) => {
       const userId = String(body.user_id ?? '');
       if (!userId) return json({ error: 'user_id обязателен' }, 400);
       if (userId === auth.userId) return json({ error: 'Нельзя удалить самого себя' }, 400);
+      const { data: targetRoles, error: targetRoleError } = await sb
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+      if (targetRoleError) return json({ error: targetRoleError.message }, 500);
+      if ((targetRoles ?? []).some((r: { role: string }) => r.role === 'admin')) {
+        return json({ error: 'Сначала измените роль администратора' }, 400);
+      }
       const { error: dErr } = await sb.auth.admin.deleteUser(userId);
       if (dErr) return json({ error: dErr.message }, 500);
       return json({ ok: true });

@@ -5,8 +5,7 @@ import { supabase } from "@/integrations/supabase/proxy-client";
 import {
   fetchAllCars,
   resolveCarPhotoUrl,
-  ensureUniqueCarSlug,
-  makeCarSlug,
+  makeCarDisplayTitle,
   CAR_COUNTRY_LABELS,
   CAR_STATUS_LABELS,
   formatPrice,
@@ -33,8 +32,11 @@ const AdminCars = () => {
         })
       );
       setItems(withCover);
-    } catch (e: any) {
-      toast.error("Не удалось загрузить: " + e.message);
+    } catch (error) {
+      toast.error(
+        "Не удалось загрузить: " +
+          (error instanceof Error ? error.message : "неизвестная ошибка"),
+      );
     } finally {
       setLoading(false);
     }
@@ -45,35 +47,43 @@ const AdminCars = () => {
   }, []);
 
   const togglePublish = async (c: CarWithPhotos) => {
-    const next = c.status === "draft" ? "in_stock" : "draft";
-    const { error } = await supabase.from("cars").update({ status: next }).eq("id", c.id);
+    if (c.status === "draft") {
+      toast.info("Заполните карточку, добавьте фото и выберите публичный статус в редакторе");
+      navigate(`/admin/cars/${c.id}`);
+      return;
+    }
+    const { error } = await supabase.from("cars").update({ status: "draft" }).eq("id", c.id);
     if (error) return toast.error(error.message);
-    toast.success(next === "draft" ? "Скрыто" : "Опубликовано");
+    toast.success("Скрыто");
     load();
   };
 
   const remove = async (c: CarWithPhotos) => {
-    if (!confirm(`Удалить «${c.title}»? Фото также удалятся.`)) return;
+    const displayTitle = makeCarDisplayTitle(c.title, c.brand, c.model, c.year);
+    if (!confirm(`Удалить «${displayTitle}»? Фото также удалятся.`)) return;
     const keys = c.photos
       .filter((p) => !/^https?:\/\//.test(p.url) && !p.url.startsWith("/"))
       .map((p) => p.url);
-    if (keys.length) await supabase.storage.from("cars").remove(keys);
     const { error } = await supabase.from("cars").delete().eq("id", c.id);
     if (error) return toast.error(error.message);
+    if (keys.length) {
+      const { error: cleanupError } = await supabase.storage.from("cars").remove(keys);
+      if (cleanupError) {
+        toast.warning("Карточка удалена, но не все файлы удалось очистить");
+      }
+    }
     toast.success("Удалено");
     load();
   };
 
   const createNew = async () => {
-    const brand = "Новая";
-    const model = "карточка";
-    const slug = await ensureUniqueCarSlug(makeCarSlug(brand, model) + "-" + Date.now());
+    const slug = `draft-${crypto.randomUUID()}`;
     const { data, error } = await supabase
       .from("cars")
       .insert({
-        title: `${brand} ${model}`,
-        brand,
-        model,
+        title: "",
+        brand: "",
+        model: "",
         slug,
         country: "japan",
         status: "draft",
@@ -115,64 +125,79 @@ const AdminCars = () => {
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {items.map((c) => (
-            <div key={c.id} className="rounded-lg border border-border overflow-hidden bg-card flex flex-col">
-              <Link
-                to={`/admin/cars/${c.id}`}
-                className="block relative aspect-[4/3] bg-secondary overflow-hidden"
+          {items.map((c) => {
+            const displayTitle = makeCarDisplayTitle(c.title, c.brand, c.model, c.year);
+            return (
+              <div
+                key={c.id}
+                className="rounded-lg border border-border overflow-hidden bg-card flex flex-col"
               >
-                {c.coverUrl ? (
-                  <img src={c.coverUrl} alt={c.title} className="h-full w-full object-cover" loading="lazy" />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                    Нет фото
-                  </div>
-                )}
-                <span
-                  className={`absolute left-2 top-2 rounded px-2 py-0.5 text-xs ${
-                    c.status === "draft"
-                      ? "bg-muted text-muted-foreground"
-                      : "bg-primary/90 text-primary-foreground"
-                  }`}
+                <Link
+                  to={`/admin/cars/${c.id}`}
+                  className="block relative aspect-[4/3] bg-secondary overflow-hidden"
                 >
-                  {CAR_STATUS_LABELS[c.status]}
-                </span>
-                <span className="absolute right-2 top-2 rounded bg-background/80 px-2 py-0.5 text-xs">
-                  {c.photos.length} фото
-                </span>
-              </Link>
-              <div className="p-3 flex flex-col gap-2 flex-1">
-                <div className="line-clamp-2 text-sm font-medium">{c.title}</div>
-                <div className="text-xs text-muted-foreground">
-                  {formatPrice(c.price, c.currency)} · {CAR_COUNTRY_LABELS[c.country]}
-                </div>
-                <div className="mt-auto flex gap-1.5">
-                  <Button size="sm" variant="outline" asChild className="flex-1">
-                    <Link to={`/admin/cars/${c.id}`}>
-                      <Pencil className="h-3.5 w-3.5 mr-1" />
-                      Править
-                    </Link>
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => togglePublish(c)}
-                    title={c.status === "draft" ? "Опубликовать" : "Скрыть"}
+                  {c.coverUrl ? (
+                    <img
+                      src={c.coverUrl}
+                      alt={displayTitle}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+                      Нет фото
+                    </div>
+                  )}
+                  <span
+                    className={`absolute left-2 top-2 rounded px-2 py-0.5 text-xs ${
+                      c.status === "draft"
+                        ? "bg-muted text-muted-foreground"
+                        : "bg-primary/90 text-primary-foreground"
+                    }`}
                   >
-                    {c.status === "draft" ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => remove(c)}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                    {CAR_STATUS_LABELS[c.status]}
+                  </span>
+                  <span className="absolute right-2 top-2 rounded bg-background/80 px-2 py-0.5 text-xs">
+                    {c.photos.length} фото
+                  </span>
+                </Link>
+                <div className="p-3 flex flex-col gap-2 flex-1">
+                  <div className="line-clamp-2 text-sm font-medium">{displayTitle}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {formatPrice(c.price, c.currency)} · {CAR_COUNTRY_LABELS[c.country]}
+                  </div>
+                  <div className="mt-auto flex gap-1.5">
+                    <Button size="sm" variant="outline" asChild className="flex-1">
+                      <Link to={`/admin/cars/${c.id}`}>
+                        <Pencil className="h-3.5 w-3.5 mr-1" />
+                        Править
+                      </Link>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => togglePublish(c)}
+                      title={c.status === "draft" ? "Заполнить и опубликовать" : "Скрыть"}
+                    >
+                      {c.status === "draft" ? (
+                        <Eye className="h-4 w-4" />
+                      ) : (
+                        <EyeOff className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => remove(c)}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

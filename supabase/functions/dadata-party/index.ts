@@ -1,19 +1,40 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+const sb = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
+
+const json = (data: unknown, status = 200) =>
+  new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+
+const authorize = async (req: Request): Promise<{ ok: boolean; error?: string }> => {
+  const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
+  if (!token) return { ok: false, error: 'Unauthorized' };
+  const { data: u, error } = await sb.auth.getUser(token);
+  if (error || !u?.user) return { ok: false, error: 'Unauthorized' };
+  const { data: roles } = await sb.from('user_roles').select('role').eq('user_id', u.user.id);
+  const allowed = (roles ?? []).some((r: { role: string }) => ['admin', 'manager'].includes(r.role));
+  return allowed ? { ok: true } : { ok: false, error: 'Forbidden' };
+};
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
+    const auth = await authorize(req);
+    if (!auth.ok) return json({ error: auth.error }, auth.error === 'Forbidden' ? 403 : 401);
+
     const { inn } = await req.json();
     if (!inn || !/^(\d{10}|\d{12})$/.test(String(inn))) {
-      return new Response(JSON.stringify({ error: 'ИНН должен быть 10 или 12 цифр' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json({ error: 'ИНН должен быть 10 или 12 цифр' }, 400);
     }
     const key = Deno.env.get('DADATA_API_KEY');
     if (!key) {
-      return new Response(JSON.stringify({ error: 'DADATA_API_KEY не настроен' }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json({ error: 'DADATA_API_KEY не настроен' }, 500);
     }
     const r = await fetch('https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party', {
       method: 'POST',
@@ -26,16 +47,12 @@ Deno.serve(async (req) => {
     });
     if (!r.ok) {
       const text = await r.text();
-      return new Response(JSON.stringify({ error: `DaData ${r.status}: ${text}` }), {
-        status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json({ error: `DaData ${r.status}: ${text}` }, 502);
     }
     const data = await r.json();
     const sug = data?.suggestions?.[0];
     if (!sug) {
-      return new Response(JSON.stringify({ error: 'Организация не найдена' }), {
-        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json({ error: 'Организация не найдена' }, 404);
     }
     const d = sug.data ?? {};
     const mgmt = d.management ?? {};
@@ -49,12 +66,8 @@ Deno.serve(async (req) => {
       director_name: mgmt.name ?? '',
       director_position: mgmt.post ?? '',
     };
-    return new Response(JSON.stringify(out), {
-      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return json(out);
   } catch (e) {
-    return new Response(JSON.stringify({ error: String((e as Error).message ?? e) }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return json({ error: String((e as Error).message ?? e) }, 500);
   }
 });

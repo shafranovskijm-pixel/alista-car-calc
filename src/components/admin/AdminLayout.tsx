@@ -37,6 +37,12 @@ import GlobalSearch from "./GlobalSearch";
 import NotificationsBell from "./NotificationsBell";
 import CurrencyTicker from "./CurrencyTicker";
 import ThemeToggle from "@/components/ThemeToggle";
+import {
+  canAccessAdminPath,
+  hasCatalogAccess,
+  hasFullCrmAccess,
+  isCatalogOnly,
+} from "@/lib/admin-access";
 
 type Item = {
   title: string;
@@ -84,12 +90,22 @@ const groups: { label: string; items: Item[] }[] = [
 ];
 
 const AdminLayout = () => {
-  const { user, loading, signOut } = useAuth();
+  const { user, roles, rolesError, loading, retryRoles, signOut } = useAuth();
   const location = useLocation();
   const [badges, setBadges] = useState<Record<string, number>>({});
+  const catalogOnly = isCatalogOnly(roles);
+  const fullCrmAccess = hasFullCrmAccess(roles);
+  const visibleGroups = catalogOnly
+    ? groups
+        .filter((group) => group.label === "Каталог")
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) => item.url === "/admin/cars"),
+        }))
+    : groups;
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || loading || !fullCrmAccess) return;
     const load = async () => {
       const [leadsNew, dealsActive, tasksOverdue] = await Promise.all([
         supabase.from("leads").select("id", { count: "exact", head: true }).eq("status", "new"),
@@ -122,13 +138,52 @@ const AdminLayout = () => {
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [user]);
+  }, [fullCrmAccess, loading, user]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Загрузка...</div>;
   }
   if (!user) {
     return <Navigate to="/admin/login" replace state={{ from: location }} />;
+  }
+  if (rolesError) {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center"
+        role="alert"
+      >
+        <div>
+          <h1 className="font-heading text-xl font-semibold">Не удалось проверить права доступа</h1>
+          <p className="mt-2 max-w-md text-sm text-muted-foreground">
+            Роли пользователя не загрузились. Проверьте соединение и повторите запрос.
+          </p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button onClick={() => void retryRoles()}>Повторить</Button>
+          <Button variant="outline" onClick={signOut}>
+            <LogOut className="h-4 w-4 mr-2" /> Выйти
+          </Button>
+        </div>
+      </div>
+    );
+  }
+  if (!hasCatalogAccess(roles)) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center">
+        <div>
+          <h1 className="font-heading text-xl font-semibold">Доступ не назначен</h1>
+          <p className="mt-2 max-w-md text-sm text-muted-foreground">
+            Попросите администратора назначить этой учётной записи роль в настройках команды.
+          </p>
+        </div>
+        <Button variant="outline" onClick={signOut}>
+          <LogOut className="h-4 w-4 mr-2" /> Выйти
+        </Button>
+      </div>
+    );
+  }
+  if (!canAccessAdminPath(roles, location.pathname)) {
+    return <Navigate to="/admin/cars" replace />;
   }
 
   return (
@@ -142,7 +197,7 @@ const AdminLayout = () => {
                 <span className="font-heading text-sm font-semibold tracking-wider">CRM ALISTA</span>
               </div>
             </div>
-            {groups.map((g) => (
+            {visibleGroups.map((g) => (
               <SidebarGroup key={g.label}>
                 <SidebarGroupLabel>{g.label}</SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -195,11 +250,11 @@ const AdminLayout = () => {
           <header className="h-14 flex items-center border-b border-border px-2 sm:px-4 gap-2 sm:gap-3 bg-background/80 backdrop-blur-xl sticky top-0 z-30">
             <SidebarTrigger />
             <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-0">
-              <GlobalSearch />
+              {!catalogOnly && <GlobalSearch />}
             </div>
-            <div className="hidden md:block"><CurrencyTicker /></div>
+            {!catalogOnly && <div className="hidden md:block"><CurrencyTicker /></div>}
             <ThemeToggle />
-            <NotificationsBell />
+            {!catalogOnly && <NotificationsBell />}
             <div className="hidden lg:block text-xs text-muted-foreground max-w-[180px] truncate">{user.email}</div>
           </header>
           <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-auto">

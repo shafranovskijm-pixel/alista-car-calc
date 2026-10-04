@@ -18,12 +18,14 @@ import HintCard from "@/components/admin/HintCard";
 import TeamManager from "@/components/admin/TeamManager";
 
 const AdminSettings = () => {
-  const { user } = useAuth();
+  const { user, roles } = useAuth();
   const { toast } = useToast();
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const tab = searchParams.get("tab") ?? "profile";
+  const isAdmin = roles.includes("admin");
+  const requestedTab = searchParams.get("tab") ?? "profile";
+  const tab = requestedTab === "team" && !isAdmin ? "profile" : requestedTab;
 
   useEffect(() => {
     if (!user) return;
@@ -85,7 +87,7 @@ const AdminSettings = () => {
       >
         <TabsList>
           <TabsTrigger value="profile">Профиль</TabsTrigger>
-          <TabsTrigger value="team">Команда</TabsTrigger>
+          {isAdmin && <TabsTrigger value="team">Команда</TabsTrigger>}
           <TabsTrigger value="email">Почта</TabsTrigger>
           <TabsTrigger value="templates">Шаблоны</TabsTrigger>
           <TabsTrigger value="onboarding">Обучение</TabsTrigger>
@@ -137,9 +139,11 @@ const AdminSettings = () => {
         <TabsContent value="onboarding">
           <OnboardingGuide />
         </TabsContent>
-        <TabsContent value="team">
-          <TeamManager />
-        </TabsContent>
+        {isAdmin && (
+          <TabsContent value="team">
+            <TeamManager />
+          </TabsContent>
+        )}
         <TabsContent value="templates">
           <div className="space-y-4">
             <AlistaContractSample />

@@ -2,7 +2,18 @@ import { supabase } from "@/integrations/supabase/proxy-client";
 import { slugify } from "@/lib/works";
 
 export const CAR_BUCKET = "cars";
-const SIGNED_TTL = 60 * 60 * 24 * 365;
+// Keep public catalogue links short-lived so hiding a car also limits the
+// lifetime of already issued photo URLs. Storage RLS still decides whether a
+// new signed URL may be created.
+const SIGNED_TTL = 60 * 60;
+export const MAX_CAR_PHOTO_BYTES = 10 * 1024 * 1024;
+export const CAR_PHOTO_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+
+const CAR_PHOTO_EXTENSIONS: Record<(typeof CAR_PHOTO_MIME_TYPES)[number], string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
 
 export type CarCountry = "japan" | "korea" | "china";
 export type CarStatus = "in_stock" | "in_transit" | "on_order" | "sold" | "draft";
@@ -58,6 +69,7 @@ export type Car = {
   status: CarStatus;
   description: string | null;
   auction_sheet_url: string | null;
+  video_url: string | null;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -90,6 +102,13 @@ const sortPhotos = (photos: CarPhoto[]): CarPhoto[] =>
     return a.sort_order - b.sort_order;
   });
 
+type CarQueryRow = Car & { car_photos?: CarPhoto[] | null };
+
+const mapCarQueryRow = ({ car_photos, ...car }: CarQueryRow): CarWithPhotos => ({
+  ...car,
+  photos: sortPhotos(car_photos ?? []),
+});
+
 export const fetchPublicCars = async (country?: CarCountry): Promise<CarWithPhotos[]> => {
   let q = supabase
     .from("cars")
@@ -100,10 +119,7 @@ export const fetchPublicCars = async (country?: CarCountry): Promise<CarWithPhot
   if (country) q = q.eq("country", country);
   const { data, error } = await q;
   if (error) throw error;
-  const list: CarWithPhotos[] = (data ?? []).map((c: any) => ({
-    ...c,
-    photos: sortPhotos(c.car_photos ?? []),
-  }));
+  const list = (data ?? []).map(mapCarQueryRow);
   await Promise.all(
     list.map(async (c) => {
       c.photos = await Promise.all(
@@ -121,7 +137,7 @@ export const fetchAllCars = async (): Promise<CarWithPhotos[]> => {
     .order("sort_order", { ascending: false })
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return (data ?? []).map((c: any) => ({ ...c, photos: sortPhotos(c.car_photos ?? []) }));
+  return (data ?? []).map(mapCarQueryRow);
 };
 
 export const fetchCar = async (idOrSlug: string): Promise<CarWithPhotos | null> => {
@@ -133,7 +149,7 @@ export const fetchCar = async (idOrSlug: string): Promise<CarWithPhotos | null> 
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
-  return { ...(data as any), photos: sortPhotos((data as any).car_photos ?? []) };
+  return mapCarQueryRow(data);
 };
 
 export const fetchCarPublic = async (slug: string): Promise<CarWithPhotos | null> => {
@@ -157,11 +173,22 @@ export const ensureUniqueCarSlug = async (base: string, ignoreId?: string): Prom
   }
 };
 
+export const validateCarPhoto = (file: Pick<File, "size" | "type">): string => {
+  if (!CAR_PHOTO_MIME_TYPES.includes(file.type as (typeof CAR_PHOTO_MIME_TYPES)[number])) {
+    throw new Error("Поддерживаются фотографии JPG, PNG и WebP");
+  }
+  if (file.size <= 0 || file.size > MAX_CAR_PHOTO_BYTES) {
+    throw new Error("Размер одной фотографии должен быть не больше 10 МБ");
+  }
+  return CAR_PHOTO_EXTENSIONS[file.type as (typeof CAR_PHOTO_MIME_TYPES)[number]];
+};
+
 export const uploadCarPhoto = async (carId: string, file: File): Promise<string> => {
-  const ext = file.name.split(".").pop() || "jpg";
+  const ext = validateCarPhoto(file);
   const key = `${carId}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage.from(CAR_BUCKET).upload(key, file, {
-    cacheControl: "31536000",
+    cacheControl: String(SIGNED_TTL),
+    contentType: file.type,
     upsert: false,
   });
   if (error) throw error;
@@ -170,11 +197,22 @@ export const uploadCarPhoto = async (carId: string, file: File): Promise<string>
 
 export const deleteCarPhotoFromStorage = async (url: string) => {
   if (/^https?:\/\//i.test(url) || url.startsWith("/")) return;
-  await supabase.storage.from(CAR_BUCKET).remove([url]);
+  const { error } = await supabase.storage.from(CAR_BUCKET).remove([url]);
+  if (error) throw error;
 };
 
 export const makeCarSlug = (brand: string, model: string, year?: number | null) =>
   slugify([brand, model, year].filter(Boolean).join(" "));
+
+export const makeCarDisplayTitle = (
+  customTitle: string,
+  brand: string,
+  model: string,
+  year?: number | null,
+) =>
+  customTitle.trim() ||
+  [brand.trim(), model.trim(), year].filter(Boolean).join(" ") ||
+  "Новый автомобиль";
 
 export const formatPrice = (price: number | null, currency: string) => {
   if (price == null) return "Цена по запросу";

@@ -15,11 +15,38 @@ const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    document.title = "Восстановление пароля | ALISTA";
+    document.title = "Новый пароль | ALISTA";
+    let active = true;
+    const showPasswordForm = () => {
+      if (active) setMode("confirm");
+    };
+
     const hash = window.location.hash;
-    if (hash.includes("type=recovery") || hash.includes("access_token")) {
-      setMode("confirm");
+    const search = window.location.search;
+    if (
+      hash.includes("type=recovery") ||
+      hash.includes("type=invite") ||
+      hash.includes("access_token") ||
+      search.includes("code=") ||
+      search.includes("token_hash=")
+    ) {
+      showPasswordForm();
     }
+
+    void supabase.auth.getSession().then(({ data }) => {
+      if (data.session) showPasswordForm();
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
+        showPasswordForm();
+      }
+    });
+
+    return () => {
+      active = false;
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const handleRequest = async (e: React.FormEvent) => {
@@ -45,15 +72,17 @@ const ResetPassword = () => {
       toast({ title: "Ошибка", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Пароль обновлён", description: "Войдите с новым паролем." });
-    navigate("/admin/login");
+    toast({ title: "Пароль сохранён", description: "Доступ к панели управления открыт." });
+    navigate("/admin", { replace: true });
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="font-heading text-2xl">Восстановление пароля</CardTitle>
+          <CardTitle className="font-heading text-2xl">
+            {mode === "request" ? "Восстановление пароля" : "Создание нового пароля"}
+          </CardTitle>
           <CardDescription>
             {mode === "request"
               ? "Введите email для получения ссылки сброса"
@@ -93,6 +122,7 @@ const ResetPassword = () => {
                 <Input
                   id="new-password"
                   type="password"
+                  autoComplete="new-password"
                   minLength={6}
                   required
                   value={newPassword}

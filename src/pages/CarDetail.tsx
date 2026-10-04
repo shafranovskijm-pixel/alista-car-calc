@@ -6,6 +6,7 @@ import Layout from "@/components/Layout";
 import PageTransition from "@/components/PageTransition";
 import LeadForm from "@/components/LeadForm";
 import Seo from "@/components/Seo";
+import CarVideo from "@/components/cars/CarVideo";
 import { trackMetrikaPageView } from "@/lib/metrika";
 import {
   fetchCarPublic,
@@ -221,6 +222,13 @@ const CarDetailPage = () => {
                 <div className="rounded-xl border border-border/50 bg-card p-5 text-sm text-muted-foreground whitespace-pre-line leading-relaxed">
                   {car.description}
                 </div>
+              </div>
+            )}
+
+            {car.video_url && (
+              <div className="mt-10 max-w-3xl">
+                <h2 className="font-heading text-xl font-bold text-foreground mb-3">Видео</h2>
+                <CarVideo url={car.video_url} title={`Видео ${carName}`} />
               </div>
             )}
           </div>

@@ -5,10 +5,12 @@ import { supabase } from "@/integrations/supabase/proxy-client";
 import {
   fetchCar,
   uploadCarPhoto,
+  validateCarPhoto,
   resolveCarPhotoUrl,
   deleteCarPhotoFromStorage,
   ensureUniqueCarSlug,
   makeCarSlug,
+  makeCarDisplayTitle,
   CAR_COUNTRY_LABELS,
   CAR_STATUS_LABELS,
   CAR_TRANSMISSION_LABELS,
@@ -49,6 +51,8 @@ import {
   rectSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import CarVideo from "@/components/cars/CarVideo";
+import { getNormalizedVideoStorageUrl, normalizeVideoUrl } from "@/lib/video";
 
 type PhotoUI = CarPhoto & { displayUrl: string };
 
@@ -133,12 +137,15 @@ const AdminCarEdit = () => {
   const [status, setStatus] = useState<CarStatus>("in_stock");
   const [description, setDescription] = useState("");
   const [auctionUrl, setAuctionUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
   const [sortOrder, setSortOrder] = useState("0");
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
+  const videoPreview = videoUrl.trim() ? normalizeVideoUrl(videoUrl) : null;
+  const videoUrlIsInvalid = Boolean(videoUrl.trim() && !videoPreview);
 
   const load = async () => {
     if (!id) return;
@@ -166,6 +173,7 @@ const AdminCarEdit = () => {
       setStatus(c.status);
       setDescription(c.description ?? "");
       setAuctionUrl(c.auction_sheet_url ?? "");
+      setVideoUrl(c.video_url ?? "");
       setSortOrder(String(c.sort_order));
       const resolved = await Promise.all(
         c.photos.map(async (p) => ({ ...p, displayUrl: await resolveCarPhotoUrl(p.url) }))
@@ -187,10 +195,25 @@ const AdminCarEdit = () => {
       toast.error("Укажите марку и модель");
       return;
     }
+    if (status !== "draft" && photos.length === 0) {
+      toast.error("Перед публикацией добавьте хотя бы одну фотографию");
+      return;
+    }
+    const normalizedVideoUrl = videoUrl.trim()
+      ? getNormalizedVideoStorageUrl(videoUrl)
+      : null;
+    if (videoUrl.trim() && !normalizedVideoUrl) {
+      toast.error("Укажите корректную ссылку YouTube, RUTUBE или VK Видео");
+      return;
+    }
     setSaving(true);
     try {
-      const computedTitle =
-        title.trim() || `${brand} ${model}${year ? " " + year : ""}`.trim();
+      const computedTitle = makeCarDisplayTitle(
+        title,
+        brand,
+        model,
+        year ? parseInt(year, 10) : null,
+      );
       const baseSlug = makeCarSlug(brand, model, year ? parseInt(year, 10) : null);
       const slug = await ensureUniqueCarSlug(baseSlug, car.id);
       const { error } = await supabase
@@ -212,14 +235,15 @@ const AdminCarEdit = () => {
           status,
           description: description || null,
           auction_sheet_url: auctionUrl || null,
+          video_url: normalizedVideoUrl,
           sort_order: parseInt(sortOrder, 10) || 0,
         })
         .eq("id", car.id);
       if (error) throw error;
       toast.success("Сохранено");
       load();
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не удалось сохранить автомобиль");
     } finally {
       setSaving(false);
     }
@@ -227,12 +251,20 @@ const AdminCarEdit = () => {
 
   const handleUpload = async (files: FileList | null) => {
     if (!files || !car) return;
+    const selectedFiles = Array.from(files);
+    try {
+      selectedFiles.forEach(validateCarPhoto);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не удалось проверить фотографии");
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
     setUploading(true);
     try {
       const startOrder = photos.length;
       const hasCover = photos.some((p) => p.is_cover);
       let i = 0;
-      for (const file of Array.from(files)) {
+      for (const file of selectedFiles) {
         const key = await uploadCarPhoto(car.id, file);
         const { error } = await supabase.from("car_photos").insert({
           car_id: car.id,
@@ -240,13 +272,16 @@ const AdminCarEdit = () => {
           sort_order: startOrder + i,
           is_cover: !hasCover && i === 0 && startOrder === 0,
         });
-        if (error) throw error;
+        if (error) {
+          await deleteCarPhotoFromStorage(key);
+          throw error;
+        }
         i += 1;
       }
       toast.success(`Загружено: ${i}`);
       load();
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не удалось загрузить фотографии");
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -263,9 +298,13 @@ const AdminCarEdit = () => {
 
   const deletePhoto = async (photo: PhotoUI) => {
     if (!confirm("Удалить фото?")) return;
-    await deleteCarPhotoFromStorage(photo.url);
     const { error } = await supabase.from("car_photos").delete().eq("id", photo.id);
     if (error) return toast.error(error.message);
+    try {
+      await deleteCarPhotoFromStorage(photo.url);
+    } catch {
+      toast.warning("Фото удалено из карточки, но файл не удалось очистить");
+    }
     load();
   };
 
@@ -283,13 +322,19 @@ const AdminCarEdit = () => {
 
   const remove = async () => {
     if (!car) return;
-    if (!confirm(`Удалить «${car.title}»?`)) return;
+    const displayTitle = makeCarDisplayTitle(car.title, car.brand, car.model, car.year);
+    if (!confirm(`Удалить «${displayTitle}»?`)) return;
     const keys = photos
       .filter((p) => !/^https?:\/\//.test(p.url) && !p.url.startsWith("/"))
       .map((p) => p.url);
-    if (keys.length) await supabase.storage.from("cars").remove(keys);
     const { error } = await supabase.from("cars").delete().eq("id", car.id);
     if (error) return toast.error(error.message);
+    if (keys.length) {
+      const { error: cleanupError } = await supabase.storage.from("cars").remove(keys);
+      if (cleanupError) {
+        toast.warning("Карточка удалена, но не все файлы удалось очистить");
+      }
+    }
     toast.success("Удалено");
     navigate("/admin/cars");
   };
@@ -311,7 +356,9 @@ const AdminCarEdit = () => {
       </Link>
       <div className="mb-6 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold truncate">
-          {brand} {model} {year && <span className="text-muted-foreground">{year}</span>}
+          {brand.trim() || model.trim()
+            ? <>{brand} {model} {year && <span className="text-muted-foreground">{year}</span>}</>
+            : "Новый автомобиль"}
         </h1>
         <div className="flex gap-2">
           {car.status !== "draft" && (
@@ -482,6 +529,39 @@ const AdminCarEdit = () => {
             />
           </div>
           <div>
+            <Label htmlFor="car-video-url">Видео автомобиля</Label>
+            <Input
+              id="car-video-url"
+              type="url"
+              inputMode="url"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+              placeholder="https://youtu.be/..."
+              maxLength={1000}
+              aria-invalid={videoUrlIsInvalid}
+              aria-describedby="car-video-help"
+            />
+            <p
+              id="car-video-help"
+              className={`mt-1 text-xs ${
+                videoUrlIsInvalid
+                  ? "text-destructive"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {videoUrlIsInvalid
+                ? "Ссылка не распознана. Поддерживаются YouTube, RUTUBE и VK Видео."
+                : "Вставьте ссылку на ролик — код iframe вставлять не нужно."}
+            </p>
+            {videoPreview && (
+              <CarVideo
+                url={videoUrl}
+                title={`Предпросмотр видео ${brand} ${model}`.trim()}
+                className="mt-3"
+              />
+            )}
+          </div>
+          <div>
             <Label>Описание</Label>
             <Textarea
               rows={8}
@@ -510,7 +590,7 @@ const AdminCarEdit = () => {
             <input
               ref={fileRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               multiple
               hidden
               onChange={(e) => handleUpload(e.target.files)}
@@ -537,7 +617,8 @@ const AdminCarEdit = () => {
             </DndContext>
           )}
           <p className="mt-2 text-xs text-muted-foreground">
-            Перетащите фото, чтобы изменить порядок. Звёздочка — сделать обложкой.
+            JPG, PNG или WebP до 10 МБ. Перетащите фото, чтобы изменить порядок. Звёздочка — сделать
+            обложкой.
           </p>
         </div>
       </div>

@@ -17,17 +17,21 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/proxy-client";
 import { Loader2, UserPlus, Trash2, ShieldCheck } from "lucide-react";
 import HintCard from "@/components/admin/HintCard";
+import type { AppRole } from "@/lib/admin-access";
 
-type Role = "admin" | "manager";
 type Member = {
   id: string;
   email: string | null;
   full_name: string | null;
   created_at: string;
-  roles: Role[];
+  roles: AppRole[];
 };
 
-const roleLabel = (r: Role) => (r === "admin" ? "Администратор" : "Менеджер");
+const roleLabel = (role: AppRole) => {
+  if (role === "admin") return "Администратор";
+  if (role === "manager") return "Менеджер";
+  return "Редактор каталога";
+};
 
 const TeamManager = () => {
   const { toast } = useToast();
@@ -37,7 +41,7 @@ const TeamManager = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<Role>("manager");
+  const [role, setRole] = useState<AppRole>("catalog_editor");
   const [inviting, setInviting] = useState(false);
 
   const call = useCallback(
@@ -108,7 +112,7 @@ const TeamManager = () => {
     }
   };
 
-  const changeRole = async (m: Member, newRole: Role) => {
+  const changeRole = async (m: Member, newRole: AppRole) => {
     if (m.roles.includes(newRole) && m.roles.length === 1) return;
     setBusy(m.id);
     try {
@@ -150,7 +154,8 @@ const TeamManager = () => {
         Приглашайте сотрудников по email — на почту придёт письмо с ссылкой для входа и создания
         пароля. <b>Администратор</b> имеет полный доступ ко всем разделам и настройкам.
         <b> Менеджер</b> работает с заявками, сделками, клиентами и документами, но не видит настройки
-        команды. Роль можно изменить или удалить сотрудника в любой момент.
+        команды. <b>Редактор каталога</b> может работать только с автомобилями, фотографиями и видео.
+        Роль можно изменить или удалить сотрудника в любой момент.
       </HintCard>
 
       <Card>
@@ -182,11 +187,12 @@ const TeamManager = () => {
             </div>
             <div>
               <Label className="mb-2 block">Роль</Label>
-              <Select value={role} onValueChange={(v) => setRole(v as Role)}>
+              <Select value={role} onValueChange={(v) => setRole(v as AppRole)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="catalog_editor">Редактор каталога</SelectItem>
                   <SelectItem value="manager">Менеджер</SelectItem>
                   <SelectItem value="admin">Администратор</SelectItem>
                 </SelectContent>
@@ -228,7 +234,13 @@ const TeamManager = () => {
                 <TableBody>
                   {members.map((m) => {
                     const isMe = m.id === user?.id;
-                    const currentRole: Role = m.roles.includes("admin") ? "admin" : "manager";
+                    const currentRole = m.roles.includes("admin")
+                      ? "admin"
+                      : m.roles.includes("manager")
+                        ? "manager"
+                        : m.roles.includes("catalog_editor")
+                          ? "catalog_editor"
+                          : null;
                     return (
                       <TableRow key={m.id}>
                         <TableCell className="font-medium">
@@ -242,14 +254,15 @@ const TeamManager = () => {
                         <TableCell>{m.full_name ?? "—"}</TableCell>
                         <TableCell>
                           <Select
-                            value={currentRole}
+                            value={currentRole ?? undefined}
                             disabled={busy === m.id || (isMe && currentRole === "admin")}
-                            onValueChange={(v) => changeRole(m, v as Role)}
+                            onValueChange={(v) => changeRole(m, v as AppRole)}
                           >
                             <SelectTrigger className="w-[180px]">
-                              <SelectValue />
+                              <SelectValue placeholder="Без роли" />
                             </SelectTrigger>
                             <SelectContent>
+                              <SelectItem value="catalog_editor">{roleLabel("catalog_editor")}</SelectItem>
                               <SelectItem value="manager">{roleLabel("manager")}</SelectItem>
                               <SelectItem value="admin">{roleLabel("admin")}</SelectItem>
                             </SelectContent>
