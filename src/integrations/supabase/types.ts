@@ -1225,7 +1225,7 @@ export type Database = {
     }
     Enums: {
       activity_type: "note" | "call" | "meeting" | "email" | "task"
-      app_role: "admin" | "manager" | "catalog_editor"
+      app_role: "admin" | "manager"
       car_country: "japan" | "korea" | "china"
       car_fuel: "petrol" | "diesel" | "hybrid" | "electric" | "gas"
       car_status: "in_stock" | "in_transit" | "on_order" | "sold" | "draft"
@@ -1390,7 +1390,7 @@ export const Constants = {
   public: {
     Enums: {
       activity_type: ["note", "call", "meeting", "email", "task"],
-      app_role: ["admin", "manager", "catalog_editor"],
+      app_role: ["admin", "manager"],
       car_country: ["japan", "korea", "china"],
       car_fuel: ["petrol", "diesel", "hybrid", "electric", "gas"],
       car_status: ["in_stock", "in_transit", "on_order", "sold", "draft"],
