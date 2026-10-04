@@ -101,6 +101,7 @@ export type Database = {
           title: string
           transmission: Database["public"]["Enums"]["car_transmission"] | null
           updated_at: string
+          video_url: string | null
           year: number | null
         }
         Insert: {
@@ -124,6 +125,7 @@ export type Database = {
           title: string
           transmission?: Database["public"]["Enums"]["car_transmission"] | null
           updated_at?: string
+          video_url?: string | null
           year?: number | null
         }
         Update: {
@@ -147,6 +149,7 @@ export type Database = {
           title?: string
           transmission?: Database["public"]["Enums"]["car_transmission"] | null
           updated_at?: string
+          video_url?: string | null
           year?: number | null
         }
         Relationships: [
