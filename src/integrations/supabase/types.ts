@@ -1222,10 +1222,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      replace_user_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       activity_type: "note" | "call" | "meeting" | "email" | "task"
-      app_role: "admin" | "manager"
+      app_role: "admin" | "manager" | "catalog_editor"
       car_country: "japan" | "korea" | "china"
       car_fuel: "petrol" | "diesel" | "hybrid" | "electric" | "gas"
       car_status: "in_stock" | "in_transit" | "on_order" | "sold" | "draft"
@@ -1390,7 +1397,7 @@ export const Constants = {
   public: {
     Enums: {
       activity_type: ["note", "call", "meeting", "email", "task"],
-      app_role: ["admin", "manager"],
+      app_role: ["admin", "manager", "catalog_editor"],
       car_country: ["japan", "korea", "china"],
       car_fuel: ["petrol", "diesel", "hybrid", "electric", "gas"],
       car_status: ["in_stock", "in_transit", "on_order", "sold", "draft"],
