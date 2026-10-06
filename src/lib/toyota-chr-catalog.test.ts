@@ -69,7 +69,7 @@ const expectedEntries = [
 ];
 
 describe("Toyota C-HR auction catalogue data", () => {
-  it.each(expectedEntries)("keeps the structured tuple for $slug intact", (entry, index) => {
+  it.each(expectedEntries)("keeps the structured tuple for $slug intact", (entry, index: number) => {
     const start = cataloguePayload.lastIndexOf(`'${entry.id}'::uuid`);
     const nextEntry = expectedEntries[index + 1];
     const end = nextEntry
