@@ -114,7 +114,7 @@ const LeadForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className={compact ? "space-y-3" : "space-y-4"}>
+    <form onSubmit={handleSubmit} className={`min-w-0 ${compact ? "space-y-3" : "space-y-4"}`}>
       <div>
         <Label htmlFor={nameId} className="text-foreground font-medium mb-2 block">Ваше имя *</Label>
         <Input
@@ -178,7 +178,7 @@ const LeadForm = ({
       <Button
         type="submit"
         disabled={loading}
-        className="w-full gradient-accent font-semibold text-primary-foreground hover:opacity-90"
+        className="h-auto min-h-10 w-full whitespace-normal py-2 text-center gradient-accent font-semibold text-primary-foreground hover:opacity-90"
       >
         {loading ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
