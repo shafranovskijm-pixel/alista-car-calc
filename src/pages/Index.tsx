@@ -262,9 +262,9 @@ const Index = () => (
       <section className="py-20 md:py-28">
         <div className="container">
           <motion.div {...reveal} className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-primary">Опубликованные работы</p>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-primary">Каталог автомобилей</p>
             <h2 className="mt-4 text-balance font-heading text-3xl font-bold tracking-[-0.035em] text-foreground sm:text-4xl md:text-5xl">Автомобили из реального каталога ALISTA</h2>
-            <p className="mt-5 text-base leading-relaxed text-muted-foreground md:text-lg">Здесь показываются только опубликованные карточки из рабочей базы: фотографии, страна и указанная стоимость.</p>
+            <p className="mt-5 text-base leading-relaxed text-muted-foreground md:text-lg">Фотографии, комплектации и стоимость автомобилей. Проданные варианты отмечены отдельно — можно запросить подбор похожего.</p>
           </motion.div>
           <div className="mt-12"><Gallery /></div>
         </div>
