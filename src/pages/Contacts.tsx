@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
-import { Phone, MessageCircle, Send, MapPin, User, Clock } from "lucide-react";
+import { Instagram, MessageCircle, Send, MapPin, User, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import PageTransition from "@/components/PageTransition";
 import LeadForm from "@/components/LeadForm";
+import { SOCIAL_LINKS } from "@/lib/social-links";
 
 const contacts = [
   { role: "Менеджер", name: "", phone: "+7 914 073-01-96", phoneRaw: "79140730196" },
@@ -45,32 +46,33 @@ const ContactsPage = () => {
                       </a>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <a
-                      href={`https://wa.me/${c.phoneRaw}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1"
-                    >
-                      <Button variant="outline" size="sm" className="w-full border-primary/30 text-primary hover:bg-primary/10 hover:text-primary">
+                  <div>
+                    <Button asChild variant="outline" size="sm" className="w-full border-primary/30 text-primary hover:bg-primary/10 hover:text-primary">
+                      <a href={`https://wa.me/${c.phoneRaw}`} target="_blank" rel="noopener noreferrer">
                         <MessageCircle className="mr-2 h-4 w-4" />
                         WhatsApp
-                      </Button>
-                    </a>
-                    <a
-                      href={`https://t.me/+${c.phoneRaw}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1"
-                    >
-                      <Button variant="outline" size="sm" className="w-full border-blue-700/30 text-blue-400 hover:bg-blue-900/20 hover:text-blue-300">
-                        <Send className="mr-2 h-4 w-4" />
-                        Telegram
-                      </Button>
-                    </a>
+                      </a>
+                    </Button>
                   </div>
                 </motion.div>
               ))}
+
+              <div className="rounded-xl border border-border/50 bg-card p-5">
+                <h2 className="font-heading text-lg font-semibold text-foreground">ALISTA в социальных сетях</h2>
+                <p className="mt-2 text-sm text-muted-foreground">Подписывайтесь на страницы компании в Telegram и Instagram.</p>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  <Button asChild variant="outline" size="sm" className="border-blue-700/30 text-blue-400 hover:bg-blue-900/20 hover:text-blue-300">
+                    <a href={SOCIAL_LINKS.telegram} target="_blank" rel="noopener noreferrer">
+                      <Send className="mr-2 h-4 w-4" aria-hidden="true" />Telegram
+                    </a>
+                  </Button>
+                  <Button asChild variant="outline" size="sm" className="border-pink-700/30 text-pink-400 hover:bg-pink-900/20 hover:text-pink-300">
+                    <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noopener noreferrer">
+                      <Instagram className="mr-2 h-4 w-4" aria-hidden="true" />Instagram
+                    </a>
+                  </Button>
+                </div>
+              </div>
 
               {/* Address */}
               <motion.div

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { ClipboardCheck, Phone, MessageCircle, Send, X, Plus } from "lucide-react";
+import { ClipboardCheck, Instagram, Phone, MessageCircle, Send, X, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import { SOCIAL_LINKS } from "@/lib/social-links";
 
 const PHONE = "79140730196";
 
@@ -19,9 +20,16 @@ const FloatingCTA = () => {
     {
       key: "tg",
       label: "Telegram",
-      href: `https://t.me/+${PHONE}`,
+      href: SOCIAL_LINKS.telegram,
       icon: Send,
       bg: "bg-[#229ED9] hover:bg-[#1c80b0]",
+    },
+    {
+      key: "instagram",
+      label: "Instagram",
+      href: SOCIAL_LINKS.instagram,
+      icon: Instagram,
+      bg: "bg-[#C13584] hover:bg-[#a52b70]",
     },
     {
       key: "tel",

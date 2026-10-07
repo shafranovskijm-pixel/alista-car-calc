@@ -11,7 +11,6 @@ import {
   HelpCircle,
   Landmark,
   MapPin,
-  MessageCircle,
   Phone,
   ReceiptText,
   Scale,
@@ -29,6 +28,7 @@ import {
 } from "@/components/ui/accordion";
 import Layout from "@/components/Layout";
 import Gallery from "@/components/Gallery";
+import BuyingGuide from "@/components/BuyingGuide";
 import LeadForm from "@/components/LeadForm";
 import heroCar from "@/assets/alista-hero-suv-v2.webp";
 
@@ -81,29 +81,6 @@ const services = [
     icon: Scale,
     title: "Консультация по оформлению",
     text: "Поможем разобраться в исходных данных, документах и составе платежей.",
-  },
-];
-
-const steps = [
-  {
-    number: "01",
-    title: "Передаёте параметры",
-    text: "Тип транспорта, стоимость, возраст, объём и мощность двигателя, формат ввоза.",
-  },
-  {
-    number: "02",
-    title: "Проверяем ставки",
-    text: "Сверяем категорию транспорта, формат ввоза и действующие правила на дату оформления.",
-  },
-  {
-    number: "03",
-    title: "Получаете расчёт",
-    text: "Объясняем предварительную сумму и показываем платежи по отдельным статьям.",
-  },
-  {
-    number: "04",
-    title: "Сопровождаем оформление",
-    text: "Готовим комплект и ведём процесс таможенного оформления во Владивостоке.",
   },
 ];
 
@@ -270,18 +247,7 @@ const Index = () => (
         </div>
       </section>
 
-      <section className="bg-secondary py-20 text-white md:py-28">
-        <div className="container">
-          <motion.div {...reveal} className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:gap-16">
-            <div><p className="text-sm font-bold uppercase tracking-[0.18em] text-primary">Как проходит работа</p><h2 className="mt-4 text-balance font-heading text-3xl font-bold tracking-[-0.035em] sm:text-4xl md:text-5xl">От исходных данных до готового оформления</h2><p className="mt-5 max-w-lg leading-relaxed text-white/65">Сначала считаем и проверяем, затем оформляем. Так клиент понимает следующий шаг и не теряется в документах.</p><Button asChild variant="outline" size="lg" className="mt-8 rounded-full border-white/20 bg-white/5 px-7 text-white hover:bg-white hover:text-foreground"><Link to="/contacts">Обсудить автомобиль<MessageCircle className="h-4 w-4" /></Link></Button></div>
-            <ol className="grid gap-4 sm:grid-cols-2">
-              {steps.map((step) => (
-                <li key={step.number} className="rounded-[1.5rem] border border-white/10 bg-white/[0.045] p-6"><div className="flex items-center justify-between"><span className="font-mono text-sm font-bold text-primary">{step.number}</span><ClipboardCheck className="h-5 w-5 text-white/35" /></div><h3 className="mt-8 font-heading text-xl font-bold">{step.title}</h3><p className="mt-3 text-sm leading-relaxed text-white/60">{step.text}</p></li>
-              ))}
-            </ol>
-          </motion.div>
-        </div>
-      </section>
+      <BuyingGuide />
 
       <section className="py-20 md:py-28">
         <div className="container">

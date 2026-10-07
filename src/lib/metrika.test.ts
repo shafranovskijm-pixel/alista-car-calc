@@ -29,6 +29,8 @@ describe("Yandex Metrika helpers", () => {
     expect(getMetrikaGoalForHref("tel:+79140730196")).toBe("phone_click");
     expect(getMetrikaGoalForHref("https://wa.me/79140730196")).toBe("whatsapp_click");
     expect(getMetrikaGoalForHref("https://t.me/example")).toBe("telegram_click");
+    expect(getMetrikaGoalForHref("https://www.instagram.com/alistaavto?utm_source=qr")).toBe("instagram_click");
+    expect(getMetrikaGoalForHref("https://instagram.com.example.org/alistaavto")).toBeNull();
     expect(getMetrikaGoalForHref("https://alistaru.ru/contacts")).toBeNull();
   });
 });

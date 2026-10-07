@@ -5,7 +5,8 @@ export type MetrikaGoal =
   | "lead_form_success"
   | "phone_click"
   | "whatsapp_click"
-  | "telegram_click";
+  | "telegram_click"
+  | "instagram_click";
 
 type MetrikaCommand =
   | [number, "init", Record<string, boolean>]
@@ -125,6 +126,7 @@ export const getMetrikaGoalForHref = (href: string): MetrikaGoal | null => {
     const url = new URL(href, window.location.origin);
     if (url.hostname === "wa.me" || url.hostname.endsWith(".wa.me")) return "whatsapp_click";
     if (url.hostname === "t.me" || url.hostname.endsWith(".t.me")) return "telegram_click";
+    if (url.hostname === "instagram.com" || url.hostname.endsWith(".instagram.com")) return "instagram_click";
   } catch {
     return null;
   }
