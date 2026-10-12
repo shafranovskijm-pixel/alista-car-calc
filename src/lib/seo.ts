@@ -83,6 +83,14 @@ export const SEO_BY_PATH: Readonly<Record<string, SeoConfig>> = {
     canonicalPath: "/privacy",
     robots: "noindex, follow",
   },
+  "/japan-import-guide": {
+    ...indexable(
+      "Как привезти авто из Японии — инструкция в карточках | ALISTA",
+      "Девять этапов покупки автомобиля из Японии с ALISTA: подбор, договор, морская перевозка, таможня и передача ключей. Карточки и текст для скачивания.",
+      "/japan-import-guide",
+    ),
+    image: `${SITE_URL}/media/japan-import-guide/01-cover.png`,
+  },
 };
 
 const noindex = (title: string, description: string): SeoConfig => ({

@@ -29,6 +29,7 @@ const Footer = () => (
             <Link to="/cars" className="text-white/65 hover:text-white">Автомобили</Link>
             <Link to="/services" className="text-white/65 hover:text-white">Услуги</Link>
             <Link to="/works" className="text-white/65 hover:text-white">Опубликованные работы</Link>
+            <Link to="/japan-import-guide" className="text-white/65 hover:text-white">Покупка авто из Японии — инструкция</Link>
             <Link to="/about" className="text-white/65 hover:text-white">О компании</Link>
             <Link to="/contacts" className="text-white/65 hover:text-white">Контакты</Link>
           </nav>

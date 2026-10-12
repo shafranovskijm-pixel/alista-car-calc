@@ -16,6 +16,7 @@ const Works = lazy(() => import("./pages/Works.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
 const Contacts = lazy(() => import("./pages/Contacts.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
+const JapanImportGuide = lazy(() => import("./pages/JapanImportGuide.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Cars = lazy(() => import("./pages/Cars.tsx"));
 const CarDetail = lazy(() => import("./pages/CarDetail.tsx"));
@@ -73,6 +74,7 @@ const AnimatedRoutes = () => {
           <Route path="/about" element={<About />} />
           <Route path="/contacts" element={<Contacts />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/japan-import-guide" element={<JapanImportGuide />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/reset-password" element={<ResetPassword />} />
           <Route path="/admin" element={<AdminLayout />}>

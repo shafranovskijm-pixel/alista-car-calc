@@ -13,6 +13,7 @@ describe("crawler files", () => {
       "https://alistaru.ru/works",
       "https://alistaru.ru/about",
       "https://alistaru.ru/contacts",
+      "https://alistaru.ru/japan-import-guide",
     ]);
     expect(sitemap).not.toMatch(/\/admin|\/calculator/);
   });

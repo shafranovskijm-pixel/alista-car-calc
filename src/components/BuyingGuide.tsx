@@ -76,6 +76,7 @@ const BuyingGuide = () => {
           <p className="text-sm font-bold uppercase tracking-[0.16em] text-primary">Из Японии — к вашим ключам</p>
           <h2 id={`${guideId}-heading`} className="mt-4 text-balance font-heading text-3xl font-bold tracking-[-0.035em] text-foreground sm:text-4xl md:text-5xl">Покупка авто в 9 понятных шагах</h2>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">Знакомьтесь, Али — ваш пушистый проводник. Выбирайте любой шаг или листайте по порядку: от первого обращения до передачи автомобиля.</p>
+          <Button asChild variant="outline" className="mt-5 h-auto min-h-11 whitespace-normal rounded-full border-primary/30 px-5 py-3"><Link to="/japan-import-guide">Инструкция в карточках — сохранить и поделиться<ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" /></Link></Button>
         </div>
         <nav aria-label="Этапы покупки автомобиля из Японии" className="mt-8">
           <ol className="grid min-w-0 grid-cols-3 gap-2 md:gap-3 xl:grid-cols-9">

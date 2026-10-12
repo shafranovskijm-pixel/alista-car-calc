@@ -14,6 +14,7 @@ describe("SEO route configuration", () => {
       "/about",
       "/contacts",
       "/privacy",
+      "/japan-import-guide",
     ]);
 
     const titles = Object.values(SEO_BY_PATH).map(({ title }) => title);
@@ -22,7 +23,7 @@ describe("SEO route configuration", () => {
       expect(config.canonicalPath).toBeTruthy();
       expect(config.description.length).toBeGreaterThan(60);
     });
-    ["/", "/services", "/works", "/about", "/contacts"].forEach((path) =>
+    ["/", "/services", "/works", "/about", "/contacts", "/japan-import-guide"].forEach((path) =>
       expect(SEO_BY_PATH[path].robots).toBe("index, follow"),
     );
     ["/cars", "/cars/japan", "/cars/korea", "/cars/china"].forEach((path) =>
