@@ -1,293 +1,147 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Loader2, Car as CarIcon, Filter } from "lucide-react";
+import { Loader2, Car as CarIcon, Filter, Search } from "lucide-react";
 import Layout from "@/components/Layout";
 import PageTransition from "@/components/PageTransition";
 import Seo from "@/components/Seo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import {
-  fetchPublicCars,
-  CAR_COUNTRY_LABELS,
-  CAR_STATUS_LABELS,
-  CAR_TRANSMISSION_LABELS,
-  formatPrice,
-  type CarCountry,
-  type CarWithPhotos,
-} from "@/lib/cars";
+import { fetchPublicCars, CAR_COUNTRY_LABELS, CAR_STATUS_LABELS, CAR_TRANSMISSION_LABELS, CAR_FUEL_LABELS, formatPrice, type CarCountry, type CarWithPhotos } from "@/lib/cars";
+import { EMPTY_CATALOG_FILTERS, filterCatalogCars, readCatalogFilters, writeCatalogFilters, type CatalogFilters } from "@/lib/catalog-filters";
 import { SEO_BY_PATH } from "@/lib/seo";
 import { withRetry } from "@/lib/retry";
 import { retryImageOnce } from "@/lib/image";
 
-const countryFromSlug = (slug: string | undefined): CarCountry | undefined => {
-  if (slug === "japan" || slug === "korea" || slug === "china") return slug;
-  return undefined;
-};
+const countryFromSlug = (slug?: string): CarCountry | undefined =>
+  slug === "japan" || slug === "korea" || slug === "china" ? slug : undefined;
 
-const CAR_COUNTRY_GENITIVE_LABELS: Record<CarCountry, string> = {
-  japan: "Японии",
-  korea: "Кореи",
-  china: "Китая",
-};
+const CAR_COUNTRY_GENITIVE_LABELS: Record<CarCountry, string> = { japan: "Японии", korea: "Кореи", china: "Китая" };
 
-const titleFor = (country?: CarCountry) =>
-  country ? `Авто из ${CAR_COUNTRY_GENITIVE_LABELS[country]}` : "Каталог авто";
+const FilterSelect = ({ id, label, value, onChange, options, allLabel }: {
+  id: string; label: string; value: string; onChange: (value: string) => void;
+  options: [string, string][]; allLabel?: string;
+}) => (
+  <div className="min-w-0">
+    <Label htmlFor={id} className="mb-1.5 block text-xs">{label}</Label>
+    <select id={id} value={value} onChange={(event) => onChange(event.target.value)} className="h-10 w-full min-w-0 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+      {allLabel && <option value="all">{allLabel}</option>}
+      {options.map(([key, text]) => <option key={key} value={key}>{text}</option>)}
+    </select>
+  </div>
+);
 
 const CarsPage = ({ countrySlug }: { countrySlug?: string }) => {
   const country = countryFromSlug(countrySlug);
-  const seoPath = country ? `/cars/${country}` : "/cars";
-  const seo = SEO_BY_PATH[seoPath];
+  const seo = SEO_BY_PATH[country ? `/cars/${country}` : "/cars"];
+  const [params, setParams] = useSearchParams();
+  const filters = useMemo(() => readCatalogFilters(params), [params]);
   const [cars, setCars] = useState<CarWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
-
-  // filters
-  const [brand, setBrand] = useState<string>("all");
-  const [transmission, setTransmission] = useState<string>("all");
-  const [yearFrom, setYearFrom] = useState("");
-  const [yearTo, setYearTo] = useState("");
-  const [priceMax, setPriceMax] = useState("");
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setFailed(false);
-    withRetry(() => fetchPublicCars(country))
-      .then((rows) => {
-        if (!cancelled) setCars(rows);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setCars([]);
-          setFailed(true);
-        }
-      })
-      .finally(() => !cancelled && setLoading(false));
-    return () => {
-      cancelled = true;
-    };
+    withRetry(() => fetchPublicCars(country)).then((rows) => {
+      if (!cancelled) setCars(rows.filter((car) => car.status !== "draft"));
+    }).catch(() => {
+      if (!cancelled) { setCars([]); setFailed(true); }
+    }).finally(() => !cancelled && setLoading(false));
+    return () => { cancelled = true; };
   }, [country, reloadKey]);
 
-  const brands = useMemo(
-    () => Array.from(new Set(cars.map((c) => c.brand))).sort(),
-    [cars]
+  useEffect(() => {
+    let lastRefresh = 0;
+    const refresh = () => {
+      if (document.visibilityState !== "hidden" && Date.now() - lastRefresh > 250) {
+        lastRefresh = Date.now();
+        setReloadKey((value) => value + 1);
+      }
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => { window.removeEventListener("focus", refresh); document.removeEventListener("visibilitychange", refresh); };
+  }, []);
+
+  const brands = useMemo(() => Array.from(new Set(cars.map((car) => car.brand).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [cars]);
+  const models = useMemo(() => Array.from(new Set(cars.filter((car) => filters.brand === "all" || car.brand === filters.brand).map((car) => car.model).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [cars, filters.brand]);
+  const filtered = useMemo(() => filterCatalogCars(cars, { ...filters, country: country ?? filters.country }), [cars, filters, country]);
+  const update = (key: keyof CatalogFilters, value: string) => {
+    const next = { ...filters, [key]: value };
+    if (key === "brand") next.model = "all";
+    setParams(writeCatalogFilters(next), { replace: true });
+  };
+  const reset = () => setParams(writeCatalogFilters(EMPTY_CATALOG_FILTERS), { replace: true });
+  const invalidRange = (filters.yearFrom && filters.yearTo && Number(filters.yearFrom) > Number(filters.yearTo)) || (filters.priceMin && filters.priceMax && Number(filters.priceMin) > Number(filters.priceMax));
+  const advancedActive = ["model", "transmission", "fuel", "yearFrom", "yearTo", "priceMin"].some((key) => filters[key as keyof CatalogFilters] !== EMPTY_CATALOG_FILTERS[key as keyof CatalogFilters]);
+  useEffect(() => { if (advancedActive) setAdvancedOpen(true); }, [advancedActive]);
+  const countryParams = new URLSearchParams(params);
+  countryParams.delete("country");
+  const countrySearch = countryParams.toString() ? `?${countryParams.toString()}` : "";
+
+  const rangeInput = (key: "yearFrom" | "yearTo" | "priceMin" | "priceMax", label: string, placeholder: string) => (
+    <div className="min-w-0"><Label htmlFor={`catalog-${key}`} className="mb-1.5 block text-xs">{label}</Label><Input id={`catalog-${key}`} type="number" min="0" step="1" inputMode="numeric" value={filters[key]} onChange={(event) => update(key, event.target.value)} placeholder={placeholder} className="min-w-0" /></div>
   );
 
-  const filtered = useMemo(() => {
-    return cars.filter((c) => {
-      if (brand !== "all" && c.brand !== brand) return false;
-      if (transmission !== "all" && c.transmission !== transmission) return false;
-      if (yearFrom && (c.year ?? 0) < parseInt(yearFrom, 10)) return false;
-      if (yearTo && (c.year ?? 9999) > parseInt(yearTo, 10)) return false;
-      if (priceMax && (c.price ?? 0) > parseFloat(priceMax)) return false;
-      return true;
-    });
-  }, [cars, brand, transmission, yearFrom, yearTo, priceMax]);
-
-  const reset = () => {
-    setBrand("all");
-    setTransmission("all");
-    setYearFrom("");
-    setYearTo("");
-    setPriceMax("");
-  };
-
   return (
-    <PageTransition>
-      <Layout>
-        <Seo
-          {...seo}
-          robots={!loading && !failed && cars.length > 0 ? "index, follow" : "noindex, follow"}
-        />
-        <section className="py-12 md:py-16">
-          <div className="container">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <h1 className="font-heading text-3xl font-bold text-foreground md:text-4xl text-center">
-                {titleFor(country)}
-              </h1>
-              <p className="mt-3 text-center text-muted-foreground">
-                Автомобили из опубликованного каталога. Используйте фильтры, чтобы подобрать подходящие параметры.
-              </p>
-            </motion.div>
+    <PageTransition><Layout>
+      <Seo {...seo} robots={!loading && !failed && cars.length > 0 ? "index, follow" : "noindex, follow"} />
+      <section className="py-12 md:py-16"><div className="container min-w-0">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="text-center font-heading text-3xl font-bold text-foreground md:text-4xl">{country ? `Авто из ${CAR_COUNTRY_GENITIVE_LABELS[country]}` : "Каталог автомобилей"}</h1>
+          <p className="mt-3 text-center text-muted-foreground">Найдите автомобиль по марке, модели и параметрам. Здесь — все опубликованные автомобили ALISTA.</p>
+        </motion.div>
+        <div className="mt-6 flex flex-wrap justify-center gap-2" aria-label="Каталоги по странам">
+          <Link to={`/cars${countrySearch}`}><Button variant={!country ? "default" : "outline"} size="sm">Все страны</Button></Link>
+          {(Object.keys(CAR_COUNTRY_LABELS) as CarCountry[]).map((key) => <Link key={key} to={`/cars/${key}${countrySearch}`}><Button variant={country === key ? "default" : "outline"} size="sm">{CAR_COUNTRY_LABELS[key]}</Button></Link>)}
+        </div>
 
-            {/* Country tabs */}
-            <div className="mt-8 flex flex-wrap justify-center gap-2">
-              <Link to="/cars">
-                <Button variant={!country ? "default" : "outline"} size="sm">
-                  Все
-                </Button>
-              </Link>
-              {(["japan", "korea", "china"] as CarCountry[]).map((c) => (
-                <Link key={c} to={`/cars/${c}`}>
-                  <Button variant={country === c ? "default" : "outline"} size="sm">
-                    {CAR_COUNTRY_LABELS[c]}
-                  </Button>
-                </Link>
-              ))}
-            </div>
-
-            {/* Filters */}
-            <div className="mt-8 rounded-xl border border-border/50 bg-card/60 p-4 backdrop-blur">
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-                <Filter className="h-4 w-4" />
-                Фильтры
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                <div>
-                  <Label className="mb-1.5 block text-xs">Марка</Label>
-                  <Select value={brand} onValueChange={setBrand}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Все марки</SelectItem>
-                      {brands.map((b) => (
-                        <SelectItem key={b} value={b}>
-                          {b}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="mb-1.5 block text-xs">КПП</Label>
-                  <Select value={transmission} onValueChange={setTransmission}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Любая</SelectItem>
-                      {Object.entries(CAR_TRANSMISSION_LABELS).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>
-                          {v}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="mb-1.5 block text-xs">Год от</Label>
-                  <Input
-                    type="number"
-                    value={yearFrom}
-                    onChange={(e) => setYearFrom(e.target.value)}
-                    placeholder="2018"
-                  />
-                </div>
-                <div>
-                  <Label className="mb-1.5 block text-xs">Год до</Label>
-                  <Input
-                    type="number"
-                    value={yearTo}
-                    onChange={(e) => setYearTo(e.target.value)}
-                    placeholder="2024"
-                  />
-                </div>
-                <div>
-                  <Label className="mb-1.5 block text-xs">Цена до (₽)</Label>
-                  <Input
-                    type="number"
-                    value={priceMax}
-                    onChange={(e) => setPriceMax(e.target.value)}
-                    placeholder="2 500 000"
-                  />
-                </div>
-              </div>
-              <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                <span>Найдено: {filtered.length}</span>
-                <Button variant="ghost" size="sm" onClick={reset}>
-                  Сбросить
-                </Button>
-              </div>
-            </div>
-
-            {/* Grid */}
-            <div className="mt-8">
-              {loading ? (
-                <div className="flex justify-center py-20">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                </div>
-              ) : failed ? (
-                <div className="rounded-xl border border-dashed border-border/50 p-12 text-center text-muted-foreground">
-                  <CarIcon className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
-                  <p>Не удалось загрузить каталог. Проверьте соединение и повторите попытку.</p>
-                  <Button className="mt-5" onClick={() => setReloadKey((value) => value + 1)}>
-                    Повторить загрузку
-                  </Button>
-                </div>
-              ) : filtered.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-border/50 p-12 text-center text-muted-foreground">
-                  <CarIcon className="mx-auto h-10 w-10 text-muted-foreground/50 mb-3" />
-                  Под текущие фильтры ничего не найдено. Попробуйте сбросить параметры.
-                </div>
-              ) : (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {filtered.map((c) => {
-                    const cover = c.photos.find((p) => p.is_cover) ?? c.photos[0];
-                    return (
-                      <Link
-                        key={c.id}
-                        to={`/cars/${c.slug}`}
-                        className="group rounded-xl border border-border/50 bg-card overflow-hidden hover-lift"
-                      >
-                        <div className="relative aspect-[4/3] bg-secondary overflow-hidden">
-                          {cover?.url ? (
-                            <img
-                              src={cover.url}
-                              alt={c.title}
-                              onError={retryImageOnce}
-                              className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                              Нет фото
-                            </div>
-                          )}
-                          <span className="absolute left-2 top-2 rounded bg-primary/90 px-2 py-0.5 text-xs text-primary-foreground">
-                            {CAR_STATUS_LABELS[c.status]}
-                          </span>
-                          <span className="absolute right-2 top-2 rounded bg-background/80 px-2 py-0.5 text-xs">
-                            {CAR_COUNTRY_LABELS[c.country]}
-                          </span>
-                        </div>
-                        <div className="p-4 space-y-1">
-                          <div className="font-heading text-base font-semibold text-foreground line-clamp-1">
-                            {c.brand} {c.model} {c.year && <span className="text-muted-foreground">{c.year}</span>}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {[
-                              c.engine_volume && `${c.engine_volume} л`,
-                              c.transmission && CAR_TRANSMISSION_LABELS[c.transmission],
-                              c.mileage_km && `${new Intl.NumberFormat("ru-RU").format(c.mileage_km)} км`,
-                            ]
-                              .filter(Boolean)
-                              .join(" · ") || "—"}
-                          </div>
-                          <div className="pt-2 text-lg font-bold text-primary">
-                            {formatPrice(c.price, c.currency)}
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+        <div className="mt-6 min-w-0 rounded-xl border border-border/50 bg-card/60 p-4 md:p-5">
+          <Label htmlFor="catalog-search" className="mb-2 block font-semibold">Какой автомобиль ищете?</Label>
+          <div className="relative min-w-0"><Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" /><Input id="catalog-search" type="search" value={filters.q} onChange={(event) => update("q", event.target.value)} placeholder="Например, Toyota C-HR или Тойота" className="min-w-0 pl-10" /></div>
+          <div className="mt-4 grid min-w-0 grid-cols-2 gap-3 lg:grid-cols-4">
+            <FilterSelect id="catalog-brand" label="Марка" value={filters.brand} onChange={(value) => update("brand", value)} options={brands.map((brand) => [brand, brand])} allLabel="Все марки" />
+            <FilterSelect id="catalog-status" label="Наличие" value={filters.status} onChange={(value) => update("status", value)} options={Object.entries(CAR_STATUS_LABELS).filter(([key]) => key !== "draft")} allLabel="Любое" />
+            {!country ? <FilterSelect id="catalog-country" label="Страна" value={filters.country} onChange={(value) => update("country", value)} options={Object.entries(CAR_COUNTRY_LABELS)} allLabel="Все страны" /> : <FilterSelect id="catalog-model-basic" label="Модель" value={filters.model} onChange={(value) => update("model", value)} options={models.map((model) => [model, model])} allLabel="Все модели" />}
+            {rangeInput("priceMax", "Цена до, ₽", "2 500 000")}
           </div>
-        </section>
-      </Layout>
-    </PageTransition>
+          <details className="mt-4" open={advancedOpen} onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}>
+            <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-md py-2 text-sm font-medium text-primary"><Filter className="h-4 w-4" />Дополнительные фильтры</summary>
+            <div className="mt-2 grid min-w-0 grid-cols-2 gap-3 lg:grid-cols-4">
+              {!country && <FilterSelect id="catalog-model" label="Модель" value={filters.model} onChange={(value) => update("model", value)} options={models.map((model) => [model, model])} allLabel="Все модели" />}
+              <FilterSelect id="catalog-transmission" label="Коробка передач" value={filters.transmission} onChange={(value) => update("transmission", value)} options={Object.entries(CAR_TRANSMISSION_LABELS)} allLabel="Любая" />
+              <FilterSelect id="catalog-fuel" label="Топливо" value={filters.fuel} onChange={(value) => update("fuel", value)} options={Object.entries(CAR_FUEL_LABELS)} allLabel="Любое" />
+              {rangeInput("yearFrom", "Год от", "2018")}{rangeInput("yearTo", "Год до", "2026")}{rangeInput("priceMin", "Цена от, ₽", "1 000 000")}
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">Фильтр цены — только для стоимости в рублях. Авто без указанного года или цены не попадают в соответствующий диапазон.</p>
+          </details>
+          {invalidRange && <p role="alert" className="mt-3 text-sm text-destructive">Значение «от» не должно быть больше значения «до».</p>}
+          <div className="mt-4 flex flex-wrap items-end justify-between gap-3 border-t border-border/50 pt-4">
+            <p role="status" aria-live="polite" className="text-sm text-muted-foreground">{loading ? "Загружаем автомобили…" : failed ? "Каталог недоступен" : `Найдено: ${filtered.length}`}</p>
+            <div className="flex flex-wrap items-end gap-3"><FilterSelect id="catalog-sort" label="Сортировка" value={filters.sort} onChange={(value) => update("sort", value)} options={[["catalog", "Порядок каталога"], ["newest", "Сначала новые"], ["price_asc", "Сначала дешевле, ₽"], ["price_desc", "Сначала дороже, ₽"], ["year_desc", "Сначала новее по году"]]} /><Button variant="ghost" size="sm" onClick={reset}>Сбросить</Button></div>
+          </div>
+        </div>
+
+        <div className="mt-8">
+          {loading ? <div className="flex justify-center py-20"><Loader2 aria-label="Загрузка каталога" className="h-6 w-6 animate-spin text-primary" /></div> : failed ? (
+            <div className="rounded-xl border border-dashed border-border/50 px-4 py-12 text-center text-muted-foreground"><CarIcon className="mx-auto mb-3 h-10 w-10" /><p>Не удалось загрузить каталог. Проверьте соединение и повторите попытку.</p><Button className="mt-5" onClick={() => setReloadKey((value) => value + 1)}>Повторить загрузку</Button></div>
+          ) : filtered.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border/50 px-4 py-12 text-center text-muted-foreground"><CarIcon className="mx-auto mb-3 h-10 w-10" /><p>По вашему запросу ничего не найдено. Измените запрос или фильтры.</p><Button variant="outline" className="mt-4" onClick={reset}>Сбросить поиск и фильтры</Button></div>
+          ) : <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">{filtered.map((car) => {
+            const cover = car.photos.find((photo) => photo.is_cover) ?? car.photos[0];
+            return <Link key={car.id} to={`/cars/${car.slug}`} className="group min-w-0 overflow-hidden rounded-xl border border-border/50 bg-card hover-lift">
+              <div className="relative aspect-[4/3] overflow-hidden bg-secondary">{cover?.url ? <img src={cover.url} alt={car.title} onError={retryImageOnce} width={800} height={600} className="h-full w-full object-contain transition-transform group-hover:scale-[1.02]" loading="lazy" /> : <div className="flex h-full items-center justify-center text-xs text-muted-foreground">Нет фото</div>}<span className="absolute left-2 top-2 rounded bg-primary/90 px-2 py-0.5 text-xs text-primary-foreground">{CAR_STATUS_LABELS[car.status]}</span><span className="absolute right-2 top-2 rounded bg-background/80 px-2 py-0.5 text-xs">{CAR_COUNTRY_LABELS[car.country]}</span></div>
+              <div className="space-y-1 p-4"><h2 className="break-words font-heading text-base font-semibold text-foreground">{car.title || `${car.brand} ${car.model}`}{car.year ? <span className="text-muted-foreground"> · {car.year}</span> : null}</h2><div className="text-xs text-muted-foreground">{[car.engine_volume != null && `${car.engine_volume} л`, car.transmission && CAR_TRANSMISSION_LABELS[car.transmission], car.mileage_km != null && `${new Intl.NumberFormat("ru-RU").format(car.mileage_km)} км`].filter(Boolean).join(" · ") || "—"}</div><div className="pt-2 text-lg font-bold text-primary">{formatPrice(car.price, car.currency)}</div></div>
+            </Link>;
+          })}</div>}
+        </div>
+      </div></section>
+    </Layout></PageTransition>
   );
 };
 

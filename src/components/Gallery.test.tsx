@@ -1,6 +1,6 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import type { PropsWithChildren } from "react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchPublicCars, type CarWithPhotos } from "@/lib/cars";
 import { fetchPublishedWorks } from "@/lib/works";
@@ -59,6 +59,23 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("Gallery public car catalogue", () => {
+  it("searches the full catalogue instead of only the six home cards", async () => {
+    vi.mocked(fetchPublicCars).mockResolvedValue([toyota]);
+    const Location = () => <output data-testid="location">{useLocation().pathname}{useLocation().search}</output>;
+    render(<MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><Gallery /><Location /></MemoryRouter>);
+    await screen.findByRole("link", { name: /Toyota C-HR/ });
+    fireEvent.change(screen.getByLabelText("Найти автомобиль в полном каталоге"), { target: { value: "Тойота CHR" } });
+    fireEvent.click(screen.getByRole("button", { name: "Найти авто" }));
+    expect(screen.getByTestId("location").textContent).toBe(`/cars?${new URLSearchParams({ q: "Тойота CHR" }).toString()}`);
+  });
+
+  it("keeps search available while loading and never shows drafts", async () => {
+    vi.mocked(fetchPublicCars).mockResolvedValue([{ ...toyota, id: "draft", title: "Скрытый черновик", status: "draft" }, toyota]);
+    render(<MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><Gallery /></MemoryRouter>);
+    expect(screen.getByRole("search")).toBeInTheDocument();
+    await screen.findByRole("link", { name: /Toyota C-HR/ });
+    expect(screen.queryByText("Скрытый черновик")).not.toBeInTheDocument();
+  });
   it("shows up to six public cars with their own cover, details and catalogue links", async () => {
     const otherCars = Array.from({ length: 6 }, (_, index): CarWithPhotos => ({
       ...toyota,

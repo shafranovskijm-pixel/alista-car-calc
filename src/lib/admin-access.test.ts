@@ -21,6 +21,8 @@ describe("admin role access", () => {
     expect(isCatalogOnly(roles)).toBe(true);
     expect(canAccessAdminPath(roles, "/admin/cars")).toBe(true);
     expect(canAccessAdminPath(roles, "/admin/cars/new")).toBe(true);
+    expect(canAccessAdminPath(roles, "/admin/videos")).toBe(true);
+    expect(canAccessAdminPath(roles, "/admin/videostream")).toBe(false);
     expect(canAccessAdminPath(roles, "/admin")).toBe(false);
     expect(canAccessAdminPath(roles, "/admin/leads")).toBe(false);
     expect(canAccessAdminPath(roles, "/admin/carousel")).toBe(false);

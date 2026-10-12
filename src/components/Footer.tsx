@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Instagram, MapPin, Phone, Send } from "lucide-react";
+import { ArrowRight, Instagram, MapPin, Phone, Send, Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SOCIAL_LINKS } from "@/lib/social-links";
 
@@ -45,6 +45,7 @@ const Footer = () => (
             <a href="https://wa.me/79140730196" target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-white/80 hover:border-white/30 hover:text-white">WhatsApp</a>
             <a href={SOCIAL_LINKS.telegram} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-white/80 hover:border-white/30 hover:text-white"><Send className="h-4 w-4" aria-hidden="true" />Telegram</a>
             <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-white/80 hover:border-white/30 hover:text-white"><Instagram className="h-4 w-4" aria-hidden="true" />Instagram</a>
+            <a href={SOCIAL_LINKS.youtube} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-white/80 hover:border-white/30 hover:text-white"><Youtube className="h-4 w-4" aria-hidden="true" />YouTube</a>
           </div>
         </div>
       </div>

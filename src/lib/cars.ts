@@ -110,21 +110,34 @@ const mapCarQueryRow = ({ car_photos, ...car }: CarQueryRow): CarWithPhotos => (
 });
 
 export const fetchPublicCars = async (country?: CarCountry): Promise<CarWithPhotos[]> => {
-  let q = supabase
-    .from("cars")
-    .select("*, car_photos(*)")
-    .neq("status", "draft")
-    .order("sort_order", { ascending: false })
-    .order("created_at", { ascending: false });
-  if (country) q = q.eq("country", country);
-  const { data, error } = await q;
-  if (error) throw error;
-  const list = (data ?? []).map(mapCarQueryRow);
+  // Fetch every published row, including new CRM entries beyond the API's
+  // default page limit. A stable id tie-breaker avoids gaps between pages.
+  const pageSize = 500;
+  const list: CarWithPhotos[] = [];
+  for (let offset = 0; ; offset += pageSize) {
+    let q = supabase.from("cars").select("*, car_photos(*)")
+      .neq("status", "draft")
+      .order("sort_order", { ascending: false })
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: true })
+      .range(offset, offset + pageSize - 1);
+    if (country) q = q.eq("country", country);
+    const { data, error } = await q;
+    if (error) throw error;
+    list.push(...(data ?? []).filter((row) => row.status !== "draft").map(mapCarQueryRow));
+    if (!data || data.length < pageSize) break;
+  }
   await Promise.all(
     list.map(async (c) => {
-      c.photos = await Promise.all(
-        c.photos.map(async (p) => ({ ...p, url: await resolveCarPhotoUrl(p.url) }))
-      );
+      const photos = await Promise.all(c.photos.map(async (p) => {
+        try {
+          return { ...p, url: await resolveCarPhotoUrl(p.url) };
+        } catch {
+          // A missing photo must not hide the car or the whole catalogue.
+          return null;
+        }
+      }));
+      c.photos = photos.filter((photo): photo is CarPhoto => photo !== null);
     })
   );
   return list;

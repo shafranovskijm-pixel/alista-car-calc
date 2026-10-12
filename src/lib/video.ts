@@ -143,3 +143,11 @@ export const getNormalizedVideoStorageUrl = (rawValue: string): string | null =>
   if (video.provider === "vk" && video.embedUrl.includes("hash=")) return video.embedUrl;
   return video.watchUrl;
 };
+
+/** A fixed thumbnail host, derived only from a validated YouTube video ID. */
+export const getYouTubeThumbnailUrl = (rawValue: string): string | null => {
+  const video = normalizeVideoUrl(rawValue);
+  if (video?.provider !== "youtube") return null;
+  const id = new URL(video.watchUrl).searchParams.get("v");
+  return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null;
+};

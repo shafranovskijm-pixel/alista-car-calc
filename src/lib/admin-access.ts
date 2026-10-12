@@ -11,5 +11,5 @@ export const isCatalogOnly = (roles: readonly AppRole[]) =>
 
 export const canAccessAdminPath = (roles: readonly AppRole[], pathname: string) => {
   if (hasFullCrmAccess(roles)) return true;
-  return roles.includes("catalog_editor") && /^\/admin\/cars(?:\/|$)/.test(pathname);
+  return roles.includes("catalog_editor") && /^\/admin\/(?:cars|videos)(?:\/|$)/.test(pathname);
 };

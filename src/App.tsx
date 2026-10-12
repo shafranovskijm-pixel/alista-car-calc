@@ -37,6 +37,7 @@ const AdminWorks = lazy(() => import("./pages/admin/AdminWorks.tsx"));
 const AdminWorkEdit = lazy(() => import("./pages/admin/AdminWorkEdit.tsx"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings.tsx"));
 const AdminCars = lazy(() => import("./pages/admin/AdminCars.tsx"));
+const AdminVideos = lazy(() => import("./pages/admin/AdminVideos.tsx"));
 const AdminCarEdit = lazy(() => import("./pages/admin/AdminCarEdit.tsx"));
 const AdminAudit = lazy(() => import("./pages/admin/AdminAudit.tsx"));
 const AdminEmails = lazy(() => import("./pages/admin/AdminEmails.tsx"));
@@ -92,6 +93,7 @@ const AnimatedRoutes = () => {
             <Route path="works/:id" element={<AdminWorkEdit />} />
             <Route path="cars" element={<AdminCars />} />
             <Route path="cars/:id" element={<AdminCarEdit />} />
+            <Route path="videos" element={<AdminVideos />} />
             <Route path="settings" element={<AdminSettings />} />
             <Route path="audit" element={<AdminAudit />} />
             <Route path="emails" element={<AdminEmails />} />

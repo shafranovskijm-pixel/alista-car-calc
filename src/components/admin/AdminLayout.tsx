@@ -29,6 +29,7 @@ import {
   History,
   Mail,
   FileSpreadsheet,
+  Youtube,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,7 @@ const groups: { label: string; items: Item[] }[] = [
     items: [
       { title: "Наши работы", url: "/admin/works", icon: Images },
       { title: "Каталог авто", url: "/admin/cars", icon: Car },
+      { title: "Видео на главной", url: "/admin/videos", icon: Youtube },
     ],
   },
   {
@@ -100,7 +102,7 @@ const AdminLayout = () => {
         .filter((group) => group.label === "Каталог")
         .map((group) => ({
           ...group,
-          items: group.items.filter((item) => item.url === "/admin/cars"),
+          items: group.items.filter((item) => item.url === "/admin/cars" || item.url === "/admin/videos"),
         }))
     : groups;
 

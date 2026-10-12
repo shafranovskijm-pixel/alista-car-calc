@@ -29,6 +29,7 @@ import {
 import Layout from "@/components/Layout";
 import Gallery from "@/components/Gallery";
 import BuyingGuide from "@/components/BuyingGuide";
+import VideoReviews from "@/components/VideoReviews";
 import LeadForm from "@/components/LeadForm";
 import heroCar from "@/assets/alista-hero-suv-v2.webp";
 
@@ -247,6 +248,7 @@ const Index = () => (
         </div>
       </section>
 
+      <VideoReviews />
       <BuyingGuide />
 
       <section className="py-20 md:py-28">

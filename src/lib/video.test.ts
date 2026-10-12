@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getNormalizedVideoStorageUrl, normalizeVideoUrl } from "./video";
+import { getNormalizedVideoStorageUrl, getYouTubeThumbnailUrl, normalizeVideoUrl } from "./video";
 
 describe("normalizeVideoUrl", () => {
   it.each([
@@ -73,5 +73,12 @@ describe("normalizeVideoUrl", () => {
         "https://vk.com/video_ext.php?oid=-12345&id=67890&hash=Abc_def-123&autoplay=1",
       ),
     ).toBe("https://vk.com/video_ext.php?oid=-12345&id=67890&hash=Abc_def-123&hd=2");
+  });
+
+  it("generates thumbnails only from validated YouTube video IDs", () => {
+    expect(getYouTubeThumbnailUrl("https://youtube.com/shorts/Fc-XxnLPPTQ")).toBe("https://i.ytimg.com/vi/Fc-XxnLPPTQ/hqdefault.jpg");
+    expect(getYouTubeThumbnailUrl("https://youtube.com/@AlistaAvto")).toBeNull();
+    expect(getYouTubeThumbnailUrl("https://youtube.com.evil.example/watch?v=Fc-XxnLPPTQ")).toBeNull();
+    expect(getYouTubeThumbnailUrl("https://vk.com/video-123_456")).toBeNull();
   });
 });

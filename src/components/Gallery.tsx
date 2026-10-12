@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   CAR_COUNTRY_LABELS,
   CAR_STATUS_LABELS,
@@ -13,6 +15,8 @@ import { withRetry } from "@/lib/retry";
 import { retryImageOnce } from "@/lib/image";
 
 const Gallery = () => {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
   const [cars, setCars] = useState<CarWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
@@ -25,7 +29,7 @@ const Gallery = () => {
       setFailed(false);
       try {
         const rows = await withRetry(() => fetchPublicCars());
-        if (!cancelled) setCars(rows.slice(0, 6));
+        if (!cancelled) setCars(rows.filter((car) => car.status !== "draft").slice(0, 6));
       } catch {
         if (!cancelled) {
           setCars([]);
@@ -40,17 +44,46 @@ const Gallery = () => {
     };
   }, [reloadKey]);
 
+  useEffect(() => {
+    let lastRefresh = 0;
+    const refresh = () => {
+      if (document.visibilityState !== "hidden" && Date.now() - lastRefresh > 250) {
+        lastRefresh = Date.now();
+        setReloadKey((value) => value + 1);
+      }
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => { window.removeEventListener("focus", refresh); document.removeEventListener("visibilitychange", refresh); };
+  }, []);
+
+  const searchForm = (
+    <form className="mb-6 min-w-0 rounded-xl border border-border/50 bg-card/60 p-4" role="search" onSubmit={(event) => {
+      event.preventDefault();
+      const params = new URLSearchParams();
+      if (query.trim()) params.set("q", query.trim());
+      navigate(`/cars${params.toString() ? `?${params.toString()}` : ""}`);
+    }}>
+      <label htmlFor="home-car-search" className="mb-2 block text-sm font-semibold text-foreground">Найти автомобиль в полном каталоге</label>
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
+        <div className="relative min-w-0 flex-1"><Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" /><Input id="home-car-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Марка или модель, например Toyota C-HR" className="min-w-0 pl-10" /></div>
+        <Button type="submit">Найти авто</Button>
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">Все опубликованные автомобили, включая новые из CRM. Фильтры — в полном каталоге.</p>
+    </form>
+  );
+
   if (loading) {
     return (
-      <div className="flex justify-center py-16" role="status" aria-label="Загрузка автомобилей">
+      <>{searchForm}<div className="flex justify-center py-16" role="status" aria-label="Загрузка автомобилей">
         <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
-      </div>
+      </div></>
     );
   }
 
   if (cars.length === 0) {
     return (
-      <div className="rounded-[1.5rem] border border-dashed border-border bg-card px-6 py-10 text-center">
+      <>{searchForm}<div className="rounded-[1.5rem] border border-dashed border-border bg-card px-6 py-10 text-center">
         <p className="font-heading font-semibold text-foreground">
           {failed ? "Не удалось загрузить автомобили" : "Автомобили пока не добавлены"}
         </p>
@@ -66,12 +99,13 @@ const Gallery = () => {
             Повторить загрузку
           </button>
         )}
-      </div>
+      </div></>
     );
   }
 
   return (
     <>
+      {searchForm}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cars.map((car, index) => {
           const cover = car.photos.find((photo) => photo.is_cover) ?? car.photos[0];
