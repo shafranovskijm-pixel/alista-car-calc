@@ -42,16 +42,18 @@ const CarsPage = ({ countrySlug }: { countrySlug?: string }) => {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const hasDataRef = useRef(false);
+  hasDataRef.current = cars.length > 0;
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
+    if (!hasDataRef.current) setLoading(true);
     setFailed(false);
     withRetry(() => fetchPublicCars(country)).then((rows) => {
       if (!cancelled) setCars(rows.filter((car) => car.status !== "draft"));
     }).catch(() => {
-      if (!cancelled) { setCars([]); setFailed(true); }
+      if (!cancelled) { if (!hasDataRef.current) setCars([]); if (!hasDataRef.current) setFailed(true); }
     }).finally(() => !cancelled && setLoading(false));
     return () => { cancelled = true; };
   }, [country, reloadKey]);

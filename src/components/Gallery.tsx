@@ -22,19 +22,21 @@ const Gallery = () => {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const hasDataRef = useRef(false);
+  hasDataRef.current = cars.length > 0;
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      setLoading(true);
+      if (!hasDataRef.current) setLoading(true);
       setFailed(false);
       try {
         const rows = await withRetry(() => fetchPublicCars());
         if (!cancelled) setCars(rows.filter((car) => car.status !== "draft").slice(0, 6));
       } catch {
         if (!cancelled) {
-          setCars([]);
-          setFailed(true);
+          if (!hasDataRef.current) setCars([]);
+          if (!hasDataRef.current) setFailed(true);
         }
       } finally {
         if (!cancelled) setLoading(false);
