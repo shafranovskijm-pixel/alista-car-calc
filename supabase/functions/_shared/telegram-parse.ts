@@ -111,7 +111,8 @@ export const parsePrice = (raw: string): { price: number; currency: ParsedCar["c
 export const parseCarPost = (text: string | null | undefined, now = new Date()): ParseResult => {
   const source = (text ?? "").trim();
   const tags = extractTags(source);
-  if (!tags.has(IMPORT_TAG)) return { kind: "ignored" };
+  // Without #авто the post is read as a normal channel post (free-form).
+  if (!tags.has(IMPORT_TAG)) return source ? parseFreeFormPost(source, now) : { kind: "ignored" };
 
   const f = readFields(source);
   const errors: string[] = [];
@@ -178,3 +179,133 @@ export const telegramSlug = (car: Pick<ParsedCar, "brand" | "model" | "year">, c
 /** Removes any bot token that could appear inside an error text or URL. */
 export const redactToken = (text: string) =>
   text.replace(/bot\d+:[A-Za-z0-9_-]+/g, "bot<hidden>").replace(/\d{6,}:[A-Za-z0-9_-]{20,}/g, "<hidden>");
+
+// ---------------------------------------------------------------------------
+// Free-form posts (how the channel is written today). Only explicit facts are
+// taken; anything missing or contradictory makes the post "invalid" with reasons.
+
+const BRANDS: [string, RegExp][] = [
+  ["Toyota", /toyota|тойота/i], ["Lexus", /lexus|лексус/i], ["Honda", /honda|хонда/i], ["Nissan", /nissan|ниссан/i],
+  ["Mazda", /mazda|мазда/i], ["Subaru", /subaru|субару/i], ["Suzuki", /suzuki|сузуки/i], ["Mitsubishi", /mitsubishi|мицубиси/i],
+  ["Daihatsu", /daihatsu|дайхатсу/i], ["Infiniti", /infiniti/i], ["Hyundai", /hyundai|хендай|хундай/i], ["Kia", /\bkia\b|\bкиа\b/i],
+  ["Genesis", /genesis/i], ["SsangYong", /ssang\s?yong/i], ["Chevrolet", /chevrolet/i], ["Renault", /renault/i],
+  ["Peugeot", /peugeot|пежо/i], ["Citroen", /citro[eë]n/i], ["BMW", /\bbmw\b|\bбмв\b/i], ["Mercedes-Benz", /mercedes|мерседес/i],
+  ["Audi", /\baudi\b|\bауди\b/i], ["Volkswagen", /volkswagen|\bvw\b/i], ["Porsche", /porsche/i], ["Volvo", /volvo/i],
+  ["Land Rover", /land\s?rover/i], ["Ford", /\bford\b/i], ["Tesla", /tesla/i], ["Skoda", /skoda/i], ["MINI", /\bmini\b/i],
+  ["BYD", /\bbyd\b/i], ["Geely", /geely|джили/i], ["Chery", /\bchery\b|чери/i], ["Haval", /haval|хавал/i], ["Changan", /changan/i],
+  ["Exeed", /exeed/i], ["Tank", /\btank\b/i], ["Li Auto", /li\s?auto|lixiang|li\s?xiang/i], ["Zeekr", /zeekr/i], ["Jetour", /jetour/i],
+  ["Omoda", /omoda/i], ["Voyah", /voyah/i], ["Hongqi", /hongqi/i], ["Great Wall", /great\s?wall/i], ["Jeep", /\bjeep\b/i],
+];
+
+const AMOUNT_RE = /(\d{1,3}(?:[ .\u00a0\u202f]\d{3})+|\d+)(?:,(\d+))?\s*(млн\.?|миллион\w*|тыс\.?|тысяч\w*)?\s*(₽|руб\w*\.?|RUB|JPY|[ий]ен\w*|CNY|RMB|юан\w*)/giu;
+const CUR_OF = (s: string): ParsedCar["currency"] =>
+  /₽|руб|rub/i.test(s) ? "RUB" : /jpy|[ий]ен/i.test(s) ? "JPY" : "CNY";
+
+const stripDecor = (s: string) =>
+  s.replace(/[\p{Extended_Pictographic}\p{Regional_Indicator}\u200d\ufe0f]/gu, " ").replace(/\s+/g, " ").trim();
+
+export const detectBrands = (text: string) => BRANDS.filter(([, re]) => re.test(text)).map(([b]) => b);
+
+export const parseFreeFormPost = (text: string, now = new Date()): ParseResult => {
+  const source = text.trim();
+  const tags = extractTags(source);
+  const lines = source.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const brands = detectBrands(source);
+  const amounts = [...source.matchAll(AMOUNT_RE)];
+
+  if (!brands.length && !amounts.length) return { kind: "ignored" };
+
+  const numbered = source.match(/(^|\n)\s*\d{1,2}\s*[).]\s+\S/g)?.length ?? 0;
+  if (/подборк/i.test(source) || numbered >= 2 || brands.length >= 2) {
+    return { kind: "invalid", errors: ["Похоже на подборку нескольких машин — пропущено, одна публикация должна описывать одну машину"] };
+  }
+
+  const errors: string[] = [];
+
+  // Brand and model from the first line naming the brand.
+  let brand = "", model = "", title = "";
+  if (!brands.length) errors.push("Не найдена марка автомобиля");
+  else {
+    brand = brands[0];
+    const re = BRANDS.find(([b]) => b === brand)![1];
+    const line = lines.find((l) => re.test(l))!;
+    const clean = stripDecor(line);
+    title = clean.slice(0, 120);
+    const after = clean.slice((clean.match(re)?.index ?? 0) + (clean.match(re)?.[0].length ?? 0)).trim();
+    const words: string[] = [];
+    for (const w of after.split(" ")) {
+      if (!w || /^[-–—:,(]/.test(w) || /^(19|20)\d{2}/.test(w) || /^\d[.,]\d/.test(w) || /^(цена|стоимость|под|из|в|с)$/i.test(w)) break;
+      words.push(w.replace(/[,.]$/, ""));
+      if (words.length >= 3) break;
+    }
+    model = words.join(" ");
+    if (!model) errors.push("Не найдена модель рядом с маркой");
+  }
+
+  // Year: explicit "2021г", "Год: 2020", "Дата производства: 09.2022", or a bare year on the title line.
+  const years = new Set<number>();
+  for (const m of source.matchAll(/\b((?:19|20)\d{2})\s*г(?:\.|од|\b)/giu)) years.add(Number(m[1]));
+  for (const m of source.matchAll(/(?:год(?:\s*выпуска)?|дата\s*производства|выпуск)[^\d\n]{0,15}(?:\d{1,2}[./])?((?:19|20)\d{2})/giu)) years.add(Number(m[1]));
+  if (title) for (const m of title.matchAll(/(?:^|\s)((?:19|20)\d{2})(?=\s|$)/g)) years.add(Number(m[1]));
+  const validYears = [...years].filter((y) => y >= 1950 && y <= now.getFullYear() + 1);
+  if (!validYears.length) errors.push("Не указан год выпуска");
+  else if (validYears.length > 1) errors.push(`Указано несколько годов: ${validYears.join(", ")}`);
+
+  // Country from flags or explicit words.
+  const countries = new Set<ParsedCar["country"]>();
+  if (/🇯🇵|япони/i.test(source)) countries.add("japan");
+  if (/🇰🇷|коре/i.test(source)) countries.add("korea");
+  if (/🇨🇳|кита/i.test(source)) countries.add("china");
+  if (!countries.size) errors.push("Не указана страна (Япония/Корея/Китай)");
+  else if (countries.size > 1) errors.push("Указано несколько стран");
+
+  // Price: exactly one distinct amount with an explicit currency.
+  const prices = new Map<string, { price: number; currency: ParsedCar["currency"] }>();
+  let negative = false;
+  for (const m of amounts) {
+    const before = source.slice(0, m.index);
+    if (/(^|\s)[-−]\s?$/.test(before)) negative = true;
+    let v = Number(m[1].replace(/[ .\u00a0\u202f]/g, "") + (m[2] ? `.${m[2]}` : ""));
+    if (m[3]) v *= /млн|миллион/i.test(m[3]) ? 1_000_000 : 1_000;
+    const cur = CUR_OF(m[4]);
+    prices.set(`${v}${cur}`, { price: Math.round(v), currency: cur });
+  }
+  if (/¥/.test(source)) errors.push("Знак ¥ неоднозначен — нужна валюта JPY/иены или CNY/юани");
+  if (negative) errors.push("Цена не может быть отрицательной");
+  if (!prices.size) errors.push("Не указана цена с валютой (₽/RUB, JPY, CNY)");
+  else if (prices.size > 1) errors.push("В посте несколько разных цен — непонятно, какая итоговая");
+  const priced = [...prices.values()][0];
+  if (priced && priced.price <= 0) errors.push("Цена должна быть больше нуля");
+
+  if (errors.length) return { kind: "invalid", errors };
+
+  const mileage = source.match(/пробег[^\d\n]{0,12}(\d{1,3}(?:[ .\u00a0\u202f]\d{3})+|\d+)\s*(тыс\.?)?\s*км/iu);
+  const engineLine = lines.find((l) => /мотор|двигат|объ[её]м/i.test(l)) ?? "";
+  const engineM = engineLine.match(/(\d[.,]\d)\s*(?:l|л|t|т)?(?![\d])/i) ?? engineLine.match(/(\d{3,4})\s*(?:см|cc|куб)/i);
+  let engine = engineM ? Number(engineM[1].replace(",", ".")) : null;
+  if (engine !== null && engine >= 100) engine = Math.round(engine / 100) / 10;
+  const power = source.match(/(\d{2,4})\s*(?:л\.?\s*с\.?|hp\b|лс\b)/i);
+  const fuelScope = [engineLine, ...lines.filter((l) => /топлив/i.test(l))].join(" ");
+  const fuels = FUELS.filter(([re]) => re.test(fuelScope)).map(([, f]) => f);
+  const trLine = lines.filter((l) => /трансмисс|коробк|кпп|вариатор|cvt|акпп|мкпп|робот|dct/i.test(l)).join(" ");
+  const trans = TRANSMISSIONS.filter(([re]) => re.test(trLine)).map(([, t]) => t);
+
+  let status: ParsedCar["status"] = "on_order";
+  if (/в\s*наличии/i.test(source)) status = "in_stock";
+  else if (/в\s*пути/i.test(source)) status = "in_transit";
+  if (/\bпродан[аo]?\b/i.test(source) || tags.has(SOLD_TAG)) status = "sold";
+  if (tags.has(HIDE_TAG)) status = "draft";
+
+  const mileageVal = mileage ? Number(mileage[1].replace(/[ .\u00a0\u202f]/g, "")) * (mileage[2] ? 1000 : 1) : null;
+  return {
+    kind: "ok",
+    car: {
+      brand, model, year: validYears[0], country: [...countries][0], price: priced.price, currency: priced.currency, status,
+      mileage_km: mileageVal, engine_volume: engine, power_hp: power ? Number(power[1]) : null,
+      transmission: new Set(trans).size === 1 ? trans[0] : null,
+      fuel: new Set(fuels).size === 1 ? fuels[0] : null,
+      title: title || `${brand} ${model} ${validYears[0]}`,
+      description: source,
+    },
+  };
+};
