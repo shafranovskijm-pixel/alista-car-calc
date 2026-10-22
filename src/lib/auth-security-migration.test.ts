@@ -52,7 +52,7 @@ describe("invite-only auth migration", () => {
   it("shows team management only to administrators", () => {
     expect(adminSettingsPage).toContain('const isAdmin = roles.includes("admin")');
     expect(adminSettingsPage).toContain(
-      'requestedTab === "team" && !isAdmin ? "profile" : requestedTab',
+      '(requestedTab === "team" || requestedTab === "telegram") && !isAdmin ? "profile" : requestedTab',
     );
     expect(adminSettingsPage).toMatch(
       /\{isAdmin && <TabsTrigger value="team">Команда<\/TabsTrigger>\}/,
