@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCatalogLiveRefresh } from "@/hooks/useCatalogLiveRefresh";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Loader2, Search } from "lucide-react";
@@ -21,19 +22,21 @@ const Gallery = () => {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const hasDataRef = useRef(false);
+  hasDataRef.current = cars.length > 0;
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      setLoading(true);
+      if (!hasDataRef.current) setLoading(true);
       setFailed(false);
       try {
         const rows = await withRetry(() => fetchPublicCars());
         if (!cancelled) setCars(rows.filter((car) => car.status !== "draft").slice(0, 6));
       } catch {
         if (!cancelled) {
-          setCars([]);
-          setFailed(true);
+          if (!hasDataRef.current) setCars([]);
+          if (!hasDataRef.current) setFailed(true);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -43,6 +46,8 @@ const Gallery = () => {
       cancelled = true;
     };
   }, [reloadKey]);
+
+  useCatalogLiveRefresh(() => setReloadKey((value) => value + 1));
 
   useEffect(() => {
     let lastRefresh = 0;
