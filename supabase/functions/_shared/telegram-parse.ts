@@ -187,9 +187,9 @@ export const redactToken = (text: string) =>
 const BRANDS: [string, RegExp][] = [
   ["Toyota", /toyota|тойота/i], ["Lexus", /lexus|лексус/i], ["Honda", /honda|хонда/i], ["Nissan", /nissan|ниссан/i],
   ["Mazda", /mazda|мазда/i], ["Subaru", /subaru|субару/i], ["Suzuki", /suzuki|сузуки/i], ["Mitsubishi", /mitsubishi|мицубиси/i],
-  ["Daihatsu", /daihatsu|дайхатсу/i], ["Infiniti", /infiniti/i], ["Hyundai", /hyundai|хендай|хундай/i], ["Kia", /\bkia\b|\bкиа\b/i],
+  ["Daihatsu", /daihatsu|дайхатсу/i], ["Infiniti", /infiniti/i], ["Hyundai", /hyundai|хендай|хундай/i], ["Kia", /\bkia\b|(?<![а-яё])киа(?![а-яё])/i],
   ["Genesis", /genesis/i], ["SsangYong", /ssang\s?yong/i], ["Chevrolet", /chevrolet/i], ["Renault", /renault/i],
-  ["Peugeot", /peugeot|пежо/i], ["Citroen", /citro[eë]n/i], ["BMW", /\bbmw\b|\bбмв\b/i], ["Mercedes-Benz", /mercedes|мерседес/i],
+  ["Peugeot", /peugeot|пежо/i], ["Citroen", /citro[eë]n/i], ["BMW", /\bbmw\b|(?<![а-яё])бмв(?![а-яё])/i], ["Mercedes-Benz", /mercedes|мерседес/i],
   ["Audi", /\baudi\b|\bауди\b/i], ["Volkswagen", /volkswagen|\bvw\b/i], ["Porsche", /porsche/i], ["Volvo", /volvo/i],
   ["Land Rover", /land\s?rover/i], ["Ford", /\bford\b/i], ["Tesla", /tesla/i], ["Skoda", /skoda/i], ["MINI", /\bmini\b/i],
   ["BYD", /\bbyd\b/i], ["Geely", /geely|джили/i], ["Chery", /\bchery\b|чери/i], ["Haval", /haval|хавал/i], ["Changan", /changan/i],
@@ -244,7 +244,7 @@ export const parseFreeFormPost = (text: string, now = new Date()): ParseResult =
 
   // Year: explicit "2021г", "Год: 2020", "Дата производства: 09.2022", or a bare year on the title line.
   const years = new Set<number>();
-  for (const m of source.matchAll(/\b((?:19|20)\d{2})\s*г(?:\.|од|\b)/giu)) years.add(Number(m[1]));
+  for (const m of source.matchAll(/(?<!\d)((?:19|20)\d{2})\s*г(?:\.|од|(?![а-яё]))/giu)) years.add(Number(m[1]));
   for (const m of source.matchAll(/(?:год(?:\s*выпуска)?|дата\s*производства|выпуск)[^\d\n]{0,15}(?:\d{1,2}[./])?((?:19|20)\d{2})/giu)) years.add(Number(m[1]));
   if (title) for (const m of title.matchAll(/(?:^|\s)((?:19|20)\d{2})(?=\s|$)/g)) years.add(Number(m[1]));
   const validYears = [...years].filter((y) => y >= 1950 && y <= now.getFullYear() + 1);
@@ -293,7 +293,7 @@ export const parseFreeFormPost = (text: string, now = new Date()): ParseResult =
   let status: ParsedCar["status"] = "on_order";
   if (/в\s*наличии/i.test(source)) status = "in_stock";
   else if (/в\s*пути/i.test(source)) status = "in_transit";
-  if (/\bпродан[аo]?\b/i.test(source) || tags.has(SOLD_TAG)) status = "sold";
+  if (/(?<![а-яё])продан[аo]?(?![а-яё])/i.test(source) || tags.has(SOLD_TAG)) status = "sold";
   if (tags.has(HIDE_TAG)) status = "draft";
 
   const mileageVal = mileage ? Number(mileage[1].replace(/[ .\u00a0\u202f]/g, "")) * (mileage[2] ? 1000 : 1) : null;
