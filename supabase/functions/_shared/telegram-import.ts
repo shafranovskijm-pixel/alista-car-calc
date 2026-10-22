@@ -58,6 +58,8 @@ const safeEqual = (a: string | null, b: string) => {
   return d === 0;
 };
 
+export const checkSecret = (header: string | null, expected: string | null) => !!expected && safeEqual(header, expected);
+
 export const authorize = (secretHeader: string | null, expectedSecret: string | null, settings: Settings | null, msg: TgMessage | undefined) => {
   if (!expectedSecret || !safeEqual(secretHeader, expectedSecret)) return "unauthorized" as const;
   if (!settings?.enabled || settings.channel_id == null) return "disabled" as const;

@@ -1,7 +1,7 @@
 // Public Telegram webhook (verify_jwt = false). Protected by the Telegram
 // secret_token header and a strict check of the configured channel id.
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { authorize, decideMembership, handleUpdate, PermanentPhotoError, type ImportDeps, type TgUpdate } from '../_shared/telegram-import.ts';
+import { authorize, checkSecret, decideMembership, handleUpdate, PermanentPhotoError, type ImportDeps, type TgUpdate } from '../_shared/telegram-import.ts';
 import { redactToken } from '../_shared/telegram-parse.ts';
 
 const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
 
     if (update?.my_chat_member) {
       const header = req.headers.get('X-Telegram-Bot-Api-Secret-Token');
-      if (authorize(header, secrets?.webhook_secret ?? null, { enabled: true, channel_id: 0 }, { message_id: 0, date: 0, chat: { id: 0, type: 'channel' } }) === 'unauthorized') {
+      if (!checkSecret(header, secrets?.webhook_secret ?? null)) {
         return new Response('Unauthorized', { status: 401 });
       }
       const decision = decideMembership(update.my_chat_member, settings ? {
