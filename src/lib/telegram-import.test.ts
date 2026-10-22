@@ -105,7 +105,7 @@ const fakeBackend = () => {
       p.version = version; p.upd = upd; cars.set(p.car_id, car); return { car_id: p.car_id, outcome: "updated" };
     },
     postCarId: async (g) => posts.get(g)?.car_id ?? null,
-    pendingPhotos: async (g) => [...messages.entries()].filter(([, m]) => m.group_key === g && m.file_id && !m.storage_path && !rejected.has(id))
+    pendingPhotos: async (g) => [...messages.entries()].filter(([id, m]) => m.group_key === g && m.file_id && !m.storage_path && !rejected.has(id))
       .sort(([a], [b]) => a - b).map(([id, m]) => ({ message_id: id, file_id: m.file_id!, file_unique_id: m.file_unique_id!, mime_type: "image/jpeg" })),
     downloadPhoto: async () => { downloads++; if (failNext) { const e = failNext; failNext = null; throw e; } return { bytes: new Uint8Array(10), mime: "image/jpeg" }; },
     storePhoto: async () => undefined,
