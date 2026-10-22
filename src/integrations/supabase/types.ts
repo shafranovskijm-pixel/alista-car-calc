@@ -1103,6 +1103,194 @@ export type Database = {
         }
         Relationships: []
       }
+      telegram_imports: {
+        Row: {
+          car_id: string | null
+          created_at: string
+          group_key: string | null
+          id: string
+          message: string | null
+          message_id: number | null
+          status: string
+        }
+        Insert: {
+          car_id?: string | null
+          created_at?: string
+          group_key?: string | null
+          id?: string
+          message?: string | null
+          message_id?: number | null
+          status: string
+        }
+        Update: {
+          car_id?: string | null
+          created_at?: string
+          group_key?: string | null
+          id?: string
+          message?: string | null
+          message_id?: number | null
+          status?: string
+        }
+        Relationships: []
+      }
+      telegram_post_messages: {
+        Row: {
+          chat_id: number
+          created_at: string
+          file_id: string | null
+          file_unique_id: string | null
+          group_key: string
+          message_id: number
+          mime_type: string | null
+          storage_path: string | null
+        }
+        Insert: {
+          chat_id: number
+          created_at?: string
+          file_id?: string | null
+          file_unique_id?: string | null
+          group_key: string
+          message_id: number
+          mime_type?: string | null
+          storage_path?: string | null
+        }
+        Update: {
+          chat_id?: number
+          created_at?: string
+          file_id?: string | null
+          file_unique_id?: string | null
+          group_key?: string
+          message_id?: number
+          mime_type?: string | null
+          storage_path?: string | null
+        }
+        Relationships: []
+      }
+      telegram_posts: {
+        Row: {
+          caption_message_id: number | null
+          car_id: string | null
+          chat_id: number
+          created_at: string
+          group_key: string
+          text_version: number
+          updated_at: string
+        }
+        Insert: {
+          caption_message_id?: number | null
+          car_id?: string | null
+          chat_id: number
+          created_at?: string
+          group_key: string
+          text_version?: number
+          updated_at?: string
+        }
+        Update: {
+          caption_message_id?: number | null
+          car_id?: string | null
+          chat_id?: number
+          created_at?: string
+          group_key?: string
+          text_version?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telegram_posts_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telegram_secrets: {
+        Row: {
+          bot_token: string
+          id: boolean
+          updated_at: string
+          webhook_secret: string
+        }
+        Insert: {
+          bot_token: string
+          id?: boolean
+          updated_at?: string
+          webhook_secret: string
+        }
+        Update: {
+          bot_token?: string
+          id?: boolean
+          updated_at?: string
+          webhook_secret?: string
+        }
+        Relationships: []
+      }
+      telegram_settings: {
+        Row: {
+          bot_id: number | null
+          bot_username: string | null
+          channel_id: number | null
+          channel_title: string | null
+          channel_username: string | null
+          enabled: boolean
+          id: boolean
+          last_error: string | null
+          last_error_at: string | null
+          last_imported_at: string | null
+          updated_at: string
+          verified_at: string | null
+          webhook_checked_at: string | null
+          webhook_status: string | null
+        }
+        Insert: {
+          bot_id?: number | null
+          bot_username?: string | null
+          channel_id?: number | null
+          channel_title?: string | null
+          channel_username?: string | null
+          enabled?: boolean
+          id?: boolean
+          last_error?: string | null
+          last_error_at?: string | null
+          last_imported_at?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          webhook_checked_at?: string | null
+          webhook_status?: string | null
+        }
+        Update: {
+          bot_id?: number | null
+          bot_username?: string | null
+          channel_id?: number | null
+          channel_title?: string | null
+          channel_username?: string | null
+          enabled?: boolean
+          id?: boolean
+          last_error?: string | null
+          last_error_at?: string | null
+          last_imported_at?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          webhook_checked_at?: string | null
+          webhook_status?: string | null
+        }
+        Relationships: []
+      }
+      telegram_updates: {
+        Row: {
+          processed_at: string
+          update_id: number
+        }
+        Insert: {
+          processed_at?: string
+          update_id: number
+        }
+        Update: {
+          processed_at?: string
+          update_id?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1228,6 +1416,23 @@ export type Database = {
           _user_id: string
         }
         Returns: undefined
+      }
+      telegram_sync_photos: {
+        Args: { p_group_key: string; p_limit?: number }
+        Returns: number
+      }
+      telegram_upsert_car: {
+        Args: {
+          p_car: Json
+          p_chat_id: number
+          p_group_key: string
+          p_message_id: number
+          p_version: number
+        }
+        Returns: {
+          car_id: string
+          outcome: string
+        }[]
       }
     }
     Enums: {
