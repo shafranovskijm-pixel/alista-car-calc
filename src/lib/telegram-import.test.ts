@@ -134,7 +134,6 @@ describe("handleUpdate", () => {
     await handleUpdate({ update_id: 1, channel_post: msg({ message_id: 10, media_group_id: "A", photo: photo(10), caption: POST }) }, b.deps);
     await handleUpdate({ update_id: 3, channel_post: msg({ message_id: 12, media_group_id: "A", photo: photo(12) }) }, b.deps);
     expect(b.cars.size).toBe(1);
-    expect(b.photos.map((p) => p.sort)).toEqual([11, 10, 12].sort((a, c) => a - c).length === 3 ? b.photos.map((p) => p.sort) : []);
     expect([...b.photos].sort((a, c) => a.sort - c.sort).map((p) => [p.sort, p.cover])).toEqual([[10, true], [11, false], [12, false]]);
   });
   it("ignores Telegram retries of the same update", async () => {
