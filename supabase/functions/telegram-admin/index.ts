@@ -37,19 +37,24 @@ const tg = async (token: string, method: string, body: Record<string, unknown> =
   return data.result;
 };
 
-const verify = async (token: string, channel: string) => {
-  const me = await tg(token, 'getMe').catch(() => { throw new TgError('Токен не принят Telegram (getMe). Проверьте токен из @BotFather.'); });
-  const chat = await tg(token, 'getChat', { chat_id: channel }).catch(() => {
-    throw new TgError(`Бот не видит канал ${channel}. Добавьте бота администратором канала.`);
-  });
+const ALLOWED_UPDATES = ['channel_post', 'edited_channel_post', 'my_chat_member'];
+
+const getMe = (token: string) =>
+  tg(token, 'getMe').catch(() => { throw new TgError('Токен не принят Telegram (getMe). Проверьте токен из @BotFather.'); });
+
+/** Returns the channel when the bot is already its administrator, otherwise null. */
+const findAdminChannel = async (token: string, botId: number, channel: string) => {
+  const chat = await tg(token, 'getChat', { chat_id: channel }).catch(() => null);
+  if (!chat) return null;
   if (chat.type !== 'channel') throw new TgError(`${channel} — не канал (тип: ${chat.type}).`);
-  const member = await tg(token, 'getChatMember', { chat_id: chat.id, user_id: me.id }).catch(() => {
-    throw new TgError('Не удалось проверить участие бота в канале.');
-  });
-  if (member.status !== 'administrator') {
-    throw new TgError(`Бот @${me.username} не администратор канала ${channel} (статус: ${member.status}).`);
-  }
-  return { me, chat };
+  const member = await tg(token, 'getChatMember', { chat_id: chat.id, user_id: botId }).catch(() => null);
+  return member?.status === 'administrator' ? chat : null;
+};
+
+const registerWebhook = async (token: string, secret: string) => {
+  await tg(token, 'setWebhook', { url: WEBHOOK_URL, secret_token: secret, allowed_updates: ALLOWED_UPDATES, drop_pending_updates: true });
+  const info = await tg(token, 'getWebhookInfo');
+  return info.url === WEBHOOK_URL ? 'ok' : 'mismatch';
 };
 
 const loadToken = async () => {
@@ -84,7 +89,7 @@ Deno.serve(async (req) => {
 
     if (action === 'status') return json(await status());
 
-    if (action === 'save') {
+    if (action === 'prepare') {
       const channel = String(body.channel ?? '').trim();
       const newToken = String(body.token ?? '').trim();
       if (!CHANNEL_RE.test(channel)) return json({ error: 'Укажите канал в формате @username' }, 400);
@@ -92,17 +97,30 @@ Deno.serve(async (req) => {
       const token = newToken || existing?.bot_token;
       if (!token) return json({ error: 'Вставьте токен бота' }, 400);
       if (!TOKEN_RE.test(token)) return json({ error: 'Токен выглядит некорректно (формат 123456:ABC…)' }, 400);
-      const { me, chat } = await verify(token, channel);
+      const me = await getMe(token);
+      const { data: prev } = await sb.from('telegram_settings').select('*').eq('id', true).maybeSingle();
+      const sameChannel = prev?.channel_username?.toLowerCase() === channel.toLowerCase();
+      const sameBot = prev?.bot_id != null && Number(prev.bot_id) === Number(me.id);
+      // A bound channel id is kept; only an explicit channel/bot change by the admin resets it.
+      const boundId = sameChannel && sameBot && prev?.channel_id != null ? Number(prev.channel_id) : null;
+
       const webhookSecret = existing && existing.bot_token === token ? existing.webhook_secret : crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
       const s = await sb.from('telegram_secrets').upsert({ id: true, bot_token: token, webhook_secret: webhookSecret, updated_at: new Date().toISOString() }, { onConflict: 'id' });
       if (s.error) throw new Error(s.error.message);
-      // A new token/channel is verified but stays disabled until "enable".
-      await saveSettings({
-        enabled: false, channel_username: channel, channel_id: chat.id, channel_title: chat.title ?? null,
-        bot_id: me.id, bot_username: me.username, verified_at: new Date().toISOString(), last_error: null,
-        webhook_status: 'not_set',
-      });
       if (existing && existing.bot_token !== token) await tg(existing.bot_token, 'deleteWebhook').catch(() => null);
+
+      const webhook = await registerWebhook(token, webhookSecret);
+      const chat = await findAdminChannel(token, me.id, channel);
+      const now = new Date().toISOString();
+      const base = {
+        channel_username: channel, bot_id: me.id, bot_username: me.username, auto_activate: true,
+        webhook_status: webhook, webhook_checked_at: now, last_error: null,
+      };
+      if (chat && (boundId == null || Number(chat.id) === boundId)) {
+        await saveSettings({ ...base, channel_id: chat.id, channel_title: chat.title ?? null, enabled: true, state: 'active', verified_at: now });
+      } else {
+        await saveSettings({ ...base, channel_id: boundId, enabled: false, state: 'awaiting_bot' });
+      }
       return json(await status());
     }
 
@@ -110,20 +128,24 @@ Deno.serve(async (req) => {
     const { data: settings } = await sb.from('telegram_settings').select('*').eq('id', true).maybeSingle();
 
     if (action === 'enable') {
-      if (!secrets || !settings?.channel_username) return json({ error: 'Сначала сохраните и проверьте токен и канал' }, 400);
-      const { chat } = await verify(secrets.bot_token, settings.channel_username);
-      if (Number(chat.id) !== Number(settings.channel_id)) return json({ error: 'ID канала изменился — сохраните настройки заново' }, 409);
-      await tg(secrets.bot_token, 'setWebhook', {
-        url: WEBHOOK_URL, secret_token: secrets.webhook_secret,
-        allowed_updates: ['channel_post', 'edited_channel_post'], drop_pending_updates: true,
-      });
-      const info = await tg(secrets.bot_token, 'getWebhookInfo');
-      await saveSettings({ enabled: true, webhook_status: info.url === WEBHOOK_URL ? 'ok' : 'mismatch', webhook_checked_at: new Date().toISOString(), last_error: null });
+      if (!secrets || !settings?.channel_username || !settings.bot_id) return json({ error: 'Сначала подготовьте подключение' }, 400);
+      const webhook = await registerWebhook(secrets.bot_token, secrets.webhook_secret);
+      const chat = await findAdminChannel(secrets.bot_token, Number(settings.bot_id), settings.channel_username);
+      const now = new Date().toISOString();
+      if (chat && settings.channel_id != null && Number(chat.id) !== Number(settings.channel_id)) {
+        return json({ error: 'ID канала не совпадает с привязанным — подготовьте подключение заново' }, 409);
+      }
+      if (chat) {
+        await saveSettings({ enabled: true, auto_activate: true, state: 'active', channel_id: chat.id, channel_title: chat.title ?? null, verified_at: now, webhook_status: webhook, webhook_checked_at: now, last_error: null });
+      } else {
+        await saveSettings({ enabled: false, auto_activate: true, state: 'awaiting_bot', webhook_status: webhook, webhook_checked_at: now });
+      }
       return json(await status());
     }
 
     if (action === 'disable') {
-      await saveSettings({ enabled: false, webhook_status: 'not_set' });
+      // Also cancels auto-activation so a late my_chat_member cannot re-enable import.
+      await saveSettings({ enabled: false, auto_activate: false, state: 'disabled', webhook_status: 'not_set' });
       if (secrets) await tg(secrets.bot_token, 'deleteWebhook').catch(() => null);
       return json(await status());
     }
@@ -142,7 +164,7 @@ Deno.serve(async (req) => {
     if (action === 'forget') {
       if (secrets) await tg(secrets.bot_token, 'deleteWebhook').catch(() => null);
       await sb.from('telegram_secrets').delete().eq('id', true);
-      await saveSettings({ enabled: false, webhook_status: 'not_set', bot_id: null, bot_username: null, verified_at: null });
+      await saveSettings({ enabled: false, auto_activate: false, state: 'not_configured', webhook_status: 'not_set', bot_id: null, bot_username: null, channel_id: null, verified_at: null });
       return json(await status());
     }
 
