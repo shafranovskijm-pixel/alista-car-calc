@@ -55,7 +55,7 @@ Peugeot 308 - 2021г. ЛЕВЫЙ РУЛЬ
   });
 
   it("rejects posts with two different prices", () => {
-    const r = parseCarPost("Honda Fit 2020г. из Японии\\nцена 1 000 000 ₽, со скидкой 950 000 ₽", NOW);
+    const r = parseCarPost("Honda Fit 2020г. из Японии\nцена 1 000 000 ₽, со скидкой 950 000 ₽", NOW);
     expect(r.kind).toBe("invalid");
   });
 
@@ -70,6 +70,6 @@ Peugeot 308 - 2021г. ЛЕВЫЙ РУЛЬ
   });
 
   it("keeps the strict #авто template working", () => {
-    expect(parseCarPost("#авто\\nМарка: Kia\\nМодель: K5\\nГод: 2021\\nСтрана: Корея\\nЦена: 2 000 000 ₽", NOW).kind).toBe("ok");
+    expect(parseCarPost("#авто\nМарка: Kia\nМодель: K5\nГод: 2021\nСтрана: Корея\nЦена: 2 000 000 ₽", NOW).kind).toBe("ok");
   });
 });
