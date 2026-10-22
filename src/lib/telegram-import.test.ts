@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { parseCarPost, redactToken, telegramSlug } from "../../supabase/functions/_shared/telegram-parse";
-import { authorize, handleUpdate, type ImportDeps, type TgMessage } from "../../supabase/functions/_shared/telegram-import";
+import { parseCarPost, parsePrice, redactToken, telegramSlug } from "../../supabase/functions/_shared/telegram-parse";
+import { authorize, decideMembership, handleUpdate, PermanentPhotoError, type ImportDeps, type TgChatMemberUpdate, type TgMessage } from "../../supabase/functions/_shared/telegram-import";
 
 const POST = `#авто
 Марка: Toyota
@@ -86,7 +86,9 @@ describe("authorize", () => {
 const fakeBackend = () => {
   const processed = new Set<number>();
   const messages = new Map<number, { group_key: string; file_id: string | null; file_unique_id: string | null; storage_path: string | null }>();
-  const posts = new Map<string, { car_id: string; version: number }>();
+  const posts = new Map<string, { car_id: string; version: number; upd: number }>();
+  const rejected = new Set<number>();
+  let failNext: Error | null = null;
   const cars = new Map<string, Record<string, unknown>>();
   const photos: { car_id: string; url: string; sort: number; cover: boolean }[] = [];
   const logs: { status: string; message: string }[] = [];
@@ -95,17 +97,19 @@ const fakeBackend = () => {
     isProcessed: async (id) => processed.has(id),
     markProcessed: async (id) => { processed.add(id); },
     saveMessage: async (r) => { if (!messages.has(r.message_id)) messages.set(r.message_id, { ...r, storage_path: null }); },
-    upsertCar: async (g, _c, _m, version, car) => {
+    upsertCar: async (g, _c, _m, version, upd, car) => {
       const p = posts.get(g);
-      if (p && version < p.version) return { car_id: p.car_id, outcome: "stale" };
-      if (!p) { const id = `car-${posts.size + 1}`; posts.set(g, { car_id: id, version }); cars.set(id, car); return { car_id: id, outcome: "created" }; }
-      p.version = version; cars.set(p.car_id, car); return { car_id: p.car_id, outcome: "updated" };
+      if (p && version === p.version && upd === p.upd) return { car_id: p.car_id, outcome: "unchanged" };
+      if (p && (version < p.version || (version === p.version && upd < p.upd))) return { car_id: p.car_id, outcome: "stale" };
+      if (!p) { const id = `car-${posts.size + 1}`; posts.set(g, { car_id: id, version, upd }); cars.set(id, car); return { car_id: id, outcome: "created" }; }
+      p.version = version; p.upd = upd; cars.set(p.car_id, car); return { car_id: p.car_id, outcome: "updated" };
     },
     postCarId: async (g) => posts.get(g)?.car_id ?? null,
-    pendingPhotos: async (g) => [...messages.entries()].filter(([, m]) => m.group_key === g && m.file_id && !m.storage_path)
+    pendingPhotos: async (g) => [...messages.entries()].filter(([id, m]) => m.group_key === g && m.file_id && !m.storage_path && !rejected.has(id))
       .sort(([a], [b]) => a - b).map(([id, m]) => ({ message_id: id, file_id: m.file_id!, file_unique_id: m.file_unique_id!, mime_type: "image/jpeg" })),
-    downloadPhoto: async () => { downloads++; return { bytes: new Uint8Array(10), mime: "image/jpeg" }; },
+    downloadPhoto: async () => { downloads++; if (failNext) { const e = failNext; failNext = null; throw e; } return { bytes: new Uint8Array(10), mime: "image/jpeg" }; },
     storePhoto: async () => undefined,
+    rejectPhoto: async (_c, id) => { rejected.add(id); },
     setStoragePath: async (_c, id, path) => { messages.get(id)!.storage_path = path; },
     syncPhotos: async (g) => {
       const car = posts.get(g)!.car_id;
@@ -120,7 +124,7 @@ const fakeBackend = () => {
     log: async (e) => { logs.push({ status: e.status, message: e.message }); },
     touchImported: async () => undefined,
   };
-  return { deps, cars, photos, logs, posts, get downloads() { return downloads; } };
+  return { deps, cars, photos, logs, posts, failOnce: (e: Error) => { failNext = e; }, get downloads() { return downloads; } };
 };
 
 const photo = (n: number) => [{ file_id: `f${n}`, file_unique_id: `u${n}`, width: 1280, height: 960 }];
@@ -168,11 +172,84 @@ describe("handleUpdate", () => {
   });
 });
 
+describe("strict price parsing", () => {
+  it.each([
+    ["1 945 000 ₽", 1945000, "RUB"], ["1,5 млн ₽", 1500000, "RUB"], ["850 тыс. руб", 850000, "RUB"],
+    ["2 000 000 JPY", 2000000, "JPY"], ["¥ 150000 CNY", 150000, "CNY"], ["¥2000000 JPY", 2000000, "JPY"], ["150 000 юаней", 150000, "CNY"],
+  ])("%s", (raw, price, currency) => {
+    expect(parsePrice(raw)).toEqual({ price, currency });
+  });
+  it.each(["-100 ₽", "JPY 2 000 CNY", "¥ 2 000 000", "100 ₽ ¥", "1 000 000", "1 000 000 – 1 200 000 ₽", "0 ₽", "около 2 млн ₽", "1 500 000 ₽ 2 000"])("rejects %s", (raw) => {
+    expect("error" in parsePrice(raw)).toBe(true);
+  });
+  it("never publishes a post with an ambiguous price", () => {
+    expect(parseCarPost(POST.replace("1 945 000 ₽", "-100 ₽")).kind).toBe("invalid");
+  });
+});
+
+describe("edits, retries and photo failures", () => {
+  it("update_id breaks ties between two edits in the same second", async () => {
+    const b = fakeBackend();
+    await handleUpdate({ update_id: 1, channel_post: msg({ message_id: 60, text: POST }) }, b.deps);
+    await handleUpdate({ update_id: 11, edited_channel_post: msg({ message_id: 60, edit_date: 5000, text: POST.replace("1 945 000", "1 700 000") }) }, b.deps);
+    await handleUpdate({ update_id: 10, edited_channel_post: msg({ message_id: 60, edit_date: 5000, text: POST.replace("1 945 000", "1 900 000") }) }, b.deps);
+    expect(b.cars.get("car-1")).toMatchObject({ price: 1700000 });
+  });
+  it("a temporary photo failure is retried by Telegram and leaves no duplicates", async () => {
+    const b = fakeBackend();
+    b.failOnce(new Error("network"));
+    const u = { update_id: 7, channel_post: msg({ message_id: 70, photo: photo(70), caption: POST }) };
+    expect((await handleUpdate(u, b.deps)).status).toBe(500);
+    expect(b.photos).toHaveLength(0);
+    expect((await handleUpdate(u, b.deps)).status).toBe(200);
+    expect(b.cars.size).toBe(1);
+    expect(b.photos).toHaveLength(1);
+    expect(b.logs.filter((l) => l.status === "imported")).toHaveLength(1);
+  });
+  it("a permanently invalid photo is skipped, not retried forever", async () => {
+    const b = fakeBackend();
+    b.failOnce(new PermanentPhotoError("недопустимый тип файла image/gif"));
+    const u = { update_id: 8, channel_post: msg({ message_id: 80, photo: photo(80), caption: POST }) };
+    expect((await handleUpdate(u, b.deps)).status).toBe(200);
+    await handleUpdate({ update_id: 9, edited_channel_post: msg({ message_id: 80, edit_date: 9000, caption: POST }) }, b.deps);
+    expect(b.downloads).toBe(1);
+  });
+});
+
+describe("bot membership auto-activation", () => {
+  const BOT = 777;
+  const base = { bot_id: BOT, channel_username: "@alistaavto25", channel_id: null as number | null, auto_activate: true };
+  const upd = (patch: Partial<TgChatMemberUpdate["chat"]> = {}, status = "administrator", userId = BOT): TgChatMemberUpdate => ({
+    date: 1, chat: { id: CHANNEL, type: "channel", username: "AlistaAvto25", title: "Alista", ...patch },
+    new_chat_member: { status, user: { id: userId, is_bot: true } },
+  });
+  it("binds the exact channel id when our bot becomes administrator", () => {
+    expect(decideMembership(upd(), base)).toEqual({ kind: "activate", channel_id: CHANNEL, channel_title: "Alista" });
+  });
+  it("ignores other channels, other users and non-channel chats", () => {
+    expect(decideMembership(upd({ username: "other" }), base).kind).toBe("ignore");
+    expect(decideMembership(upd({}, "administrator", 1), base).kind).toBe("ignore");
+    expect(decideMembership(upd({ type: "supergroup" }), base).kind).toBe("ignore");
+  });
+  it("never rebinds an already bound channel id", () => {
+    expect(decideMembership(upd({ id: -999 }), { ...base, channel_id: CHANNEL }).kind).toBe("ignore");
+  });
+  it("removing the bot or its admin rights stops import", () => {
+    expect(decideMembership(upd({}, "member"), { ...base, channel_id: CHANNEL }).kind).toBe("deactivate");
+    expect(decideMembership(upd({}, "left"), base).kind).toBe("deactivate");
+  });
+  it("manual disable blocks a late activation", () => {
+    expect(decideMembership(upd(), { ...base, auto_activate: false }).kind).toBe("ignore");
+  });
+});
+
 describe("telegram migration keeps secrets server-only", () => {
-  const sql = readFileSync(resolve("drizzle/migrations/0000_telegram_catalog_import.sql"), "utf8");
+  const sql = ["0000_telegram_catalog_import", "0001_telegram_auto_activation"]
+    .map((f) => readFileSync(resolve(`drizzle/migrations/${f}.sql`), "utf8")).join("\n");
   it("never grants Telegram tables or functions to browser roles", () => {
     expect(sql).not.toMatch(/GRANT[^;]*TO[^;]*\b(anon|authenticated)\b/i);
     expect(sql).toMatch(/REVOKE ALL ON public\.telegram_secrets FROM anon, authenticated/);
     expect(sql).not.toMatch(/CREATE POLICY/i);
+    expect(sql).toMatch(/\(p_version, p_update_id\) < \(v_post\.text_version, v_post\.text_update_id\)/);
   });
 });

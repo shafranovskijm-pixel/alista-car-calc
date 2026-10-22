@@ -12,7 +12,7 @@ type Status = {
   has_token: boolean;
   token_hint: string | null;
   settings: {
-    enabled: boolean; channel_username: string | null; channel_title: string | null; bot_username: string | null;
+    enabled: boolean; auto_activate: boolean; state: string; channel_username: string | null; channel_title: string | null; bot_username: string | null;
     webhook_status: string | null; webhook_checked_at: string | null; verified_at: string | null;
     last_imported_at: string | null; last_error: string | null; last_error_at: string | null;
   } | null;
@@ -21,6 +21,26 @@ type Status = {
 
 const fmt = (d?: string | null) => (d ? new Date(d).toLocaleString("ru-RU") : "—");
 const WEBHOOK_LABELS: Record<string, string> = { ok: "работает", not_set: "не установлен", mismatch: "указывает на другой адрес", error: "Telegram сообщает об ошибке" };
+const STATE_LABELS: Record<string, string> = {
+  not_configured: "не настроено", awaiting_bot: "Ожидаем добавления бота в канал", active: "импорт работает",
+  disabled: "выключено вручную", bot_removed: "бота убрали из администраторов канала",
+};
+export const CLIENT_BOT = "@alistaru_catalog_bot";
+export const CLIENT_INSTRUCTION = `1. Откройте канал @alistaavto25 → Управление каналом → Администраторы → Добавить администратора.
+2. Найдите ${CLIENT_BOT} и добавьте его. Права можно снять все — нажмите «Сохранить».
+3. Публикуйте машины как обычно по примеру ниже. Пост с #авто сам появится на сайте.
+
+#авто
+Марка: Toyota
+Модель: C-HR
+Год: 2020
+Страна: Япония
+Цена: 1 945 000 ₽
+Пробег: 42 000 км
+Статус: Под заказ
+Ваш текст описания.
+
+#продано — машина станет проданной, #скрыть — уберётся с сайта.`;
 const STATUS_LABELS: Record<string, string> = { imported: "Импорт", skipped: "Пропуск", error: "Ошибка" };
 
 const TelegramSettings = () => {
@@ -48,7 +68,7 @@ const TelegramSettings = () => {
     try {
       const next = await call(action, extra);
       setSt(next);
-      if (action === "save") setToken("");
+      if (action === "prepare") setToken("");
       if (okText) toast({ title: okText });
     } catch (e) {
       toast({ title: "Не получилось", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
@@ -65,19 +85,25 @@ const TelegramSettings = () => {
   }, [call, toast]);
 
   const s = st?.settings;
-  const verified = !!(st?.has_token && s?.verified_at);
 
   return (
     <div className="space-y-4 max-w-3xl">
       <Card>
-        <CardHeader><CardTitle className="text-base">Как подключить канал</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">Для нас (технически)</CardTitle></CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-1">
           <ol className="list-decimal pl-5 space-y-1">
-            <li>В Telegram откройте @BotFather → /newbot, придумайте имя — получите токен.</li>
-            <li>В канале: Управление → Администраторы → добавьте бота. Достаточно минимальных прав; публиковать от имени бота не нужно.</li>
-            <li>Вставьте токен только здесь, укажите канал и нажмите «Проверить и сохранить», затем «Включить импорт».</li>
+            <li>Вставьте токен нашего бота {CLIENT_BOT} и канал клиента, нажмите «Подготовить подключение».</li>
+            <li>Если бот ещё не в канале — статус «Ожидаем добавления бота в канал». Импорт включится сам, как только клиент сделает бота администратором.</li>
+            <li>«Отключить импорт» останавливает импорт и автоматическое включение.</li>
           </ol>
-          <p>Пересылать посты боту в личку не нужно. Импортируются новые посты с тегом #авто, старые сообщения бот не видит.</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Инструкция для клиента</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          <pre className="whitespace-pre-wrap text-sm bg-muted rounded-md p-3 font-sans">{CLIENT_INSTRUCTION}</pre>
+          <Button variant="outline" size="sm" onClick={() => navigator.clipboard.writeText(CLIENT_INSTRUCTION).then(() => toast({ title: "Инструкция скопирована" }))}>Скопировать</Button>
         </CardContent>
       </Card>
 
@@ -92,22 +118,23 @@ const TelegramSettings = () => {
           <div>
             <Label className="mb-2 block">Канал</Label>
             <Input value={channel} onChange={(e) => setChannel(e.target.value.trim())} placeholder="@alistaavto25" />
+            <p className="text-xs text-muted-foreground mt-1">Сменить канал можно только здесь; уже привязанный канал другие сообщения не перепривяжут.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button disabled={!!busy} onClick={() => run("save", { token, channel }, "Бот и канал проверены")}>
-              {busy === "save" ? "Проверяю…" : "Проверить и сохранить"}
+            <Button disabled={!!busy} onClick={() => run("prepare", { token, channel }, "Подключение подготовлено")}>
+              {busy === "prepare" ? "Проверяю…" : "Подготовить подключение"}
             </Button>
             {s?.enabled ? (
-              <Button variant="outline" disabled={!!busy} onClick={() => run("disable", {}, "Импорт выключен")}>Выключить импорт</Button>
+              <Button variant="outline" disabled={!!busy} onClick={() => run("disable", {}, "Импорт выключен")}>Отключить импорт</Button>
             ) : (
-              <Button variant="outline" disabled={!!busy || !verified} onClick={() => run("enable", {}, "Импорт включён")}>Включить импорт</Button>
+              <Button variant="outline" disabled={!!busy || !st?.has_token || !s?.bot_username} onClick={() => run("enable")}>Включить импорт</Button>
             )}
             <Button variant="ghost" disabled={!!busy || !st?.has_token} onClick={() => run("check")}>Проверить webhook</Button>
           </div>
 
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm pt-2">
             <dt className="text-muted-foreground">Импорт</dt>
-            <dd>{s?.enabled ? <Badge>включён</Badge> : <Badge variant="secondary">выключен</Badge>}</dd>
+            <dd className="flex flex-wrap gap-1">{s?.enabled ? <Badge>включён</Badge> : <Badge variant="secondary">выключен</Badge>}<span>{STATE_LABELS[s?.state ?? "not_configured"] ?? s?.state}</span></dd>
             <dt className="text-muted-foreground">Бот</dt><dd>{s?.bot_username ? `@${s.bot_username}` : "не подключён"}</dd>
             <dt className="text-muted-foreground">Канал</dt><dd>{s?.channel_username ? `${s.channel_username}${s.channel_title ? ` (${s.channel_title})` : ""}` : "—"}</dd>
             <dt className="text-muted-foreground">Webhook</dt><dd>{s?.webhook_status ? WEBHOOK_LABELS[s.webhook_status] ?? s.webhook_status : "не установлен"} {s?.webhook_checked_at && <span className="text-muted-foreground">· {fmt(s.webhook_checked_at)}</span>}</dd>

@@ -17,7 +17,15 @@ export type TgMessage = {
   photo?: TgPhotoSize[];
   document?: { file_id: string; file_unique_id: string; mime_type?: string; file_size?: number };
 };
-export type TgUpdate = { update_id: number; channel_post?: TgMessage; edited_channel_post?: TgMessage; [k: string]: unknown };
+export type TgChatMemberUpdate = {
+  chat: { id: number; type: string; username?: string; title?: string };
+  date: number;
+  new_chat_member: { status: string; user: { id: number; is_bot?: boolean } };
+};
+export type TgUpdate = { update_id: number; channel_post?: TgMessage; edited_channel_post?: TgMessage; my_chat_member?: TgChatMemberUpdate; [k: string]: unknown };
+
+/** Permanent photo problem (bad type/size): never retried. */
+export class PermanentPhotoError extends Error {}
 
 export type Settings = { enabled: boolean; channel_id: number | null };
 export type PendingPhoto = { message_id: number; file_id: string; file_unique_id: string; mime_type: string | null };
@@ -26,12 +34,13 @@ export interface ImportDeps {
   isProcessed(updateId: number): Promise<boolean>;
   markProcessed(updateId: number): Promise<void>;
   saveMessage(row: { chat_id: number; message_id: number; group_key: string; file_id: string | null; file_unique_id: string | null; mime_type: string | null }): Promise<void>;
-  upsertCar(groupKey: string, chatId: number, messageId: number, version: number, car: Record<string, unknown>): Promise<{ car_id: string | null; outcome: string }>;
+  upsertCar(groupKey: string, chatId: number, messageId: number, version: number, updateId: number, car: Record<string, unknown>): Promise<{ car_id: string | null; outcome: string }>;
   postCarId(groupKey: string): Promise<string | null>;
   pendingPhotos(groupKey: string): Promise<PendingPhoto[]>;
   downloadPhoto(fileId: string): Promise<{ bytes: Uint8Array; mime: string }>;
   storePhoto(path: string, bytes: Uint8Array, mime: string): Promise<void>;
   setStoragePath(chatId: number, messageId: number, path: string): Promise<void>;
+  rejectPhoto(chatId: number, messageId: number, reason: string): Promise<void>;
   syncPhotos(groupKey: string): Promise<number>;
   log(entry: { group_key: string | null; message_id: number | null; car_id: string | null; status: string; message: string }): Promise<void>;
   touchImported(): Promise<void>;
@@ -48,6 +57,8 @@ const safeEqual = (a: string | null, b: string) => {
   for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return d === 0;
 };
+
+export const checkSecret = (header: string | null, expected: string | null) => !!expected && safeEqual(header, expected);
 
 export const authorize = (secretHeader: string | null, expectedSecret: string | null, settings: Settings | null, msg: TgMessage | undefined) => {
   if (!expectedSecret || !safeEqual(secretHeader, expectedSecret)) return "unauthorized" as const;
@@ -85,7 +96,7 @@ export const handleUpdate = async (update: TgUpdate, deps: ImportDeps): Promise<
       await deps.log({ group_key: groupKey, message_id: msg.message_id, car_id: null, status: "error", message: parsed.errors.join("; ") });
     } else if (parsed.kind === "ok") {
       const car = { ...parsed.car, slug: telegramSlug(parsed.car, chatId, msg.message_id) };
-      const res = await deps.upsertCar(groupKey, chatId, msg.message_id, msg.edit_date ?? msg.date, car);
+      const res = await deps.upsertCar(groupKey, chatId, msg.message_id, msg.edit_date ?? msg.date, update.update_id, car);
       carId = res.car_id;
       const labels: Record<string, string> = {
         created: `Создана карточка: ${parsed.car.title}`,
@@ -93,29 +104,70 @@ export const handleUpdate = async (update: TgUpdate, deps: ImportDeps): Promise<
         stale: "Пропущена устаревшая версия текста (уже есть более новая правка)",
         car_deleted: "Карточка была удалена на сайте — пост не восстанавливается",
       };
-      await deps.log({ group_key: groupKey, message_id: msg.message_id, car_id: carId, status: res.outcome === "created" || res.outcome === "updated" ? "imported" : "skipped", message: labels[res.outcome] ?? res.outcome });
+      if (res.outcome !== "unchanged") await deps.log({ group_key: groupKey, message_id: msg.message_id, car_id: carId, status: res.outcome === "created" || res.outcome === "updated" ? "imported" : "skipped", message: labels[res.outcome] ?? res.outcome });
       if (res.outcome === "created" || res.outcome === "updated") await deps.touchImported();
     }
   }
 
   carId = carId ?? (await deps.postCarId(groupKey));
+  let transient: string | null = null;
   if (carId) {
     for (const p of (await deps.pendingPhotos(groupKey)).slice(0, MAX_PHOTOS)) {
       try {
         const file = await deps.downloadPhoto(p.file_id);
         const ext = PHOTO_MIME[file.mime];
-        if (!ext) throw new Error(`недопустимый тип файла ${file.mime}`);
-        if (file.bytes.byteLength > MAX_PHOTO_BYTES) throw new Error("фото больше 10 МБ");
+        if (!ext) throw new PermanentPhotoError(`недопустимый тип файла ${file.mime}`);
+        if (file.bytes.byteLength > MAX_PHOTO_BYTES) throw new PermanentPhotoError("фото больше 10 МБ");
         const path = `${carId}/tg-${p.message_id}-${p.file_unique_id}.${ext}`;
         await deps.storePhoto(path, file.bytes, file.mime);
         await deps.setStoragePath(chatId, p.message_id, path);
       } catch (e) {
-        await deps.log({ group_key: groupKey, message_id: p.message_id, car_id: carId, status: "error", message: redactToken(`Фото не загружено: ${e instanceof Error ? e.message : String(e)}`) });
+        const reason = redactToken(e instanceof Error ? e.message : String(e));
+        if (e instanceof PermanentPhotoError) {
+          await deps.rejectPhoto(chatId, p.message_id, reason);
+          await deps.log({ group_key: groupKey, message_id: p.message_id, car_id: carId, status: "error", message: `Фото пропущено: ${reason}` });
+        } else {
+          transient = reason;
+        }
       }
     }
     await deps.syncPhotos(groupKey);
   }
 
+  // Temporary failures: leave the update unprocessed so Telegram redelivers it.
+  // Retries are safe: car upsert is versioned, photo paths are deterministic.
+  if (transient) return { status: 500, body: `photo retry: ${transient}` };
+
   await deps.markProcessed(update.update_id);
   return { status: 200, body: "ok" };
+};
+
+export type MembershipSettings = {
+  bot_id: number | null;
+  channel_username: string | null;
+  channel_id: number | null;
+  auto_activate: boolean;
+};
+export type MembershipPatch =
+  | { kind: "ignore"; reason: string }
+  | { kind: "activate"; channel_id: number; channel_title: string | null }
+  | { kind: "deactivate" };
+
+const norm = (u?: string | null) => (u ?? "").replace(/^@/, "").toLowerCase();
+
+/** Decides what a my_chat_member update (already secret-verified) may change. */
+export const decideMembership = (u: TgChatMemberUpdate, s: MembershipSettings | null): MembershipPatch => {
+  if (!s?.bot_id || !s.channel_username) return { kind: "ignore", reason: "не настроено" };
+  if (u.chat.type !== "channel") return { kind: "ignore", reason: "не канал" };
+  if (u.new_chat_member.user.id !== s.bot_id) return { kind: "ignore", reason: "другой участник" };
+  if (s.channel_id != null) {
+    if (u.chat.id !== s.channel_id) return { kind: "ignore", reason: "другой канал" };
+  } else if (!u.chat.username || norm(u.chat.username) !== norm(s.channel_username)) {
+    return { kind: "ignore", reason: "другой канал" };
+  }
+  if (u.new_chat_member.status === "administrator") {
+    if (!s.auto_activate) return { kind: "ignore", reason: "импорт выключен вручную" };
+    return { kind: "activate", channel_id: u.chat.id, channel_title: u.chat.title ?? null };
+  }
+  return { kind: "deactivate" };
 };

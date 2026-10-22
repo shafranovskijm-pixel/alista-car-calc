@@ -1142,6 +1142,7 @@ export type Database = {
           group_key: string
           message_id: number
           mime_type: string | null
+          photo_error: string | null
           storage_path: string | null
         }
         Insert: {
@@ -1152,6 +1153,7 @@ export type Database = {
           group_key: string
           message_id: number
           mime_type?: string | null
+          photo_error?: string | null
           storage_path?: string | null
         }
         Update: {
@@ -1162,6 +1164,7 @@ export type Database = {
           group_key?: string
           message_id?: number
           mime_type?: string | null
+          photo_error?: string | null
           storage_path?: string | null
         }
         Relationships: []
@@ -1173,6 +1176,7 @@ export type Database = {
           chat_id: number
           created_at: string
           group_key: string
+          text_update_id: number
           text_version: number
           updated_at: string
         }
@@ -1182,6 +1186,7 @@ export type Database = {
           chat_id: number
           created_at?: string
           group_key: string
+          text_update_id?: number
           text_version?: number
           updated_at?: string
         }
@@ -1191,6 +1196,7 @@ export type Database = {
           chat_id?: number
           created_at?: string
           group_key?: string
+          text_update_id?: number
           text_version?: number
           updated_at?: string
         }
@@ -1227,6 +1233,7 @@ export type Database = {
       }
       telegram_settings: {
         Row: {
+          auto_activate: boolean
           bot_id: number | null
           bot_username: string | null
           channel_id: number | null
@@ -1237,12 +1244,14 @@ export type Database = {
           last_error: string | null
           last_error_at: string | null
           last_imported_at: string | null
+          state: string
           updated_at: string
           verified_at: string | null
           webhook_checked_at: string | null
           webhook_status: string | null
         }
         Insert: {
+          auto_activate?: boolean
           bot_id?: number | null
           bot_username?: string | null
           channel_id?: number | null
@@ -1253,12 +1262,14 @@ export type Database = {
           last_error?: string | null
           last_error_at?: string | null
           last_imported_at?: string | null
+          state?: string
           updated_at?: string
           verified_at?: string | null
           webhook_checked_at?: string | null
           webhook_status?: string | null
         }
         Update: {
+          auto_activate?: boolean
           bot_id?: number | null
           bot_username?: string | null
           channel_id?: number | null
@@ -1269,6 +1280,7 @@ export type Database = {
           last_error?: string | null
           last_error_at?: string | null
           last_imported_at?: string | null
+          state?: string
           updated_at?: string
           verified_at?: string | null
           webhook_checked_at?: string | null
@@ -1421,19 +1433,34 @@ export type Database = {
         Args: { p_group_key: string; p_limit?: number }
         Returns: number
       }
-      telegram_upsert_car: {
-        Args: {
-          p_car: Json
-          p_chat_id: number
-          p_group_key: string
-          p_message_id: number
-          p_version: number
-        }
-        Returns: {
-          car_id: string
-          outcome: string
-        }[]
-      }
+      telegram_upsert_car:
+        | {
+            Args: {
+              p_car: Json
+              p_chat_id: number
+              p_group_key: string
+              p_message_id: number
+              p_version: number
+            }
+            Returns: {
+              car_id: string
+              outcome: string
+            }[]
+          }
+        | {
+            Args: {
+              p_car: Json
+              p_chat_id: number
+              p_group_key: string
+              p_message_id: number
+              p_update_id: number
+              p_version: number
+            }
+            Returns: {
+              car_id: string
+              outcome: string
+            }[]
+          }
     }
     Enums: {
       activity_type: "note" | "call" | "meeting" | "email" | "task"
