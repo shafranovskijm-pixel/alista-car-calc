@@ -1,3 +1,4 @@
+import { useCatalogLiveRefresh } from "@/hooks/useCatalogLiveRefresh";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -54,6 +55,8 @@ const CarsPage = ({ countrySlug }: { countrySlug?: string }) => {
     }).finally(() => !cancelled && setLoading(false));
     return () => { cancelled = true; };
   }, [country, reloadKey]);
+
+  useCatalogLiveRefresh(() => setReloadKey((value) => value + 1));
 
   useEffect(() => {
     let lastRefresh = 0;

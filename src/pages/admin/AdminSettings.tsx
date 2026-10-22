@@ -86,7 +86,7 @@ const AdminSettings = () => {
           setSearchParams(next, { replace: true });
         }}
       >
-        <TabsList>
+        <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="profile">Профиль</TabsTrigger>
           {isAdmin && <TabsTrigger value="team">Команда</TabsTrigger>}
           {isAdmin && <TabsTrigger value="telegram">Telegram</TabsTrigger>}

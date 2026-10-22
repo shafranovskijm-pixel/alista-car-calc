@@ -1,3 +1,4 @@
+import { useCatalogLiveRefresh } from "@/hooks/useCatalogLiveRefresh";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -43,6 +44,8 @@ const Gallery = () => {
       cancelled = true;
     };
   }, [reloadKey]);
+
+  useCatalogLiveRefresh(() => setReloadKey((value) => value + 1));
 
   useEffect(() => {
     let lastRefresh = 0;
