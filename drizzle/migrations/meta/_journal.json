@@ -8,6 +8,13 @@
       "when": 1792678185097,
       "tag": "0000_telegram_catalog_import",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792679179767,
+      "tag": "0001_telegram_auto_activation",
+      "breakpoints": true
     }
   ]
 }
