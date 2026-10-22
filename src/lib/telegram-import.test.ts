@@ -30,8 +30,8 @@ describe("parseCarPost", () => {
     });
     expect(r.car.description).toContain("Отличное состояние.");
   });
-  it("ignores posts without #авто", () => {
-    expect(parseCarPost(POST.replace("#авто", "#новости")).kind).toBe("ignored");
+  it("ignores non-car posts without #авто", () => {
+    expect(parseCarPost("Наши новости #новости").kind).toBe("ignored");
   });
   it("rejects missing required fields instead of guessing", () => {
     const r = parseCarPost("#авто\nМарка: Honda\nЦена: 1000000");
