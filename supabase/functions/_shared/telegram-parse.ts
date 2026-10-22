@@ -85,7 +85,7 @@ export const parsePrice = (raw: string): { price: number; currency: ParsedCar["c
   let rest = raw.trim();
   const found = new Set<ParsedCar["currency"]>();
   for (const [re, cur] of CURRENCY_TOKENS) {
-    if (re.test(rest)) found.add(cur);
+    if (rest.search(re) >= 0) found.add(cur);
     rest = rest.replace(re, " ");
   }
   const yen = rest.includes("¥");
