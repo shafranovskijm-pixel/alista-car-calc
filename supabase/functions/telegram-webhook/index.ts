@@ -1,7 +1,7 @@
 // Public Telegram webhook (verify_jwt = false). Protected by the Telegram
 // secret_token header and a strict check of the configured channel id.
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { authorize, handleUpdate, type ImportDeps, type TgUpdate } from '../_shared/telegram-import.ts';
+import { authorize, decideMembership, handleUpdate, PermanentPhotoError, type ImportDeps, type TgUpdate } from '../_shared/telegram-import.ts';
 import { redactToken } from '../_shared/telegram-parse.ts';
 
 const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
@@ -37,9 +37,9 @@ const makeDeps = (token: string): ImportDeps => ({
     const r = await sb.from('telegram_post_messages').insert(row);
     if (r.error && r.error.code !== '23505') throw new Error(r.error.message);
   },
-  async upsertCar(groupKey, chatId, messageId, version, car) {
+  async upsertCar(groupKey, chatId, messageId, version, updateId, car) {
     const rows = must(await sb.rpc('telegram_upsert_car', {
-      p_group_key: groupKey, p_chat_id: chatId, p_message_id: messageId, p_version: version, p_car: car,
+      p_group_key: groupKey, p_chat_id: chatId, p_message_id: messageId, p_version: version, p_update_id: updateId, p_car: car,
     })) as { car_id: string | null; outcome: string }[];
     return rows[0];
   },
@@ -49,15 +49,19 @@ const makeDeps = (token: string): ImportDeps => ({
   },
   async pendingPhotos(groupKey) {
     return must(await sb.from('telegram_post_messages').select('message_id,file_id,file_unique_id,mime_type')
-      .eq('group_key', groupKey).is('storage_path', null).not('file_id', 'is', null).order('message_id')) as never;
+      .eq('group_key', groupKey).is('storage_path', null).is('photo_error', null).not('file_id', 'is', null).order('message_id')) as never;
   },
   async downloadPhoto(fileId) {
     const info = await fetch(`https://api.telegram.org/bot${token}/getFile`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file_id: fileId }),
     }).then((r) => r.json());
-    if (!info.ok) throw new Error(`getFile: ${info.description ?? 'ошибка'}`);
+    if (!info.ok) {
+      const d = String(info.description ?? 'ошибка');
+      if (/too big|wrong file_id|invalid file/i.test(d)) throw new PermanentPhotoError(`getFile: ${d}`);
+      throw new Error(`getFile: ${d}`);
+    }
     const filePath: string = info.result.file_path;
-    if ((info.result.file_size ?? 0) > 10 * 1024 * 1024) throw new Error('фото больше 10 МБ');
+    if ((info.result.file_size ?? 0) > 10 * 1024 * 1024) throw new PermanentPhotoError('фото больше 10 МБ');
     const res = await fetch(`https://api.telegram.org/file/bot${token}/${filePath}`);
     if (!res.ok) throw new Error(`скачивание фото: HTTP ${res.status}`);
     const ext = filePath.split('.').pop()?.toLowerCase() ?? '';
@@ -71,6 +75,9 @@ const makeDeps = (token: string): ImportDeps => ({
   },
   async setStoragePath(chatId, messageId, path) {
     must(await sb.from('telegram_post_messages').update({ storage_path: path }).eq('chat_id', chatId).eq('message_id', messageId));
+  },
+  async rejectPhoto(chatId, messageId, reason) {
+    must(await sb.from('telegram_post_messages').update({ photo_error: reason.slice(0, 300) }).eq('chat_id', chatId).eq('message_id', messageId));
   },
   async syncPhotos(groupKey) {
     return must(await sb.rpc('telegram_sync_photos', { p_group_key: groupKey })) as number;
@@ -88,9 +95,31 @@ Deno.serve(async (req) => {
   try {
     const [{ data: secrets }, { data: settings }] = await Promise.all([
       sb.from('telegram_secrets').select('bot_token, webhook_secret').eq('id', true).maybeSingle(),
-      sb.from('telegram_settings').select('enabled, channel_id').eq('id', true).maybeSingle(),
+      sb.from('telegram_settings').select('enabled, channel_id, channel_username, bot_id, auto_activate').eq('id', true).maybeSingle(),
     ]);
     const update = (await req.json().catch(() => null)) as TgUpdate | null;
+
+    if (update?.my_chat_member) {
+      const header = req.headers.get('X-Telegram-Bot-Api-Secret-Token');
+      if (authorize(header, secrets?.webhook_secret ?? null, { enabled: true, channel_id: 0 }, { message_id: 0, date: 0, chat: { id: 0, type: 'channel' } }) === 'unauthorized') {
+        return new Response('Unauthorized', { status: 401 });
+      }
+      const decision = decideMembership(update.my_chat_member, settings ? {
+        bot_id: settings.bot_id == null ? null : Number(settings.bot_id),
+        channel_username: settings.channel_username,
+        channel_id: settings.channel_id == null ? null : Number(settings.channel_id),
+        auto_activate: settings.auto_activate,
+      } : null);
+      const now = new Date().toISOString();
+      if (decision.kind === 'activate') {
+        await sb.from('telegram_settings').update({ channel_id: decision.channel_id, channel_title: decision.channel_title, enabled: true, state: 'active', verified_at: now, last_error: null, updated_at: now }).eq('id', true);
+        await sb.from('telegram_imports').insert({ status: 'imported', message: 'Бот добавлен администратором канала — импорт включён' });
+      } else if (decision.kind === 'deactivate') {
+        await sb.from('telegram_settings').update({ enabled: false, state: 'bot_removed', updated_at: now }).eq('id', true);
+        await sb.from('telegram_imports').insert({ status: 'error', message: 'Бота убрали из администраторов канала — импорт остановлен' });
+      }
+      return new Response(decision.kind, { status: 200 });
+    }
     const msg = update?.channel_post ?? update?.edited_channel_post;
     const verdict = authorize(
       req.headers.get('X-Telegram-Bot-Api-Secret-Token'),
