@@ -1,5 +1,5 @@
 import { useCatalogLiveRefresh } from "@/hooks/useCatalogLiveRefresh";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Loader2, Car as CarIcon, Filter, Search } from "lucide-react";

@@ -15,18 +15,23 @@ export const useCatalogLiveRefresh = (onChange: () => void, pollMs = 90_000) => 
       window.clearTimeout(timer);
       timer = window.setTimeout(() => cb.current(), 1500);
     };
-    const channel = supabase
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    try {
+      channel = supabase
       .channel(`catalog-live-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "cars" }, trigger)
       .on("postgres_changes", { event: "*", schema: "public", table: "car_photos" }, trigger)
       .subscribe();
+    } catch {
+      channel = null; // realtime unavailable: polling below still refreshes
+    }
     const poll = window.setInterval(() => {
       if (document.visibilityState === "visible") cb.current();
     }, pollMs);
     return () => {
       window.clearTimeout(timer);
       window.clearInterval(poll);
-      void supabase.removeChannel(channel);
+      if (channel) void supabase.removeChannel(channel);
     };
   }, [pollMs]);
 };
