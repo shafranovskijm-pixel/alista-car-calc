@@ -70,11 +70,42 @@ const FUELS: [RegExp, NonNullable<ParsedCar["fuel"]>][] = [
 const pick = <T,>(value: string | undefined, table: [RegExp, T][]) =>
   value ? table.find(([re]) => re.test(value))?.[1] ?? null : null;
 
-const parseCurrency = (s: string): ParsedCar["currency"] | null => {
-  if (/rub|руб|₽/i.test(s)) return "RUB";
-  if (/jpy|иен|йен|¥/i.test(s)) return "JPY";
-  if (/cny|юан|rmb/i.test(s)) return "CNY";
-  return null;
+const CURRENCY_TOKENS: [RegExp, ParsedCar["currency"]][] = [
+  [/\bRUB\b|руб(?:лей|ля|ль)?\.?|₽/giu, "RUB"],
+  [/\bJPY\b|[ий]ен[аы]?/giu, "JPY"],
+  [/\bCNY\b|\bRMB\b|юан(?:ей|я|ь|и)?/giu, "CNY"],
+];
+const MULTIPLIERS: [RegExp, number][] = [
+  [/^(?:млн\.?|миллион(?:а|ов)?)$/iu, 1_000_000],
+  [/^(?:тыс\.?|тысяч[аи]?)$/iu, 1_000],
+];
+
+/** Strict price parser: one positive amount, one unambiguous currency. */
+export const parsePrice = (raw: string): { price: number; currency: ParsedCar["currency"] } | { error: string } => {
+  let rest = raw.trim();
+  const found = new Set<ParsedCar["currency"]>();
+  for (const [re, cur] of CURRENCY_TOKENS) {
+    if (re.test(rest)) found.add(cur);
+    rest = rest.replace(re, " ");
+  }
+  const yen = rest.includes("¥");
+  rest = rest.replace(/¥/g, " ");
+  if (yen && found.size === 0) return { error: "знак ¥ неоднозначен — укажите JPY или CNY" };
+  if (yen && found.size === 1 && found.has("RUB")) return { error: "в цене смешаны валюты" };
+  if (found.size === 0) return { error: "не указана валюта (RUB/₽/JPY/CNY)" };
+  if (found.size > 1) return { error: "в цене указано несколько валют" };
+  if (/[-−–]/.test(rest)) return { error: "цена не может быть отрицательной или диапазоном" };
+  const m = rest.trim().match(/^(\d{1,3}(?:[ \u00a0\u202f]\d{3})+|\d+)(?:[.,](\d+))?\s*([\p{L}.]+)?$/u);
+  if (!m) return { error: "не удалось однозначно прочитать сумму" };
+  let multiplier = 1;
+  if (m[3]) {
+    const mul = MULTIPLIERS.find(([re]) => re.test(m[3]));
+    if (!mul) return { error: `непонятное слово в цене «${m[3]}»` };
+    multiplier = mul[1];
+  }
+  const value = Number(`${m[1].replace(/[ \u00a0\u202f]/g, "")}${m[2] ? `.${m[2]}` : ""}`) * multiplier;
+  if (!Number.isFinite(value) || value <= 0) return { error: "цена должна быть больше нуля" };
+  return { price: Math.round(value * 100) / 100, currency: [...found][0] };
 };
 
 export const parseCarPost = (text: string | null | undefined, now = new Date()): ParseResult => {
@@ -95,12 +126,13 @@ export const parseCarPost = (text: string | null | undefined, now = new Date()):
   if (!f.country) errors.push("Не указана «Страна:» (Япония/Корея/Китай)");
   else if (!country) errors.push(`Неизвестная страна: «${f.country}» — нужна Япония, Корея или Китай`);
 
-  const price = f.price ? num(f.price) : NaN;
-  const currency = f.price ? parseCurrency(f.price) : null;
+  let price = NaN;
+  let currency: ParsedCar["currency"] | null = null;
   if (!f.price) errors.push("Не указана «Цена:»");
   else {
-    if (!Number.isFinite(price) || price <= 0) errors.push(`Некорректная цена: «${f.price}»`);
-    if (!currency) errors.push(`В цене не указана валюта (RUB/₽/JPY/CNY): «${f.price}»`);
+    const p = parsePrice(f.price);
+    if ("error" in p) errors.push(`Некорректная цена «${f.price}»: ${p.error}`);
+    else ({ price, currency } = p);
   }
 
   let status: ParsedCar["status"] = "on_order";
