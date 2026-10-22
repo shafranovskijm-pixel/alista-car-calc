@@ -1,11 +1,12 @@
-import { supabase } from "@/integrations/supabase/proxy-client";
-import type { Tables } from "@/integrations/supabase/types";
+import { supabase as baseClient } from "@/integrations/supabase/proxy-client";
+import { asSiteVideosClient, type SiteVideoRow } from "@/integrations/supabase/site-videos-types";
 import { normalizeVideoUrl } from "@/lib/video";
 import { SOCIAL_LINKS } from "@/lib/social-links";
 
 export const ALISTA_YOUTUBE_CHANNEL_URL = SOCIAL_LINKS.youtube;
 export const HOME_VIDEO_LIMIT = 3;
-export type SiteVideo = Tables<"site_videos">;
+export type SiteVideo = SiteVideoRow;
+const supabase = asSiteVideosClient(baseClient);
 
 export type SiteVideoForm = {
   title: string;
