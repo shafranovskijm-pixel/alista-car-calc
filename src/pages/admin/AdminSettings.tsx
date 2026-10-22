@@ -16,6 +16,7 @@ import EmailSettings from "@/components/admin/EmailSettings";
 import AlistaContractSample from "@/components/admin/AlistaContractSample";
 import HintCard from "@/components/admin/HintCard";
 import TeamManager from "@/components/admin/TeamManager";
+import TelegramSettings from "@/components/admin/TelegramSettings";
 
 const AdminSettings = () => {
   const { user, roles } = useAuth();
@@ -25,7 +26,7 @@ const AdminSettings = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const isAdmin = roles.includes("admin");
   const requestedTab = searchParams.get("tab") ?? "profile";
-  const tab = requestedTab === "team" && !isAdmin ? "profile" : requestedTab;
+  const tab = (requestedTab === "team" || requestedTab === "telegram") && !isAdmin ? "profile" : requestedTab;
 
   useEffect(() => {
     if (!user) return;
@@ -88,6 +89,7 @@ const AdminSettings = () => {
         <TabsList>
           <TabsTrigger value="profile">Профиль</TabsTrigger>
           {isAdmin && <TabsTrigger value="team">Команда</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="telegram">Telegram</TabsTrigger>}
           <TabsTrigger value="email">Почта</TabsTrigger>
           <TabsTrigger value="templates">Шаблоны</TabsTrigger>
           <TabsTrigger value="onboarding">Обучение</TabsTrigger>
@@ -127,8 +129,7 @@ const AdminSettings = () => {
         <CardContent className="text-sm text-muted-foreground space-y-2">
           <p>В следующих спринтах здесь появится:</p>
           <ul className="list-disc pl-5 space-y-1">
-            <li>Telegram-уведомления о новых заявках (бот и chat_id)</li>
-            <li>E-mail рассылка через SMTP/Resend</li>
+                        <li>E-mail рассылка через SMTP/Resend</li>
             <li>Счётчик Яндекс.Метрики и настройка целей</li>
             <li>Поп-ап «Спецпредложение» и его управление</li>
           </ul>
@@ -139,6 +140,11 @@ const AdminSettings = () => {
         <TabsContent value="onboarding">
           <OnboardingGuide />
         </TabsContent>
+        {isAdmin && (
+          <TabsContent value="telegram">
+            <TelegramSettings />
+          </TabsContent>
+        )}
         {isAdmin && (
           <TabsContent value="team">
             <TeamManager />
