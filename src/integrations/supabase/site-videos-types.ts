@@ -1,6 +1,6 @@
-// Hand-declared schema for public.site_videos (migration 20261012103000).
-// Kept outside the auto-generated types.ts, which is regenerated from the live
-// database and drops this table while that migration is not applied there.
+// Explicit schema for public.site_videos (migration 20261012103000).
+// Kept as a narrow client type so this section remains stable when the shared
+// generated database types are refreshed independently of the frontend.
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type SiteVideoRow = {
