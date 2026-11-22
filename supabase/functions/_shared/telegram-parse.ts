@@ -262,16 +262,33 @@ export const parseFreeFormPost = (text: string, now = new Date()): ParseResult =
     return { kind: "invalid", errors: ["Похоже на новость, обзор или вопрос, а не объявление об одной машине"] };
   }
 
+  // The primary vehicle comes from the first heading containing a known brand,
+  // then from the earliest brand in that heading — never from BRANDS order or
+  // competitor mentions later in the description.
+  let primary: { name: string; re: RegExp; clean: string } | null = null;
+  for (const rawLine of lines) {
+    const clean = stripDecor(rawLine);
+    let first: { name: string; re: RegExp; index: number } | null = null;
+    for (const [name, re] of BRANDS) {
+      const match = clean.match(re);
+      if (match?.index !== undefined && (!first || match.index < first.index)) first = { name, re, index: match.index };
+    }
+    if (first) {
+      primary = { name: first.name, re: first.re, clean };
+      break;
+    }
+  }
+
   const errors: string[] = [];
 
   // Start at the brand itself: prefixes such as "in stock in Vladivostok"
   // and trailing advertising copy must not become part of the model or title.
   let brand = "", model = "", title = "";
-  if (!brands.length) errors.push("Не найдена марка автомобиля");
+  if (!primary) errors.push("Не найдена марка автомобиля");
   else {
-    brand = brands[0];
-    const re = BRANDS.find(([name]) => name === brand)![1];
-    const clean = stripDecor(lines.find((line) => re.test(line))!);
+    brand = primary.name;
+    const re = primary.re;
+    const clean = primary.clean;
     const combined = clean.match(/марка\s*,\s*модель\s*[:：]\s*(.+)$/i);
     if (combined) {
       const combinedBrand = combined[1].match(re)!;
