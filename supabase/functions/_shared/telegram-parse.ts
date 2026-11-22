@@ -190,7 +190,7 @@ const BRANDS: [string, RegExp][] = [
   ["Daihatsu", /daihatsu|дайхатсу/i], ["Infiniti", /infiniti/i], ["Hyundai", /hyundai|хендай|хундай/i], ["Kia", /\bkia\b|(?<![а-яё])киа(?![а-яё])/i],
   ["Genesis", /genesis/i], ["SsangYong", /ssang\s?yong/i], ["Chevrolet", /chevrolet/i], ["Renault", /renault/i],
   ["Peugeot", /peugeot|пежо/i], ["Citroen", /citro[eë]n/i], ["BMW", /\bbmw\b|(?<![а-яё])бмв(?![а-яё])/i], ["Mercedes-Benz", /mercedes|мерседес/i],
-  ["Audi", /\baudi\b|\bауди\b/i], ["Volkswagen", /volkswagen|\bvw\b/i], ["Porsche", /porsche/i], ["Volvo", /volvo/i],
+  ["Audi", /\baudi\b|\bауди\b/i], ["Volkswagen", /volkswagen|wolkswagen|\bvw\b/i], ["Porsche", /porsche/i], ["Volvo", /volvo/i],
   ["Land Rover", /land\s?rover/i], ["Ford", /\bford\b/i], ["Tesla", /tesla/i], ["Skoda", /skoda/i], ["MINI", /\bmini\b/i],
   ["BYD", /\bbyd\b/i], ["Geely", /geely|джили/i], ["Chery", /\bchery\b|чери/i], ["Haval", /haval|хавал/i], ["Changan", /changan/i],
   ["Exeed", /exeed/i], ["Tank", /\btank\b/i], ["Li Auto", /li\s?auto|lixiang|li\s?xiang/i], ["Zeekr", /zeekr/i], ["Jetour", /jetour/i],
@@ -206,7 +206,7 @@ const stripDecor = (s: string) =>
 
 // This is advertising, not evidence about the vehicle. Everything before it
 // remains available for extraction; the untouched source remains description.
-const PROMO_FOOTER = /(?:🌏\s*)?ALISTA\s*—\s*авто\s+из\s+Японии,\s*Китая\s+и\s+Кореи\s+под\s+ключ\s*:[\s\S]*$/iu;
+const PROMO_FOOTER = /(?:(?:🌏\s*)?ALISTA\s*—\s*авто\s+из\s+Японии,\s*Китая\s+и\s+Кореи\s+под\s+ключ\s*:|Привез[её]м\s+такой\s+же\s+или\s+любой\s+другой\s+авто\s+из\s+Китая,\s*Японии\s+и\s+Кореи)[\s\S]*$/iu;
 
 export const detectBrands = (text: string) => BRANDS.filter(([, re]) => re.test(text)).map(([b]) => b);
 
@@ -231,15 +231,35 @@ export const parseFreeFormPost = (text: string, now = new Date()): ParseResult =
       if (/(^|\s)[-−–]\s*$/.test(before)) negative = true;
       let value = Number(match[1].replace(/[ .\u00a0\u202f]/g, "") + (match[2] ? `.${match[2]}` : ""));
       if (match[3]) value *= /млн|миллион/i.test(match[3]) ? 1_000_000 : 1_000;
-      amounts.push({ price: Math.round(value), currency: CUR_OF(match[4]), line });
+      amounts.push({ price: Math.round(value * 100) / 100, currency: CUR_OF(match[4]), line });
     }
   }
 
   if (!brands.length && !amounts.length) return { kind: "ignored" };
 
-  const numbered = facts.match(/(^|\n)\s*\d{1,2}\s*[).]\s+\S/g)?.length ?? 0;
-  if (/подборк/i.test(facts) || numbered >= 2 || brands.length >= 2) {
+  const numberedLines = lines.filter((line) => /^\s*\d{1,2}\s*[).]\s+\S/.test(line));
+  const brandAtStart = (line: string) => {
+    const clean = stripDecor(line).replace(/^\d{1,2}\s*[).]\s*/, "");
+    for (const [name, re] of BRANDS) {
+      const match = clean.match(re);
+      if (match?.index === 0) return name;
+    }
+    return null;
+  };
+  // A model name may contain another brand (Pajero MINI) and the description
+  // may mention competitors. Only separate enumerated/year-bearing headings
+  // are evidence of a multi-car collection.
+  const listedBrands = new Set([
+    ...numberedLines.map(brandAtStart),
+    ...lines.filter((line) => /(?:19|20)\d{2}/.test(line)).map(brandAtStart),
+  ].filter((value): value is string => Boolean(value)));
+  const numbered = numberedLines.length;
+  if (/подборк/i.test(facts) || numbered >= 2 || listedBrands.size >= 2) {
     return { kind: "invalid", errors: ["Похоже на подборку нескольких машин — пропущено, одна публикация должна описывать одну машину"] };
+  }
+  const lead = lines.map(stripDecor).filter(Boolean).slice(0, 2).join(" ");
+  if (/в\s+обзоре|обзор|нового\s+поколения\s+вышел|стартовали\s+продажи/i.test(lead) || /^[^\n?]{0,180}\?/u.test(lead)) {
+    return { kind: "invalid", errors: ["Похоже на новость, обзор или вопрос, а не объявление об одной машине"] };
   }
 
   const errors: string[] = [];
@@ -252,20 +272,28 @@ export const parseFreeFormPost = (text: string, now = new Date()): ParseResult =
     brand = brands[0];
     const re = BRANDS.find(([name]) => name === brand)![1];
     const clean = stripDecor(lines.find((line) => re.test(line))!);
-    const brandMatch = clean.match(re)!;
-    title = clean.slice(brandMatch.index).trim();
-    title = title.split(/\s+[—–]\s+/)[0].split(/\s+-\s+/)[0];
-    title = title.replace(/[,;]\s*(?=(?:\d{1,2}[./])?(?:19|20)\d{2}|из\s+(?:япон|коре|кита)|\d[\d\s.,]*\s*(?:₽|RUB|JPY|CNY)).*$/iu, "").replace(/[,;].*$/s, "");
-    title = title.replace(/\s+из\s+(?:япон\w*|коре\w*|кита\w*).*$/iu, "").trim().slice(0, 120);
-    const after = title.slice(brandMatch[0].length).trim();
-    const words: string[] = [];
-    for (const rawWord of after.split(" ")) {
-      const word = rawWord.replace(/^[,(]+|[,.]$/g, "");
-      if (!word || /^(?:19|20)\d{2}/.test(word) || /^\d+[.,]\d+/.test(word) || /^(цена|стоимость|под|из|в|с)$/i.test(word)) break;
-      words.push(word);
-      if (words.length >= 6) break;
+    const combined = clean.match(/марка\s*,\s*модель\s*[:：]\s*(.+)$/i);
+    if (combined) {
+      const combinedBrand = combined[1].match(re)!;
+      model = combined[1].slice((combinedBrand.index ?? 0) + combinedBrand[0].length)
+        .replace(/^\s*,\s*/, "").split(/\s+[—–]\s+|\s+-\s+/)[0].trim().slice(0, 80);
+      title = `${combinedBrand[0]} ${model}`.trim();
+    } else {
+      const brandMatch = clean.match(re)!;
+      title = clean.slice(brandMatch.index).trim();
+      title = title.split(/\s+[—–]\s+/)[0].split(/\s+-\s+/)[0];
+      title = title.replace(/[,;]\s*(?=(?:\d{1,2}[./])?(?:19|20)\d{2}|из\s+(?:япон|коре|кита)|\d[\d\s.,]*\s*(?:₽|RUB|JPY|CNY)).*$/iu, "").replace(/[,;].*$/s, "");
+      title = title.replace(/\s+из\s+(?:япон\w*|коре\w*|кита\w*).*$/iu, "").trim().slice(0, 120);
+      const after = title.slice(brandMatch[0].length).trim();
+      const words: string[] = [];
+      for (const rawWord of after.split(" ")) {
+        const word = rawWord.replace(/^[,(]+|[,.]$/g, "");
+        if (!word || /^(?:19|20)\d{2}/.test(word) || /^\d+[.,]\d+/.test(word) || /^(цена|стоимость|под|из|в|с)$/i.test(word)) break;
+        words.push(word);
+        if (words.length >= 6) break;
+      }
+      model = words.join(" ").trim();
     }
-    model = words.join(" ").trim();
     if (!model) errors.push("Не найдена модель рядом с маркой");
   }
 
@@ -273,9 +301,15 @@ export const parseFreeFormPost = (text: string, now = new Date()): ParseResult =
   // Full DD.MM.YYYY customs dates and customs/delivery lines are not production.
   const years = new Set<number>();
   for (const match of facts.matchAll(/(?<!\d)((?:19|20)\d{2})\s*г(?:\.|од|(?![а-яё]))/giu)) years.add(Number(match[1]));
-  for (const match of facts.matchAll(/(?:год(?:\s*выпуска)?|дата\s*производства|производство|выпуск)\s*[:：-]?\s*(?:(?:0?[1-9]|1[0-2])[./])?((?:19|20)\d{2})/giu)) years.add(Number(match[1]));
+  for (const line of lines) {
+    // The model year is descriptive; an explicit production date determines
+    // the car year and does not contradict a different model year.
+    if (/модельный\s+год/i.test(line)) continue;
+    for (const match of line.matchAll(/(?:год(?:\s*выпуска)?|дата\s*(?:производства|изготовления)|производство|выпуск)\s*[:：-]?\s*(?:(?:0?[1-9]|[12]\d|3[01])[./])?(?:(?:0?[1-9]|1[0-2])[./])?((?:19|20)\d{2})/giu)) years.add(Number(match[1]));
+  }
   for (const line of lines) {
     if (/растамож|таможен|доставк|прибыт/i.test(line)) continue;
+    for (const match of line.matchAll(/(?<!\d)((?:19|20)\d{2})[./-](?:0?[1-9]|1[0-2])[./-](?:0?[1-9]|[12]\d|3[01])(?!\d)/g)) years.add(Number(match[1]));
     for (const match of line.matchAll(/(?<![\d.])(?:0?[1-9]|1[0-2])[./]((?:19|20)\d{2})(?![\d.])/g)) years.add(Number(match[1]));
   }
   if (title) for (const match of title.matchAll(/(?:^|\s)((?:19|20)\d{2})(?=\s|$)/g)) years.add(Number(match[1]));
@@ -286,7 +320,7 @@ export const parseFreeFormPost = (text: string, now = new Date()): ParseResult =
   // Country is an import fact, never a guess from brand, steering wheel or a
   // manufacturer flag such as 🇩🇪. Only explicit phrases and import flags count.
   const countries = new Set<ParsedCar["country"]>();
-  for (const match of facts.matchAll(/(?:из\s+|страна\s*[:：-]?\s*|автомобиль\s+в\s+)(япон\w*|коре\w*|кита\w*)/giu)) {
+  for (const match of facts.matchAll(/(?:из\s+(?:южной\s+)?|страна\s*[:：-]?\s*|автомобиль\s+в\s+)(япон\w*|коре\w*|кита\w*)/giu)) {
     countries.add(/^япон/i.test(match[1]) ? "japan" : /^коре/i.test(match[1]) ? "korea" : "china");
   }
   if (/🇯🇵/u.test(facts)) countries.add("japan");

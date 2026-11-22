@@ -159,6 +159,92 @@ describe("real @alistaavto25 posts", () => {
   });
 });
 
+describe("additional real queue regressions", () => {
+  it("/279 prefers production 2022 over model year 2023", () => {
+    const car = ok(`Volkswagen Bora 280TSI DSG Respect Drive
+🇨🇳
+Модельный год: 2023
+📅 Дата производства: 10.2022
+🛣 Пробег: 28 000 км
+⚙️ Двигатель: 1.4 турбо бензин (150 л.с.)
+🚗 Привод: Передний
+🔄 Трансмиссия: Робот (DSG)
+🔑 Ключей: 2
+💵 Стоимость под ключ до Уссурийска-1 950 000 ₽`);
+    expect(car).toMatchObject({ brand: "Volkswagen", model: "Bora 280TSI DSG Respect Drive", year: 2022, country: "china", price: 1950000, mileage_km: 28000, engine_volume: 1.4, power_hp: 150 });
+  });
+
+  it("/302 reads the full YYYY/MM/DD vehicle date", () => {
+    const car = ok(`🇰🇷 KIA RAY
+🚗 Автомобиль - 2023/04/26 г. ЛЕВЫЙ руль
+🏃‍♂️ Пробег - 21.408 км
+🎬 Мотор 998 t Бензиновый 2вд 76 л.с.
+👍 Комплектация Standard
+✅ А цена данного автомобиля под ключ с растаможкой и утилём 1.350.000₽`);
+    expect(car).toMatchObject({ brand: "Kia", model: "RAY", year: 2023, country: "korea", price: 1350000, mileage_km: 21408, power_hp: 76 });
+  });
+
+  it("/325 parses Марка, модель, DD.MM.YYYY and preserves kopecks", () => {
+    const source = `🇨🇳 Марка, модель: TOYOTA, LEVIN
+✅ Рабочий объём двигателя: 1197 см³ 116 л.с
+✅ Дата изготовления: 15.01.2022
+✅ Стоимость: под ключ и доставкой во Владивосток 1 769 544,48 RUB
+🧠 «Под капотом турбированный 1.2 литра на 116 сил и 185 Н·м. Этот мотор ставился также на Auris и Yaris.»`;
+    const car = ok(source);
+    expect(car).toMatchObject({ brand: "Toyota", model: "LEVIN", title: "TOYOTA LEVIN", year: 2022, country: "china", price: 1769544.48, currency: "RUB", engine_volume: 1.2, power_hp: 116 });
+    expect(car.description).toBe(source);
+  });
+
+  it("/334 supports only the explicit Wolkswagen alias", () => {
+    const car = ok(`🇨🇳 Wolkswagen Tayron 2022 из Китая
+1.4 TSI турбо, 150 л.с. • робот DSG-7 • передний привод
+✅ Больше и просторнее Tiguan
+✅ Уже растаможен
+💰 Привезли за 2 250 000 ₽, все расходы уже включены!`);
+    expect(car).toMatchObject({ brand: "Volkswagen", model: "Tayron", year: 2022, country: "china", price: 2250000, engine_volume: 1.4, power_hp: 150 });
+  });
+
+  it("/366 keeps MINI in the Pajero model instead of rejecting two brands", () => {
+    const car = ok(`🔥 MITSUBISHI PAJERO MINI 2012
+Маленький, но настоящий внедорожник 💪
+📅 Выпуск: 04.2012
+🛣 Пробег: 135 866 км
+⚙️ Двигатель: 659 см³, 64 л.с., турбо
+🔧 Коробка: автомат
+🚙 Полный привод 4WD с раздаткой
+🧭 Правый руль, оригинал из Японии
+✅ Почему его берут: Характер Pajero в компактном кузове
+💰 Цена: 550 000 ₽ под ключ во Владивостоке`);
+    expect(car).toMatchObject({ brand: "Mitsubishi", model: "PAJERO MINI", year: 2012, country: "japan", price: 550000, mileage_km: 135866, power_hp: 64, transmission: "at" });
+  });
+
+  it.each([
+    ["/204", `Mitsubishi Pajero нового поколения вышел на рынок. В Таиланде стартовали продажи. В Японии продажи начнутся в декабре 2026 года. В 2027-м внедорожник появится на других рынках.`],
+    ["/205", `Volkswagen T-Roc — один из самых интересных вариантов из Китая?\nVolkswagen 2022 год T-Roc с пробегом 44 000 км\nцена под ключ с нашей услугой 1 936 000`],
+    ["/309", `Привет, друзья! Сегодня у нас в обзоре компактный городской автомобиль из Южной Кореи - KIA Ray 2023 год`],
+  ])("%s remains a non-listing", (_id, source) => {
+    const result = parseCarPost(source, NOW);
+    expect(result.kind).toBe("invalid");
+    if (result.kind === "invalid") expect(result.errors.join(" ")).toMatch(/новость|обзор|вопрос/i);
+  });
+
+  it.each([
+    ["/224", `🇩🇪 Mercedes-Benz E-Class\n🚗 Автомобиль - 2024г. ЛЕВЫЙ РУЛЬ\n✅ Цена под ключ 5.930.000 ₽`],
+    ["/231", `🇩🇪 BMW 5-Series\n🚗 Автомобиль - 2024г. ЛЕВЫЙ руль\n💵 Цена под ключ 6.250.000`],
+    ["/355", `🚘 TOYOTA bZ3X 2026\n📅 Производство: 01.2026\n💰 Цена: от 2 880 000 ₽ под ключ до Владивостока.\nПривезём такой же или любой другой авто из Китая, Японии и Кореи.`],
+  ])("%s does not invent an import country", (_id, source) => {
+    const result = parseCarPost(source, NOW);
+    expect(result.kind).toBe("invalid");
+    if (result.kind === "invalid") expect(result.errors.join(" ")).toMatch(/страна/i);
+  });
+
+  it("rejects separate year-bearing headings even without the word подборка", () => {
+    const result = parseCarPost(`Toyota Harrier 2020 из Японии\nЦена: 2 900 000 ₽\nBMW X1 2018 из Японии\nЦена: 2 100 000 ₽`, NOW);
+    expect(result.kind).toBe("invalid");
+    if (result.kind === "invalid") expect(result.errors[0]).toMatch(/подборк/i);
+  });
+});
+
 describe("free-form ambiguity remains protected", () => {
   it("rejects two equally significant prices without a total", () => {
     expect(parseCarPost("Honda Fit 2020г. из Японии\nЦена: 1 000 000 ₽\nСкидка: 950 000 ₽", NOW).kind).toBe("invalid");
