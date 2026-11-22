@@ -9,15 +9,16 @@ import MetrikaManager from "@/components/MetrikaManager";
 import RouteSeo from "@/components/RouteSeo";
 import AdminLayout from "./components/admin/AdminLayout.tsx";
 import { AuthProvider } from "./hooks/useAuth.tsx";
+import Services from "./pages/Services.tsx";
+import ServiceDetail from "./pages/ServiceDetail.tsx";
+import NotFound from "./pages/NotFound.tsx";
 
 const Index = lazy(() => import("./pages/Index.tsx"));
-const Services = lazy(() => import("./pages/Services.tsx"));
 const Works = lazy(() => import("./pages/Works.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
 const Contacts = lazy(() => import("./pages/Contacts.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const JapanImportGuide = lazy(() => import("./pages/JapanImportGuide.tsx"));
-const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Cars = lazy(() => import("./pages/Cars.tsx"));
 const CarDetail = lazy(() => import("./pages/CarDetail.tsx"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin.tsx"));
@@ -65,6 +66,7 @@ const AnimatedRoutes = () => {
           <Route path="/" element={<Index />} />
           <Route path="/calculator" element={<Navigate replace to="/contacts" />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/services/:slug" element={<ServiceDetail />} />
           <Route path="/works" element={<Works />} />
           <Route path="/cars" element={<Cars />} />
           <Route path="/cars/japan" element={<Cars countrySlug="japan" />} />

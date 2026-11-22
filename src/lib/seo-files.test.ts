@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { VEHICLE_SERVICES, servicePath } from "./vehicle-services";
 
 describe("crawler files", () => {
   it("publishes exactly the known public routes in sitemap.xml", () => {
@@ -9,11 +10,12 @@ describe("crawler files", () => {
 
     expect(locations).toEqual([
       "https://alistaru.ru/",
-      "https://alistaru.ru/services",
+      "https://alistaru.ru/services/",
       "https://alistaru.ru/works",
       "https://alistaru.ru/about",
       "https://alistaru.ru/contacts",
       "https://alistaru.ru/japan-import-guide",
+      ...VEHICLE_SERVICES.map((service) => `https://alistaru.ru${servicePath(service)}`),
     ]);
     expect(sitemap).not.toMatch(/\/admin|\/calculator/);
   });

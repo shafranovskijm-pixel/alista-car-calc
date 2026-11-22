@@ -30,6 +30,7 @@ import Layout from "@/components/Layout";
 import Gallery from "@/components/Gallery";
 import BuyingGuide from "@/components/BuyingGuide";
 import VideoReviews from "@/components/VideoReviews";
+import VehicleServicesPreview from "@/components/VehicleServicesPreview";
 import LeadForm from "@/components/LeadForm";
 import heroCar from "@/assets/alista-hero-suv-v2.webp";
 
@@ -224,7 +225,7 @@ const Index = () => (
         <div className="container">
           <motion.div {...reveal} className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div><p className="text-sm font-bold uppercase tracking-[0.18em] text-primary">Услуги</p><h2 className="mt-4 max-w-2xl text-balance font-heading text-3xl font-bold tracking-[-0.035em] text-foreground sm:text-4xl md:text-5xl">Оформляем не только легковые автомобили</h2></div>
-            <Link to="/services" className="inline-flex items-center gap-1 font-semibold text-primary hover:underline">Все услуги <ChevronRight className="h-4 w-4" /></Link>
+            <Link to="/services/" className="inline-flex items-center gap-1 font-semibold text-primary hover:underline">Все услуги <ChevronRight className="h-4 w-4" /></Link>
           </motion.div>
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {services.map((service, index) => (
@@ -248,6 +249,7 @@ const Index = () => (
         </div>
       </section>
 
+      <VehicleServicesPreview />
       <VideoReviews />
       <BuyingGuide />
 

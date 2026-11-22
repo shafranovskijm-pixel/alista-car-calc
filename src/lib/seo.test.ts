@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SEO_BY_PATH, getRouteSeo, toCanonicalUrl } from "./seo";
+import { VEHICLE_SERVICES, servicePath } from "./vehicle-services";
 
 describe("SEO route configuration", () => {
   it("defines unique metadata for every public static page", () => {
@@ -15,6 +16,7 @@ describe("SEO route configuration", () => {
       "/contacts",
       "/privacy",
       "/japan-import-guide",
+      ...VEHICLE_SERVICES.map((service) => servicePath(service).replace(/\/$/, "")),
     ]);
 
     const titles = Object.values(SEO_BY_PATH).map(({ title }) => title);
@@ -33,7 +35,7 @@ describe("SEO route configuration", () => {
   });
 
   it("keeps admin, redirect, dynamic loading, and missing routes out of the index", () => {
-    ["/admin", "/admin/leads", "/calculator", "/cars/example", "/missing"].forEach(
+    ["/admin", "/admin/leads", "/calculator", "/cars/example", "/missing", "/services/unknown-service"].forEach(
       (path) => {
         expect(getRouteSeo(path)).toMatchObject({
           canonicalPath: null,

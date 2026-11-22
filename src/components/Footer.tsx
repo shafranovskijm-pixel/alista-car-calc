@@ -27,7 +27,7 @@ const Footer = () => (
           <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Разделы</h2>
           <nav className="mt-5 grid gap-3 text-sm" aria-label="Навигация в подвале">
             <Link to="/cars" className="text-white/65 hover:text-white">Автомобили</Link>
-            <Link to="/services" className="text-white/65 hover:text-white">Услуги</Link>
+            <Link to="/services/" className="text-white/65 hover:text-white">Услуги</Link>
             <Link to="/works" className="text-white/65 hover:text-white">Опубликованные работы</Link>
             <Link to="/japan-import-guide" className="text-white/65 hover:text-white">Покупка авто из Японии — инструкция</Link>
             <Link to="/about" className="text-white/65 hover:text-white">О компании</Link>

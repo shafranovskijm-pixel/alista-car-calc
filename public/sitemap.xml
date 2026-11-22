@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://alistaru.ru/</loc></url>
-  <url><loc>https://alistaru.ru/services</loc></url>
+  <url><loc>https://alistaru.ru/services/</loc></url>
   <url><loc>https://alistaru.ru/works</loc></url>
   <url><loc>https://alistaru.ru/about</loc></url>
   <url><loc>https://alistaru.ru/contacts</loc></url>
   <url><loc>https://alistaru.ru/japan-import-guide</loc></url>
+  <url><loc>https://alistaru.ru/services/uteplenie-kapota/</loc></url>
+  <url><loc>https://alistaru.ru/services/shumoizolyatsiya-dverey/</loc></url>
+  <url><loc>https://alistaru.ru/services/shumoizolyatsiya-kolesnyh-arok/</loc></url>
+  <url><loc>https://alistaru.ru/services/shumoizolyatsiya-pola/</loc></url>
+  <url><loc>https://alistaru.ru/services/shumoizolyatsiya-bagazhnika/</loc></url>
+  <url><loc>https://alistaru.ru/services/peretyazhka-salona-ekokozha/</loc></url>
+  <url><loc>https://alistaru.ru/services/podogrev-sideniy/</loc></url>
+  <url><loc>https://alistaru.ru/services/ventilyatsiya-sideniy/</loc></url>
+  <url><loc>https://alistaru.ru/services/podogrev-rulya/</loc></url>
+  <url><loc>https://alistaru.ru/services/podogrev-zerkal/</loc></url>
+  <url><loc>https://alistaru.ru/services/podogrev-zony-dvornikov/</loc></url>
+  <url><loc>https://alistaru.ru/services/bagazhnye-sistemy/</loc></url>
 </urlset>

@@ -34,7 +34,7 @@ const Header = () => {
           {navLinks.map((link) => (
             <Link
               key={link.to}
-              to={link.to}
+              to={link.to === "/services" ? "/services/" : link.to}
               className={`rounded-full px-3.5 py-2 text-sm font-semibold transition-colors ${
                 isActive(link.to)
                   ? "bg-secondary text-foreground"
@@ -75,7 +75,7 @@ const Header = () => {
                 {navLinks.map((link) => (
                   <Link
                     key={link.to}
-                    to={link.to}
+                    to={link.to === "/services" ? "/services/" : link.to}
                     onClick={() => setOpen(false)}
                     className={`rounded-xl px-4 py-3 text-base font-semibold transition-colors ${isActive(link.to) ? "bg-secondary text-primary" : "text-foreground hover:bg-secondary"}`}
                   >

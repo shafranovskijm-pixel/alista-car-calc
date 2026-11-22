@@ -1,3 +1,5 @@
+import { VEHICLE_SERVICES, SERVICES_HUB_SEO, servicePath, serviceSeo } from "./vehicle-services";
+
 export const SITE_URL = "https://alistaru.ru";
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpg`;
 
@@ -37,11 +39,7 @@ export const SEO_BY_PATH: Readonly<Record<string, SeoConfig>> = {
     "Таможенное оформление автомобилей и другой техники во Владивостоке. Проверка документов и предварительный расчёт платежей специалистом ALISTA.",
     "/",
   ),
-  "/services": indexable(
-    "Услуги таможенного оформления во Владивостоке | ALISTA",
-    "Таможенное оформление легковых и грузовых автомобилей, мототехники, спецтехники и водного транспорта во Владивостоке.",
-    "/services",
-  ),
+  "/services": SERVICES_HUB_SEO,
   "/works": indexable(
     "Наши работы — опубликованные автомобили | ALISTA",
     "Опубликованные карточки автомобилей ALISTA: фотографии, цены, комплектации и страна происхождения.",
@@ -91,6 +89,7 @@ export const SEO_BY_PATH: Readonly<Record<string, SeoConfig>> = {
     ),
     image: `${SITE_URL}/media/japan-import-guide/01-cover.png`,
   },
+  ...Object.fromEntries(VEHICLE_SERVICES.map((service) => [servicePath(service).replace(/\/$/, ""), serviceSeo(service)])),
 };
 
 const noindex = (title: string, description: string): SeoConfig => ({
