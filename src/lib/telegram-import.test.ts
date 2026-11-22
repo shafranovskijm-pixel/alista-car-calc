@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parseCarPost, parsePrice, redactToken, telegramSlug } from "../../supabase/functions/_shared/telegram-parse";
-import { authorize, decideMembership, handleUpdate, PermanentPhotoError, type ImportDeps, type TgChatMemberUpdate, type TgMessage } from "../../supabase/functions/_shared/telegram-import";
+import { authorize, decideMembership, detectPhotoMime, handleUpdate, PermanentPhotoError, type ImportDeps, type TgChatMemberUpdate, type TgMessage } from "../../supabase/functions/_shared/telegram-import";
 
 const POST = `#авто
 Марка: Toyota
@@ -174,7 +174,7 @@ describe("handleUpdate", () => {
 
 describe("strict price parsing", () => {
   it.each([
-    ["1 945 000 ₽", 1945000, "RUB"], ["1,5 млн ₽", 1500000, "RUB"], ["850 тыс. руб", 850000, "RUB"],
+    ["1 945 000 ₽", 1945000, "RUB"], ["1,5 млн ₽", 1500000, "RUB"], ["1.9 млн ₽", 1900000, "RUB"], ["1 769 544,48 RUB", 1769544.48, "RUB"], ["850 тыс. руб", 850000, "RUB"],
     ["2 000 000 JPY", 2000000, "JPY"], ["¥ 150000 CNY", 150000, "CNY"], ["¥2000000 JPY", 2000000, "JPY"], ["150 000 юаней", 150000, "CNY"],
   ])("%s", (raw, price, currency) => {
     expect(parsePrice(raw)).toEqual({ price, currency });
@@ -184,6 +184,15 @@ describe("strict price parsing", () => {
   });
   it("never publishes a post with an ambiguous price", () => {
     expect(parseCarPost(POST.replace("1 945 000 ₽", "-100 ₽")).kind).toBe("invalid");
+  });
+});
+
+describe("photo MIME detection", () => {
+  it("recognises real image bytes when Telegram omits extension and MIME", () => {
+    expect(detectPhotoMime(new Uint8Array([0xff, 0xd8, 0xff, 0xe0]), "", "application/octet-stream")).toBe("image/jpeg");
+    expect(detectPhotoMime(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), "", "")).toBe("image/png");
+    expect(detectPhotoMime(new Uint8Array([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50]), "", "")).toBe("image/webp");
+    expect(detectPhotoMime(new Uint8Array([0x47, 0x49, 0x46]), "", "application/octet-stream")).toBe("application/octet-stream");
   });
 });
 

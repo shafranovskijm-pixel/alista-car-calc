@@ -5,6 +5,17 @@ export const MAX_PHOTOS = 20;
 export const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 export const PHOTO_MIME: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
+/** Telegram may return a generic content type and an extensionless file path. */
+export const detectPhotoMime = (bytes: Uint8Array, extension: string, header: string) => {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
+  if (bytes.length >= 8 && [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every((byte, index) => bytes[index] === byte)) return "image/png";
+  if (bytes.length >= 12 && String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" && String.fromCharCode(...bytes.slice(8, 12)) === "WEBP") return "image/webp";
+  const extMime = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" }[extension.toLowerCase()];
+  if (extMime) return extMime;
+  const headerMime = header.split(";")[0].trim().toLowerCase();
+  return PHOTO_MIME[headerMime] ? headerMime : "application/octet-stream";
+};
+
 type TgPhotoSize = { file_id: string; file_unique_id: string; file_size?: number; width?: number; height?: number };
 export type TgMessage = {
   message_id: number;

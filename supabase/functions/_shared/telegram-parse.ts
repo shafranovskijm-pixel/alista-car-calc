@@ -197,7 +197,7 @@ const BRANDS: [string, RegExp][] = [
   ["Omoda", /omoda/i], ["Voyah", /voyah/i], ["Hongqi", /hongqi/i], ["Great Wall", /great\s?wall/i], ["Jeep", /\bjeep\b/i],
 ];
 
-const AMOUNT_RE = /(\d{1,3}(?:[ .\u00a0\u202f]\d{3})+|\d+)(?:,(\d+))?\s*(млн\.?|миллион\w*|тыс\.?|тысяч\w*)?\s*(₽|руб\w*\.?|RUB|JPY|[ий]ен\w*|CNY|RMB|юан\w*)/giu;
+const AMOUNT_RE = /(\d{1,3}(?:[ \u00a0\u202f]\d{3}|\.\d{3})+|\d+)(?:[.,](\d+))?\s*(млн\.?|миллион\w*|тыс\.?|тысяч\w*)?\s*(₽|руб\w*\.?|RUB|JPY|[ий]ен\w*|CNY|RMB|юан\w*)/giu;
 const CUR_OF = (s: string): ParsedCar["currency"] =>
   /₽|руб|rub/i.test(s) ? "RUB" : /jpy|[ий]ен/i.test(s) ? "JPY" : "CNY";
 
@@ -228,7 +228,7 @@ export const parseFreeFormPost = (text: string, now = new Date()): ParseResult =
   for (const line of lines) {
     for (const match of line.matchAll(AMOUNT_RE)) {
       const before = line.slice(0, match.index);
-      if (/(^|\s)[-−–]\s*$/.test(before)) negative = true;
+      if (/(^|\s)[-−–—]\s*$/.test(before)) negative = true;
       let value = Number(match[1].replace(/[ .\u00a0\u202f]/g, "") + (match[2] ? `.${match[2]}` : ""));
       if (match[3]) value *= /млн|миллион/i.test(match[3]) ? 1_000_000 : 1_000;
       amounts.push({ price: Math.round(value * 100) / 100, currency: CUR_OF(match[4]), line });
@@ -332,6 +332,7 @@ export const parseFreeFormPost = (text: string, now = new Date()): ParseResult =
   // A clear ИТОГО wins over its components. A single explicit "под ключ"
   // total can win over an itemised breakdown; otherwise different prices reject.
   if (/(?:цена|стоимость|итого)[^\n]*\[\s*указать\s*\]/iu.test(facts)) errors.push("Цена содержит незаполненное поле [указать]");
+  if (/(?:^|\s)от\s+[^\n]+?\s+до\s+\d/iu.test(facts)) errors.push("Цена диапазоном неоднозначна — укажите одну итоговую сумму");
   if (negative) errors.push("Цена не может быть отрицательной или диапазоном");
   for (const line of lines) {
     if (/(?:цена|стоимость|итого)\s*[:：]/iu.test(line) && /\d/.test(line) && ![...line.matchAll(AMOUNT_RE)].length) {

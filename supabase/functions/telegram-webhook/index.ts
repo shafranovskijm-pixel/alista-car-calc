@@ -1,14 +1,12 @@
 // Public Telegram webhook (verify_jwt = false). Protected by the Telegram
 // secret_token header and a strict check of the configured channel id.
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { authorize, checkSecret, decideMembership, handleUpdate, PermanentPhotoError, type ImportDeps, type TgUpdate } from '../_shared/telegram-import.ts';
+import { authorize, checkSecret, decideMembership, detectPhotoMime, handleUpdate, PermanentPhotoError, type ImportDeps, type TgUpdate } from '../_shared/telegram-import.ts';
 import { redactToken } from '../_shared/telegram-parse.ts';
 
 const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
   auth: { persistSession: false },
 });
-
-const MIME_BY_EXT: Record<string, string> = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp' };
 
 const must = <T>(r: { data: T; error: { message: string } | null }) => {
   if (r.error) throw new Error(r.error.message);
@@ -66,8 +64,9 @@ const makeDeps = (token: string): ImportDeps => ({
     if (!res.ok) throw new Error(`скачивание фото: HTTP ${res.status}`);
     const ext = filePath.split('.').pop()?.toLowerCase() ?? '';
     const header = res.headers.get('content-type') ?? '';
-    const mime = MIME_BY_EXT[ext] ?? (header.startsWith('image/') ? header : 'application/octet-stream');
-    return { bytes: new Uint8Array(await res.arrayBuffer()), mime };
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    const mime = detectPhotoMime(bytes, ext, header);
+    return { bytes, mime };
   },
   async storePhoto(path, bytes, mime) {
     const { error } = await sb.storage.from('cars').upload(path, bytes, { contentType: mime, upsert: true });

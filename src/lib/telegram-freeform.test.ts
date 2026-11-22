@@ -69,6 +69,27 @@ Peugeot 308 - 2021г. ЛЕВЫЙ РУЛЬ
     expect(c).toMatchObject({ status: "sold", price: 1900000, model: "Vezel" });
   });
 
+  it.each([
+    ["1.9 млн ₽", 1900000],
+    ["1,9 млн ₽", 1900000],
+    ["1.9 тыс. ₽", 1900],
+    ["1.650.000 ₽", 1650000],
+    ["1 650 000 ₽", 1650000],
+    ["ОТ ✅2 480 000 ₽", 2480000],
+    ["1 769 544,48 RUB", 1769544.48],
+  ])("reads %s as one exact amount", (rawPrice, expected) => {
+    const car = ok(`Honda Fit 2020г. из Японии\nЦена: ${rawPrice}`);
+    expect(car.price).toBe(expected);
+  });
+
+  it.each([
+    "от 1 000 000 до 1 200 000 ₽",
+    "1 000 000 — 1 200 000 ₽",
+    "1 000 000 - 1 200 000 ₽",
+  ])("rejects the ambiguous range %s", (rawPrice) => {
+    expect(parseCarPost(`Honda Fit 2020г. из Японии\nЦена: ${rawPrice}`, NOW).kind).toBe("invalid");
+  });
+
   it("keeps the strict #авто template working", () => {
     expect(parseCarPost("#авто\nМарка: Kia\nМодель: K5\nГод: 2021\nСтрана: Корея\nЦена: 2 000 000 ₽", NOW).kind).toBe("ok");
   });
